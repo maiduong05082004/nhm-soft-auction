@@ -3,26 +3,28 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Infolists\Components;
 use Filament\Infolists\Infolist;
-use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user';
+
+    protected static ?string $navigationLabel = 'Người dùng';
+
+    protected static ?string $modelLabel = 'Người dùng';
+
+    protected static ?string $pluralModelLabel = 'Người dùng';
 
     public static function form(Form $form): Form
     {
@@ -91,10 +93,6 @@ class UserResource extends Resource
                             ];
                         }
                     }),
-                Forms\Components\TextInput::make('referral_link')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('ref_by')
-                    ->maxLength(255),
             ]);
     }
 
@@ -103,29 +101,35 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Tên')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('profile_photo_path')
-                    ->label('Avatar')
+                    ->label('Ảnh')
                     ->circular()
                     ->defaultImageUrl(fn($record) => $record->profile_photo_url),
                 Tables\Columns\TextColumn::make('phone')
+                    ->label('Số điện thoại')
                     ->searchable()
                     ->default('no phone'),
                 Tables\Columns\TextColumn::make('address')
+                    ->label('Địa chỉ')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('current_balance')
+                    ->label('Số dư')
                     ->searchable()
-                    ->default('no current balance'),
+                    ->default(0),
                 Tables\Columns\TextColumn::make('membership')
                     ->searchable()
-                    ->formatStateUsing(fn(bool $state): string => $state ? 'Membership' : 'No Membership')
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Membership' : 'Chưa đăng ký')
                     ->badge()
                     ->color(fn(bool $state): string => $state ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('reputation')
+                    ->label('Danh tiếng')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -144,12 +148,13 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Chỉnh sửa'),
                 Tables\Actions\Action::make('manager')
-                    ->label('Manager')
+                    ->label('Quản lý')
                     ->icon('heroicon-o-user')
                     ->url(fn(User $record) => UserResource::getUrl('view', ['record' => $record])),
                 Tables\Actions\Action::make('delete')
+                    ->label('Xóa')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->visible(fn() => auth()->user()?->role === 'admin')
@@ -183,34 +188,76 @@ class UserResource extends Resource
                             Components\Grid::make(2)
                                 ->schema([
                                     Components\Group::make([
-                                        Components\TextEntry::make('name')->label('Name'),
+                                        Components\TextEntry::make('name')->label('Tên người dùng'),
                                         Components\TextEntry::make('email')->label('Email'),
-                                        Components\TextEntry::make('phone')->label('Phone Number'),
+                                        Components\TextEntry::make('phone')->label('Số điện thoại'),
                                     ]),
                                     Components\Group::make([
-                                        Components\TextEntry::make('role')->label('Role'),
-                                        Components\TextEntry::make('membership')->label('membership')
-                                            ->formatStateUsing(fn(bool $state): string => $state ? 'Membership' : 'No Membership')
+                                        Components\TextEntry::make('role')->label('Vai trò'),
+                                        Components\TextEntry::make('membership')->label('Membership')
+                                            ->formatStateUsing(fn(bool $state): string => $state ? 'Membership' : 'Chưa đăng ký')
                                             ->badge()
                                             ->color(fn(bool $state): string => $state ? 'success' : 'danger'),
                                     ]),
                                 ]),
                             Components\ImageEntry::make('profile_photo_url')
-                                ->label('Avatar')
+                                ->label('Ảnh')
                                 ->hiddenLabel()
                                 ->grow(false),
                         ])->from('lg'),
                     ]),
-                Components\Section::make('Transaction Cash Flow')
+                Components\Section::make('Lịch sử dòng tiền')
                     ->schema([
                         Components\ViewEntry::make('transaction_stats')
                             ->view('filament.user-transaction-stats')
                             ->columnSpanFull(),
                     ]),
-                Components\Section::make('Other information')
+
+                Components\Section::make('Lịch sử giao dịch')
                     ->schema([
-                        Components\TextEntry::make('created_at')->label('Creation date')->dateTime(),
-                        Components\TextEntry::make('updated_at')->label('Last updated')->dateTime(),
+                        Components\RepeatableEntry::make('transactions')
+                            ->schema([
+                                Components\Grid::make(5)
+                                    ->schema([
+                                        Components\TextEntry::make('type_transaction')
+                                            ->label('Loại giao dịch')
+                                            ->badge()
+                                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                                'recharge_point' => 'Nạp tiền',
+                                                'bid' => 'Đấu giá',
+                                                'buy_product' => 'Mua sản phẩm',
+                                                default => 'Khác',
+                                            })
+                                            ->color(fn (string $state): string => match ($state) {
+                                                'recharge_point' => 'success',
+                                                'bid' => 'warning',
+                                                'buy_product' => 'danger',
+                                                default => 'gray',
+                                            }),
+                                        Components\TextEntry::make('point_change')
+                                            ->label('Số dư sau')
+                                            ->formatStateUsing(fn ($state) => 
+                                                ($state > 0 ? '+' : '') . number_format($state, 0, ',', '.') . ' ₫'
+                                            )
+                                            ->color(fn ($state): string => $state > 0 ? 'success' : 'danger'),
+                                        Components\TextEntry::make('point')
+                                            ->label('Số dư hiện tại')
+                                            ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' ₫'),
+                                        Components\TextEntry::make('created_at')
+                                            ->label('Ngày giao dịch')
+                                            ->dateTime(),
+                                        Components\TextEntry::make('id')
+                                            ->label('Mã giao dịch')
+                                            ->prefix('#'),
+                                    ]),
+                            ])
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible(),
+                Components\Section::make('Thông tin khác')
+                    ->schema([
+                        Components\TextEntry::make('created_at')->label('Ngày tạo')->dateTime(),
+                        Components\TextEntry::make('updated_at')->label('Ngày cập nhật')->dateTime(),
                     ])
                     ->collapsible(),
             ]);

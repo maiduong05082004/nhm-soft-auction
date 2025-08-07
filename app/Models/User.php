@@ -71,7 +71,6 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
-    // Relationships
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
@@ -99,7 +98,7 @@ class User extends Authenticatable
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Transaction::class)->orderBy('created_at', 'desc');
     }
 
     public function articles()
@@ -119,7 +118,6 @@ class User extends Authenticatable
 
     public function getDynamicCurrentBalanceAttribute()
     {
-        // Tổng point_change, không cho âm
         $balance = $this->transactions()->sum('point_change');
         return $balance < 0 ? 0 : $balance;
     }
@@ -136,13 +134,12 @@ class User extends Authenticatable
 
     public function getTotalBidAttribute()
     {
-        // Tổng tiền đã dùng để đấu giá (giá trị âm)
         return $this->transactions()->where('type_transaction', 'bid')->sum('point_change');
     }
 
     public function getTotalBuyProductAttribute()
     {
-        // Tổng tiền đã dùng để mua sản phẩm (giá trị âm)
         return $this->transactions()->where('type_transaction', 'buy_product')->sum('point_change');
     }
+
 }

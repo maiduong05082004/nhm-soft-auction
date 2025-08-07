@@ -14,7 +14,7 @@ class ListCategories extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Create new category'),
+                ->label('Tạo danh mục mới'),
         ];
     }
 }

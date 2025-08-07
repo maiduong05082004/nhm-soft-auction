@@ -9,4 +9,14 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewUser extends ViewRecord
 {
     protected static string $resource = UserResource::class;
+
+    protected static ?string $title = 'Chi tiết người dùng';
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make()
+                ->label('Chỉnh sửa'),
+        ];
+    }
 }
