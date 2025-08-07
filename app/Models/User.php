@@ -116,4 +116,33 @@ class User extends Authenticatable
     {
         return $this->hasMany(Auction::class, 'winner_id');
     }
+
+    public function getDynamicCurrentBalanceAttribute()
+    {
+        // Tổng point_change, không cho âm
+        $balance = $this->transactions()->sum('point_change');
+        return $balance < 0 ? 0 : $balance;
+    }
+
+    public function getTransactionCountAttribute()
+    {
+        return $this->transactions()->count();
+    }
+
+    public function getTotalRechargeAttribute()
+    {
+        return $this->transactions()->where('type_transaction', 'recharge_point')->sum('point_change');
+    }
+
+    public function getTotalBidAttribute()
+    {
+        // Tổng tiền đã dùng để đấu giá (giá trị âm)
+        return $this->transactions()->where('type_transaction', 'bid')->sum('point_change');
+    }
+
+    public function getTotalBuyProductAttribute()
+    {
+        // Tổng tiền đã dùng để mua sản phẩm (giá trị âm)
+        return $this->transactions()->where('type_transaction', 'buy_product')->sum('point_change');
+    }
 }

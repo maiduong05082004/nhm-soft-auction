@@ -13,7 +13,7 @@ class Transaction extends Model
     protected $fillable = [
         'user_id',
         'point',
-        'minus_points',
+        'point_change',
         'type_transaction',
     ];
 
