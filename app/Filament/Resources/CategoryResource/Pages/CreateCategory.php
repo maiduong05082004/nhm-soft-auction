@@ -16,8 +16,8 @@ class CreateCategory extends CreateRecord
     {
         if (Category::where('name', $data['name'])->exists()) {
             Notification::make()
-                ->title('Error')
-                ->body('Category name already exists.')
+                ->title('Lỗi')
+                ->body('Tên danh mục đã tồn tại.')
                 ->danger()
                 ->send();
             
