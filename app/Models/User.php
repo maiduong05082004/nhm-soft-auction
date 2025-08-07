@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -17,7 +18,8 @@ class User extends Authenticatable
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
-
+    use SoftDeletes;
+    
     /**
      * The attributes that are mass assignable.
      *
@@ -27,6 +29,14 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'current_balance',
+        'reputation',
+        'membership',
+        'phone',
+        'address',
+        'avatar',
+        'introduce',
+        'status',
     ];
 
     /**
@@ -48,6 +58,8 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'phone_verified_at' => 'datetime',
+        'membership' => 'boolean',
     ];
 
     /**
@@ -58,4 +70,50 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    // Relationships
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    public function evaluations()
+    {
+        return $this->hasMany(Evaluate::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function auctionBids()
+    {
+        return $this->hasMany(AuctionBid::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function articles()
+    {
+        return $this->hasMany(Article::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function wonAuctions()
+    {
+        return $this->hasMany(Auction::class, 'winner_id');
+    }
 }
