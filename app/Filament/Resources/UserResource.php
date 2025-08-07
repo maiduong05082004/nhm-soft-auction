@@ -8,6 +8,9 @@ use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
+use Filament\Infolists\Components;
+use Filament\Infolists\Infolist;
+use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -142,6 +145,10 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('manager')
+                    ->label('Manager')
+                    ->icon('heroicon-o-user')
+                    ->url(fn(User $record) => UserResource::getUrl('view', ['record' => $record])),
                 Tables\Actions\Action::make('delete')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
@@ -165,6 +172,50 @@ class UserResource extends Resource
             ]);
     }
 
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Components\Section::make()
+                    ->schema([
+                        Components\Split::make([
+                            Components\Grid::make(2)
+                                ->schema([
+                                    Components\Group::make([
+                                        Components\TextEntry::make('name')->label('Name'),
+                                        Components\TextEntry::make('email')->label('Email'),
+                                        Components\TextEntry::make('phone')->label('Phone Number'),
+                                    ]),
+                                    Components\Group::make([
+                                        Components\TextEntry::make('role')->label('Role'),
+                                        Components\TextEntry::make('membership')->label('membership')
+                                            ->formatStateUsing(fn(bool $state): string => $state ? 'Membership' : 'No Membership')
+                                            ->badge()
+                                            ->color(fn(bool $state): string => $state ? 'success' : 'danger'),
+                                    ]),
+                                ]),
+                            Components\ImageEntry::make('profile_photo_url')
+                                ->label('Avatar')
+                                ->hiddenLabel()
+                                ->grow(false),
+                        ])->from('lg'),
+                    ]),
+                Components\Section::make('Transaction Cash Flow')
+                    ->schema([
+                        Components\ViewEntry::make('transaction_stats')
+                            ->view('filament.user-transaction-stats')
+                            ->columnSpanFull(),
+                    ]),
+                Components\Section::make('Other information')
+                    ->schema([
+                        Components\TextEntry::make('created_at')->label('Creation date')->dateTime(),
+                        Components\TextEntry::make('updated_at')->label('Last updated')->dateTime(),
+                    ])
+                    ->collapsible(),
+            ]);
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -178,7 +229,7 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            'view' => Pages\ViewUser::route('/{record}')
         ];
     }
-
 }
