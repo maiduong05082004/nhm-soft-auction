@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('auctions', function (Blueprint $table) {
-            $table->softDeletes();
+        Schema::table('products', function( Blueprint $table){
+            $table->foreignId('created_by')->constrained('users');
         });
     }
 
@@ -21,8 +21,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('auctions', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        Schema::dropIfExists('products');
     }
 };

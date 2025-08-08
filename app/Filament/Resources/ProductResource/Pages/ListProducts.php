@@ -16,4 +16,12 @@ class ListProducts extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+             'products' => 'Sản phẩm',
+            'products' => 'Danh sách',
+        ];
+    }
 }
