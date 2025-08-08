@@ -1,0 +1,213 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\ArticleResource\Pages;
+use App\Models\Article;
+use Filament\Forms;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use FilamentTiptapEditor\TiptapEditor;
+
+class ArticleResource extends Resource
+{
+    protected static ?string $model = Article::class;
+    protected static ?string $navigationIcon = 'heroicon-o-newspaper';
+    protected static ?string $modelLabel = 'Tin tức';
+    protected static ?string $navigationLabel = 'Tin tức';
+    protected static ?string $pluralModelLabel = 'Tin tức';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\Section::make('Thông tin cơ bản')
+                    ->schema([
+                        Forms\Components\TextInput::make('title')
+                            ->label('Tiêu đề')
+                            ->required()
+                            ->maxLength(255)
+                            ->live(debounce: 1000)
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if ($state) {
+                                    $set('slug', \Illuminate\Support\Str::slug($state));
+                                }
+                            }),
+
+                        Forms\Components\TextInput::make('slug')
+                            ->label('Đường dẫn')
+                            ->required()
+                            ->readOnly()
+                            ->maxLength(255)
+                            ->unique(ignoreRecord: true),
+
+                        Forms\Components\FileUpload::make('image')
+                            ->label('Hình ảnh đại diện')
+                            ->image()
+                            ->directory('articles')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jfif'])
+                            ->maxSize(2048),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Nội dung')
+                    ->schema([
+                        TiptapEditor::make('content')
+                            ->label('Nội dung bài viết')
+                            ->profile('default') // Sử dụng profile đã cấu hình
+                            ->required()
+                            ->columnSpanFull()
+                            ->disk('public')
+                            ->directory('uploads/editor')
+                            ->acceptedFileTypes([
+                                'image/jpeg',
+                                'image/png',
+                                'image/webp',
+                                'image/gif',
+                                'application/pdf'
+                            ])
+                            ->maxFileSize(10240)
+                            ->imageResizeMode('force')
+                            ->imageResizeTargetWidth('800')
+                            ->imageResizeTargetHeight('600')
+                            ->extraInputAttributes([
+                                'style' => 'min-height: 400px;' // Chiều cao tối thiểu giống Word
+                            ])
+                    ]),
+
+                Forms\Components\Section::make('Cài đặt')
+                    ->schema([
+                        Forms\Components\Select::make('status')
+                            ->label('Trạng thái')
+                            ->options([
+                                'draft' => 'Nháp',
+                                'published' => 'Đã đăng',
+                            ])
+                            ->default('draft')
+                            ->required(),
+
+                        Forms\Components\TextInput::make('sort')
+                            ->label('Thứ tự')
+                            ->numeric()
+                            ->default(0),
+
+                        Forms\Components\TextInput::make('view')
+                            ->label('Lượt xem')
+                            ->numeric()
+                            ->default(0)
+                            ->disabled(),
+                    ])
+                    ->columns(3),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Hình ảnh')
+                    ->circular()
+                    ->size(60),
+
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Tiêu đề')
+                    ->color('primary')
+                    ->limit(40)
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('slug')
+                    ->label('Đường dẫn')
+                    ->limit(30)
+                    ->searchable(),
+
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Trạng thái')
+                    ->colors([
+                        'success' => 'published',
+                        'gray' => 'draft',
+                    ])
+                    ->formatStateUsing(fn($state): string => match ($state) {
+                        'published' => 'Đã đăng',
+                        'draft' => 'Nháp',
+                        default => $state
+                    }),
+
+                Tables\Columns\TextColumn::make('view')
+                    ->label('Lượt xem')
+                    ->sortable()
+                    ->alignCenter(),
+
+                Tables\Columns\TextColumn::make('sort')
+                    ->label('Thứ tự')
+                    ->sortable()
+                    ->alignCenter(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Ngày tạo')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Trạng thái')
+                    ->options([
+                        'draft' => 'Nháp',
+                        'published' => 'Đã đăng',
+                    ]),
+                Tables\Filters\Filter::make('view')
+                    ->form([
+                        Forms\Components\TextInput::make('min_view')
+                            ->label('Số lượt xem từ')
+                            ->numeric(),
+                        Forms\Components\TextInput::make('max_view')
+                            ->label('Số lượt xem tới')
+                            ->numeric()
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['min_view'], fn($q, $value) => $q->where('view', '>=', $value))
+                            ->when($data['max_view'], fn($q, $value) => $q->where('view', '<=', $value));
+                    }),
+                Tables\Filters\Filter::make('publish_time')
+                    ->form([
+                        Forms\Components\DatePicker::make('start_from')
+                            ->label('Đăng từ'),
+                        Forms\Components\DatePicker::make('start_to')
+                            ->label('Đến'),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when($data['start_from'], fn($q, $date) => $q->whereDate('start_time', '>=', $date))
+                            ->when($data['start_to'], fn($q, $date) => $q->whereDate('start_time', '<=', $date));
+                    }),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Xem'),
+                Tables\Actions\EditAction::make()
+                    ->label('Sửa'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Xóa'),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Xóa đã chọn'),
+                ]),
+            ])
+            ->defaultSort('created_at', 'desc');
+    }
+
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListArticles::route('/'),
+            'create' => Pages\CreateArticle::route('/create'),
+            'edit' => Pages\EditArticle::route('/{record}/edit'),
+        ];
+    }
+}
