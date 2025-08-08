@@ -16,4 +16,12 @@ class EditProduct extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+             'products' => 'Sản phẩm',
+            'products' => 'Chỉnh sửa',
+        ];
+    }
 }

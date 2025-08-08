@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
@@ -25,6 +26,7 @@ class Product extends Model
         'start_time',
         'end_time',
         'status',
+        'is_hot'
     ];
 
     public function category()
@@ -58,7 +60,6 @@ class Product extends Model
     }
     public function firstImage()
     {   
-        // dd($this->hasOne(ProductImage::class)->latest());
-        return $this->hasOne(ProductImage::class, 'product_id')->latest(); // or ->oldest()
+        return $this->hasOne(ProductImage::class, 'product_id')->latest();
     }
 }
