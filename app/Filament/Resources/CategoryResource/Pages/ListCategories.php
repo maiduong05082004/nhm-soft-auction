@@ -10,6 +10,14 @@ class ListCategories extends ListRecords
 {
     protected static string $resource = CategoryResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Danh mục',
+            '' => 'Danh sách',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

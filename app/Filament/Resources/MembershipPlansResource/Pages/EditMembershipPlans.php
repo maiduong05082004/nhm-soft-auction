@@ -10,6 +10,14 @@ class EditMembershipPlans extends EditRecord
 {
     protected static string $resource = MembershipPlansResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Gói thành viên',
+            '' => 'Sửa gói thành viên',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

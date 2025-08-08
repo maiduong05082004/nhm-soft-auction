@@ -12,6 +12,14 @@ class CreateCategory extends CreateRecord
 {
     protected static string $resource = CategoryResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Danh mục',
+            '' => 'Tạo danh mục',
+        ];
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (Category::where('name', $data['name'])->exists()) {

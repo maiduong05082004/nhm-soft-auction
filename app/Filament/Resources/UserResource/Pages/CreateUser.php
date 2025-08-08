@@ -10,7 +10,13 @@ class CreateUser extends CreateRecord
 {
     protected static string $resource = UserResource::class;
 
-    protected static ?string $title = 'Tạo người dùng mới';
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Người dùng',
+            '' => 'Tạo người dùng mới',
+        ];
+    }
 
     protected function getCreateFormAction(): Actions\Action
     {

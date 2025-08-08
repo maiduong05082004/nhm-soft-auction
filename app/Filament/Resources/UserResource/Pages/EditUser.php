@@ -10,7 +10,13 @@ class EditUser extends EditRecord
 {
     protected static string $resource = UserResource::class;
 
-    protected static ?string $title = 'Chỉnh sửa người dùng';
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Người dùng',
+            '' => 'Sửa người dùng',
+        ];
+    }
 
     protected function getHeaderActions(): array
     {

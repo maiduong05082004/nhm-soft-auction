@@ -10,7 +10,13 @@ class ViewUser extends ViewRecord
 {
     protected static string $resource = UserResource::class;
 
-    protected static ?string $title = 'Chi tiết người dùng';
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Người dùng',
+            '' => 'Xem người dùng',
+        ];
+    }
 
     protected function getHeaderActions(): array
     {
