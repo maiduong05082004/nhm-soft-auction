@@ -10,6 +10,14 @@ class ListMembershipPlans extends ListRecords
 {
     protected static string $resource = MembershipPlansResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Gói thành viên',
+            '' => 'Danh sách',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

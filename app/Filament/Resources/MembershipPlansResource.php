@@ -128,21 +128,13 @@ class MembershipPlansResource extends Resource
 
                 Tables\Columns\TextColumn::make('price')
                     ->label('Giá')
-                    ->money('VND', divideBy: 1)
+                    ->suffix('₫')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('duration')
                     ->label('Thời gian')
                     ->suffix(' tháng')
                     ->sortable(),
-
-                Tables\Columns\IconColumn::make('status')
-                    ->label('Trạng thái')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger'),
 
                 Tables\Columns\IconColumn::make('config.free_product_listing')
                     ->label('Đăng SP miễn phí')
@@ -157,6 +149,14 @@ class MembershipPlansResource extends Resource
                     ->suffix('%')
                     ->default('0%'),
 
+                Tables\Columns\IconColumn::make('status')
+                    ->label('Trạng thái')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger'),
+                    
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
                     ->dateTime('d/m/Y H:i')

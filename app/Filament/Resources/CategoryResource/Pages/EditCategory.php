@@ -12,6 +12,14 @@ class EditCategory extends EditRecord
 {
     protected static string $resource = CategoryResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Danh mục',
+            '' => 'Sửa danh mục',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
