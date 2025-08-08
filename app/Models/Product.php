@@ -12,6 +12,10 @@ class Product extends Model
     use HasFactory;
     use SoftDeletes;
 
+    protected $casts = [
+        'seo' => 'array'
+    ];
+
     protected $fillable = [
         'name',
         'slug',
@@ -26,7 +30,9 @@ class Product extends Model
         'start_time',
         'end_time',
         'status',
-        'is_hot'
+        'is_hot',
+        'created_by',
+        'seo'
     ];
 
     public function category()

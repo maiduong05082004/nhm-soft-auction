@@ -17,3 +17,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/lang/vendor/filament/*
+!/lang/vendor/filament/vi/ // chỉ giữ tiếng Việt

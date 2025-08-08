@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->foreignId('created_by')
-                ->nullable()
-                ->constrained('users')
-                ->cascadeOnDelete();
+            $table->json('seo')->nullable()->after('created_by');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::table('products', function (Blueprint $table) {
+             $table->dropColumn('seo');
+        });
     }
 };
