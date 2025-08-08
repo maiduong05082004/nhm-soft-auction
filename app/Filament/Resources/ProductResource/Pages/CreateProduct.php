@@ -26,4 +26,12 @@ class CreateProduct extends CreateRecord
             $nu++;
         }
     }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+             'products' => 'Sản phẩm',
+            'products' => 'Tạo mới',
+        ];
+    }
 }
