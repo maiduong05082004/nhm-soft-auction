@@ -8,9 +8,10 @@ use Filament\Resources\RelationManagers\RelationManager;
 
 class ProductImageRelationManager extends RelationManager
 {
+    
     protected static string $relationship = 'images'; // tên relation trong model Product
 
-    protected static ?string $title = 'Product Images';
+    protected static ?string $title = 'Hình ảnh sản phẩm';
 
     public function form(Forms\Form $form): Forms\Form
     {
@@ -33,7 +34,7 @@ class ProductImageRelationManager extends RelationManager
                     ->width(80),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(), 
+                Tables\Actions\CreateAction::make()->label('Thêm hình ảnh sản phẩm')->modalHeading('Thêm hình ảnh sản phẩm'), 
             ])
             ->actions([
                 Tables\Actions\EditAction::make(), 
