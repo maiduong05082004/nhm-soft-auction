@@ -34,6 +34,7 @@ class MembershipPlansResource extends Resource
 
                 Forms\Components\TextInput::make('price')
                     ->label('Giá')
+                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫')
                     ->required()
                     ->numeric()
                     ->minValue(0),
@@ -156,7 +157,7 @@ class MembershipPlansResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger'),
-                    
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
                     ->dateTime('d/m/Y H:i')

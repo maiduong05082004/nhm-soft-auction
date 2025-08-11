@@ -21,25 +21,25 @@ class OrderStats extends BaseWidget
         return ListOrders::class;
     }
 
-    protected function getStats(): array
-    {
-        $orderData = Trend::model(Order::class)
-            ->between(
-                start: now()->subYear(),
-                end: now(),
-            )
-            ->perMonth()
-            ->count();
+    // protected function getStats(): array
+    // {
+    //     $orderData = Trend::model(Order::class)
+    //         ->between(
+    //             start: now()->subYear(),
+    //             end: now(),
+    //         )
+    //         ->perMonth()
+    //         ->count();
 
-        return [
-            Stat::make('Orders', $this->getPageTableQuery()->count())
-                ->chart(
-                    $orderData
-                        ->map(fn (TrendValue $value) => $value->aggregate)
-                        ->toArray()
-                ),
-            Stat::make('Open orders', $this->getPageTableQuery()->whereIn('status', ['open', 'processing'])->count()),
-            Stat::make('Average price', number_format($this->getPageTableQuery()->avg('total_price'), 2)),
-        ];
-    }
+    //     return [
+    //         Stat::make('Orders', $this->getPageTableQuery()->count())
+    //             ->chart(
+    //                 $orderData
+    //                     ->map(fn (TrendValue $value) => $value->aggregate)
+    //                     ->toArray()
+    //             ),
+    //         Stat::make('Open orders', $this->getPageTableQuery()->whereIn('status', ['open', 'processing'])->count()),
+    //         Stat::make('Average price', number_format($this->getPageTableQuery()->avg('total_price'), 2)),
+    //     ];
+    // }
 }

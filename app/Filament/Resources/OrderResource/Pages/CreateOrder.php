@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
-use App\Models\Shop\Order;
+use App\Models\Order;
 use App\Models\User;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Wizard;

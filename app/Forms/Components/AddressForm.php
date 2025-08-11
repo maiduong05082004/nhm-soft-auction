@@ -37,30 +37,6 @@ class AddressForm extends Forms\Components\Field
         $record?->touch();
     }
 
-    public function getChildComponents(): array
-    {
-        return [
-            Forms\Components\Grid::make()
-                ->schema([
-                    
-                ]),
-            Forms\Components\TextInput::make('street')
-                ->label('Street address')
-                ->maxLength(255),
-            Forms\Components\Grid::make(3)
-                ->schema([
-                    Forms\Components\TextInput::make('city')
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('state')
-                        ->label('State / Province')
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('zip')
-                        ->label('Zip / Postal code')
-                        ->maxLength(255),
-                ]),
-        ];
-    }
-
     protected function setUp(): void
     {
         parent::setUp();

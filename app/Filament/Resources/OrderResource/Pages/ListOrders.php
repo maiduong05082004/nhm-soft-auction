@@ -14,10 +14,19 @@ class ListOrders extends ListRecords
 
     protected static string $resource = OrderResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Đơn hàng',
+            '' => 'Danh sách',
+        ];
+    }
+
     protected function getActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Tạo đơn hàng mới'),
         ];
     }
 
@@ -29,12 +38,12 @@ class ListOrders extends ListRecords
     public function getTabs(): array
     {
         return [
-            null => Tab::make('All'),
-            'new' => Tab::make()->query(fn ($query) => $query->where('status', 'new')),
-            'processing' => Tab::make()->query(fn ($query) => $query->where('status', 'processing')),
-            'shipped' => Tab::make()->query(fn ($query) => $query->where('status', 'shipped')),
-            'delivered' => Tab::make()->query(fn ($query) => $query->where('status', 'delivered')),
-            'cancelled' => Tab::make()->query(fn ($query) => $query->where('status', 'cancelled')),
+            null => Tab::make('Tất cả'),
+            'Đơn mới' => Tab::make()->query(fn ($query) => $query->where('status', '1')),
+            'Đang xử lý' => Tab::make()->query(fn ($query) => $query->where('status', '2')),
+            'Đã giao' => Tab::make()->query(fn ($query) => $query->where('status', '3')),
+            'Đã giao' => Tab::make()->query(fn ($query) => $query->where('status', '4')),
+            'Đã hủy' => Tab::make()->query(fn ($query) => $query->where('status', '5')),
         ];
     }
 }

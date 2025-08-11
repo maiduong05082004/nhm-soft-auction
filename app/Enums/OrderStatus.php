@@ -6,26 +6,26 @@ use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 
-enum OrderStatus: string implements HasColor, HasIcon, HasLabel
+enum OrderStatus: int implements HasColor, HasIcon, HasLabel
 {
-    case New = 'new';
+    case New = 1;
 
-    case Processing = 'processing';
+    case Processing = 2;
 
-    case Shipped = 'shipped';
+    case Shipped = 3;
 
-    case Delivered = 'delivered';
+    case Delivered = 4;
 
-    case Cancelled = 'cancelled';
+    case Cancelled = 5;
 
     public function getLabel(): string
     {
         return match ($this) {
-            self::New => 'New',
-            self::Processing => 'Processing',
-            self::Shipped => 'Shipped',
-            self::Delivered => 'Delivered',
-            self::Cancelled => 'Cancelled',
+            self::New => 'Đơn mới',
+            self::Processing => 'Đang xử lý',
+            self::Shipped => 'Đã giao',
+            self::Delivered => 'Đã giao',
+            self::Cancelled => 'Đã hủy',
         };
     }
 
