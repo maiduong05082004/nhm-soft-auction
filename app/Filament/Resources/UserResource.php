@@ -17,13 +17,9 @@ use Filament\Tables\Table;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-user';
-
     protected static ?string $navigationLabel = 'Người dùng';
-
     protected static ?string $modelLabel = 'Người dùng';
-
     protected static ?string $pluralModelLabel = 'Người dùng';
 
     public static function form(Form $form): Form
@@ -120,6 +116,7 @@ class UserResource extends Resource
                     ->label('Địa chỉ')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('current_balance')
+                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫')
                     ->label('Số dư')
                     ->searchable()
                     ->default(0),
