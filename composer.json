@@ -10,12 +10,10 @@
         "codewithdennis/filament-select-tree": "^3.1",
         "filament/filament": "^3.3",
         "guzzlehttp/guzzle": "^7.2",
-        "inertiajs/inertia-laravel": "^0.6.8",
         "laravel/framework": "^10.10",
         "laravel/jetstream": "^4.3",
         "laravel/sanctum": "^3.3",
-        "laravel/tinker": "^2.8",
-        "tightenco/ziggy": "^2.0"
+        "laravel/tinker": "^2.8"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
