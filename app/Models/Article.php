@@ -22,6 +22,7 @@ class Article extends Model
         'user_id',
         'sort',
         'status',
+        'category_article_id'
     ];
 
     protected static function boot()
@@ -35,5 +36,10 @@ class Article extends Model
     public function author()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(CategoryArticle::class, 'category_article_id');
     }
 }
