@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,6 +13,7 @@ class Article extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'id',
         'title',
         'slug',
         'content',
@@ -21,6 +23,14 @@ class Article extends Model
         'sort',
         'status',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->id = HelperFunc::getTimestampAsId();
+        });
+    }
 
     public function author()
     {

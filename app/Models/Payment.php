@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,8 +10,9 @@ class Payment extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    
+
     protected $fillable = [
+        'id',
         'order_id',
         'user_id',
         'payment_method',
@@ -24,6 +26,13 @@ class Payment extends Model
         'status',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->id = HelperFunc::getTimestampAsId();
+        });
+    }
     public function order()
     {
         return $this->belongsTo(Order::class);
