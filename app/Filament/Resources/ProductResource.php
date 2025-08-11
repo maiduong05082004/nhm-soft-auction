@@ -34,7 +34,7 @@ class ProductResource extends Resource
                 ->label('Tên')
                 ->required()
                 ->maxLength(255)
-                ->live(debounce: 250)
+                ->live(debounce: 1000)
                 ->afterStateUpdated(function ($state, callable $set) {
                     if ($state) {
                         $set('slug', \Illuminate\Support\Str::slug($state));
@@ -200,12 +200,14 @@ class ProductResource extends Resource
                     ->label('Thời gian kết thúc')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\ImageColumn::make('firstImage.image_url')
+                Tables\Columns\ImageColumn::make('images.image_url')
                     ->label('Hình ảnh')
                     ->disk('public')
                     ->height(100)
                     ->width(100)
-                    ->defaultImageUrl(fn($record) => gettype($record->image_url) === 'string' ? asset('storage/' . $record->image_url) : null),
+                    ->stacked()
+                    ->limit(3)
+                    ->limitedRemainingText(isSeparate: true),
                 Tables\Columns\TextColumn::make('category.name')
                     ->label('Danh mục')
                     ->limit(50),
