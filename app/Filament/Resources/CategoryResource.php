@@ -53,10 +53,19 @@ class CategoryResource extends Resource
                     ->directory('categories'),
                 SelectTree::make('parent_id')
                     ->label('Danh mục cha')
-                    ->withCount()
+                    ->options(function (?Category $record) {
+                        $options = [];
+                        foreach (Category::getTreeList() as $category) {
+                            if ($record && $record->id === $category->id) {
+                                continue;
+                            }
+                            $options[$category->id] = str_repeat('— ', $category->level) . $category->name;
+                        }
+                        return $options;
+                    })
                     ->searchable()
+                    ->preload()
                     ->placeholder('Chọn danh mục cha')
-                    ->relationship('parent', 'name', 'parent_id')
                     ->nullable(),
 
                 Forms\Components\Textarea::make('description')

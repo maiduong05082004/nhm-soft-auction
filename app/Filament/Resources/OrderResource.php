@@ -6,9 +6,10 @@ use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Filament\Resources\OrderResource\Widgets\OrderStats;
-use App\Forms\Components\AddressForm;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
+use App\Utils\HelperFunc;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Repeater;
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class OrderResource extends Resource
 {
@@ -52,6 +54,48 @@ class OrderResource extends Resource
                             ])
                             ->schema([
                                 static::getItemsRepeater(),
+                                Forms\Components\Placeholder::make('subtotal_display')
+                                    ->label('Tổng tiền sản phẩm')
+                                    ->content(function (Forms\Get $get): string {
+                                        $items = $get('items') ?? [];
+                                        $subtotal = 0;
+                                        foreach ($items as $item) {
+                                            $qty = (float) ($item['quantity'] ?? 0);
+                                            $productId = $item['product_id'] ?? null;
+                                            $price = $productId ? (float) (Product::find($productId)?->price ?? 0) : (float) ($item['price'] ?? 0);
+                                            $subtotal += $qty * $price;
+                                        }
+                                        return number_format($subtotal, 0, ',', '.') . ' ₫';
+                                    })
+                                    ->columnSpan('full')
+                                    ->extraAttributes(['class' => 'text-lg font-bold text-blue-600']),
+                                Forms\Components\Placeholder::make('shipping_fee_display')
+                                    ->label('Phí vận chuyển')
+                                    ->content(function (Forms\Get $get): string {
+                                        $shippingFee = (float) ($get('shipping_fee') ?: 0);
+                                        return number_format($shippingFee, 0, ',', '.') . ' ₫';
+                                    })
+                                    ->columnSpan('full')
+                                    ->extraAttributes(['class' => 'text-base text-gray-600']),
+                                Forms\Components\Placeholder::make('total_display')
+                                    ->label('Tổng tiền đơn hàng')
+                                    ->content(function (Forms\Get $get): string {
+                                        $items = $get('items') ?? [];
+                                        $subtotal = 0;
+                                        foreach ($items as $item) {
+                                            $qty = (float) ($item['quantity'] ?? 0);
+                                            $productId = $item['product_id'] ?? null;
+                                            $price = $productId ? (float) (Product::find($productId)?->price ?? 0) : (float) ($item['price'] ?? 0);
+                                            $subtotal += $qty * $price;
+                                        }
+                                        $shippingFee = (float) ($get('shipping_fee') ?: 0);
+                                        $total = $subtotal + $shippingFee;
+                                        return number_format($total, 0, ',', '.') . ' ₫';
+                                    })
+                                    ->columnSpan('full')
+                                    ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
+
+
                             ]),
                     ])
                     ->columnSpan(['lg' => fn(?Order $record) => $record === null ? 3 : 2]),
@@ -234,7 +278,7 @@ class OrderResource extends Resource
         return [
             Forms\Components\TextInput::make('code_orders')
                 ->label('Mã đơn hàng')
-                ->default('ORD-' . random_int(100000, 999999))
+                ->default('ORD-' . HelperFunc::getTimestampAsId())
                 ->disabled()
                 ->dehydrated()
                 ->required()
@@ -277,7 +321,7 @@ class OrderResource extends Resource
                         ->label('Địa chỉ')
                         ->required()
                         ->maxLength(255),
-                        
+
                 ])
                 ->createOptionAction(function (Action $action) {
                     return $action
@@ -293,17 +337,17 @@ class OrderResource extends Resource
                     if (!$userId) {
                         return [];
                     }
-                    
+
                     $user = \App\Models\User::find($userId);
                     if (!$user || !$user->address) {
                         return [];
                     }
-                    
+
                     return [$user->address => $user->address];
                 })
                 ->searchable()
                 ->required()
-                ->visible(fn (Forms\Get $get) => !empty($get('user_id')))
+                ->visible(fn(Forms\Get $get) => !empty($get('user_id')))
                 ->placeholder('Chọn khách hàng trước')
                 ->suffixAction(
                     Forms\Components\Actions\Action::make('editAddress')
@@ -320,18 +364,26 @@ class OrderResource extends Resource
                                 ->required()
                                 ->rows(3)
                                 ->placeholder('Nhập địa chỉ giao hàng...')
-                                ->default(fn (Forms\Get $get) => $get('ship_address'))
+                                ->default(fn(Forms\Get $get) => $get('ship_address'))
                         ])
-                        ->action(function (array $data, Forms\Set $set) {
+                        ->action(function (array $data, Forms\Set $set, Forms\Get $get) {
                             $set('ship_address', $data['new_address']);
-                            
+
+                            $userId = $get('user_id');
+                            if ($userId) {
+                                $user = \App\Models\User::find($userId);
+                                if ($user) {
+                                    $user->update(['address' => $data['new_address']]);
+                                }
+                            }
+
                             \Filament\Notifications\Notification::make()
                                 ->title('Thành công!')
                                 ->body('Địa chỉ giao hàng đã được cập nhật')
                                 ->success()
                                 ->send();
                         })
-                        ->visible(fn (Forms\Get $get) => !empty($get('ship_address')))
+                        ->visible(fn(Forms\Get $get) => !empty($get('user_id')))
                 ),
 
             Forms\Components\ToggleButtons::make('status')
@@ -339,10 +391,71 @@ class OrderResource extends Resource
                 ->options(OrderStatus::class)
                 ->required(),
 
+            Forms\Components\TextInput::make('email_receiver')
+                ->label('Email người nhận')
+                ->maxLength(255)
+                ->required()
+                ->live()
+                ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                    if (empty($state)) {
+                        $userId = $get('user_id');
+                        if ($userId) {
+                            $user = \App\Models\User::find($userId);
+                            if ($user && $user->email) {
+                                $set('email_receiver', $user->email);
+                            }
+                        }
+                    }
+                })
+                ->suffixAction(
+                    Forms\Components\Actions\Action::make('useUserEmail')
+                        ->label('Dùng email user')
+                        ->icon('heroicon-o-user')
+                        ->color('info')
+                        ->tooltip('Sử dụng email của khách hàng đã chọn')
+                        ->action(function (Forms\Set $set, Forms\Get $get) {
+                            $userId = $get('user_id');
+                            if ($userId) {
+                                $user = \App\Models\User::find($userId);
+                                if ($user && $user->email) {
+                                    $set('email_receiver', $user->email);
 
-
-            AddressForm::make('address')
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Thành công!')
+                                        ->body('Đã sử dụng email của khách hàng: ' . $user->email)
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Lỗi!')
+                                        ->body('Khách hàng này không có email')
+                                        ->danger()
+                                        ->send();
+                                }
+                            } else {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Lỗi!')
+                                    ->body('Vui lòng chọn khách hàng trước')
+                                    ->warning()
+                                    ->send();
+                            }
+                        })
+                        ->visible(fn(Forms\Get $get) => !empty($get('user_id')))
+                )
+                ->placeholder('Nhập email hoặc chọn email từ khách hàng')
                 ->columnSpan('full'),
+
+            Forms\Components\Hidden::make('subtotal')
+                ->default(0)
+                ->dehydrated()
+                ->required(),
+
+            Forms\Components\Hidden::make('total')
+                ->default(0)
+                ->dehydrated()
+                ->required(),
+
+
 
             Forms\Components\MarkdownEditor::make('notes')
                 ->columnSpan('full'),
@@ -352,6 +465,7 @@ class OrderResource extends Resource
     public static function getItemsRepeater(): Repeater
     {
         return Repeater::make('items')
+            ->label('Sản phẩm')
             ->relationship()
             ->schema([
                 Forms\Components\Select::make('product_id')
@@ -359,18 +473,45 @@ class OrderResource extends Resource
                     ->options(Product::query()->pluck('name', 'id'))
                     ->required()
                     ->reactive()
-                    ->afterStateUpdated(fn($state, Forms\Set $set) => $set('price', Product::find($state)?->price ?? 0))
-                    ->distinct()
-                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                    ->afterStateUpdated(function ($state, Forms\Set $set) {
+                        if ($state) {
+                            $product = Product::find($state);
+                            if ($product) {
+                                $set('price', $product->price);
+                                $set('quantity', 1);
+                                $set('subtotal', $product->price * 1);
+                                Log::debug('[OrderResource] product selected', [
+                                    'product_id' => $state,
+                                    'price' => (float) $product->price,
+                                    'quantity_set' => 1,
+                                    'line_subtotal' => (float) $product->price,
+                                ]);
+                            }
+                        }
+                    })
                     ->columnSpan([
-                        'md' => 5,
+                        'md' => 6,
                     ])
                     ->searchable(),
 
-                Forms\Components\TextInput::make('qty')
+                Forms\Components\TextInput::make('quantity')
                     ->label('Số lượng')
                     ->numeric()
                     ->default(1)
+                    ->minValue(1)
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                        $quantity = $state ?: 1;
+                        $price = (float) ($get('price') ?: 0);
+                        $line = $quantity * $price;
+                        $set('subtotal', $line);
+                        Log::debug('[OrderResource] quantity updated', [
+                            'product_id' => $get('product_id'),
+                            'quantity' => (float) $quantity,
+                            'price' => $price,
+                            'line_subtotal' => $line,
+                        ]);
+                    })
                     ->columnSpan([
                         'md' => 2,
                     ])
@@ -383,9 +524,138 @@ class OrderResource extends Resource
                     ->numeric()
                     ->required()
                     ->columnSpan([
-                        'md' => 3,
+                        'md' => 2,
+                    ]),
+
+                Forms\Components\TextInput::make('subtotal')
+                    ->label('Thành tiền')
+                    ->disabled()
+                    ->dehydrated()
+                    ->numeric()
+                    ->default(0)
+                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                        $quantity = (float) ($get('quantity') ?: 1);
+                        $price = (float) ($get('price') ?: 0);
+                        $line = $quantity * $price;
+                        $set('subtotal', $line);
+                        Log::debug('[OrderResource] subtotal recalculated', [
+                            'product_id' => $get('product_id'),
+                            'quantity' => $quantity,
+                            'price' => $price,
+                            'line_subtotal' => $line,
+                        ]);
+                    })
+                    ->columnSpan([
+                        'md' => 2,
+                    ]),
+                Forms\Components\Hidden::make('total')
+                    ->label('Tổng tiền')
+                    ->disabled()
+                    ->dehydrated()
+                    ->default(0)
+                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                        $subtotal = $get('subtotal') ?: 0;
+                        $shippingFee = $get('shipping_fee') ?: 0;
+                        $set('total', $subtotal + $shippingFee);
+                    })
+                    ->columnSpan([
+                        'md' => 2,
                     ]),
             ])
+            ->columns(12)
+            ->defaultItems(1)
+            ->reorderable(false)
+            ->collapsible(false)
+            ->addActionLabel('Thêm sản phẩm')
             ->required();
+    }
+
+    public static function getPaymentFormSchema(): array
+    {
+        return [
+            Forms\Components\Select::make('payment_method')
+                ->label('Phương thức thanh toán')
+                ->options([
+                    '0' => 'Giao dịch trực tiếp',
+                    '1' => 'Chuyển khoản ngân hàng',
+                ])
+                ->required()
+                ->default('0'),
+
+            Forms\Components\TextInput::make('shipping_fee')
+                ->label('Phí vận chuyển')
+                ->numeric()
+                ->default(0)
+                ->required(),
+
+            Forms\Components\Placeholder::make('subtotal')
+                ->label('Tổng tiền sản phẩm')
+                ->content(function (Forms\Get $get): string {
+                    $items = $get('items') ?? [];
+                    $subtotal = 0;
+
+                    foreach ($items as $item) {
+                        if (isset($item['quantity']) && isset($item['price'])) {
+                            $subtotal += $item['quantity'] * $item['price'];
+                        }
+                    }
+
+                    return number_format($subtotal, 0, ',', '.') . ' ₫';
+                }),
+
+            Forms\Components\Placeholder::make('total')
+                ->label('Tổng tiền đơn hàng')
+                ->content(function (Forms\Get $get): string {
+                    $items = $get('items') ?? [];
+                    $subtotal = 0;
+                    $shippingFee = $get('shipping_fee') ?: 0;
+
+                    foreach ($items as $item) {
+                        if (isset($item['quantity']) && isset($item['price'])) {
+                            $subtotal += $item['quantity'] * $item['price'];
+                        }
+                    }
+
+                    $total = $subtotal + $shippingFee;
+                    return number_format($total, 0, ',', '.') . ' ₫';
+                })
+                ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
+        ];
+    }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $subtotal = 0.0;
+        if (!empty($data['items']) && is_array($data['items'])) {
+            foreach ($data['items'] as $item) {
+                $quantity = (float) ($item['quantity'] ?? 0);
+                $price = (float) ($item['price'] ?? 0);
+                $subtotal += $quantity * $price;
+            }
+        }
+
+        $data['subtotal'] = $subtotal;
+        $shippingFee = (float) ($data['shipping_fee'] ?? 0);
+        $data['total'] = $subtotal + $shippingFee;
+
+        return $data;
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $subtotal = 0.0;
+        if (!empty($data['items']) && is_array($data['items'])) {
+            foreach ($data['items'] as $item) {
+                $quantity = (float) ($item['quantity'] ?? 0);
+                $price = (float) ($item['price'] ?? 0);
+                $subtotal += $quantity * $price;
+            }
+        }
+
+        $data['subtotal'] = $subtotal;
+        $shippingFee = (float) ($data['shipping_fee'] ?? 0);
+        $data['total'] = $subtotal + $shippingFee;
+
+        return $data;
     }
 }

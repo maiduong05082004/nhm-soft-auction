@@ -4,7 +4,6 @@ namespace App\Forms\Components;
 
 use Filament\Forms;
 use Illuminate\Database\Eloquent\Model;
-use Squire\Models\Country;
 
 class AddressForm extends Forms\Components\Field
 {
@@ -18,23 +17,6 @@ class AddressForm extends Forms\Components\Field
         $this->relationship = $relationship;
 
         return $this;
-    }
-
-    public function saveRelationships(): void
-    {
-        $state = $this->getState();
-        $record = $this->getRecord();
-        $relationship = $record?->{$this->getRelationship()}();
-
-        if ($relationship === null) {
-            return;
-        } elseif ($address = $relationship->first()) {
-            $address->update($state);
-        } else {
-            $relationship->updateOrCreate($state);
-        }
-
-        $record?->touch();
     }
 
     protected function setUp(): void
