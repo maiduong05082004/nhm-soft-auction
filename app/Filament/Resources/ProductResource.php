@@ -34,7 +34,7 @@ class ProductResource extends Resource
                 ->label('Tên')
                 ->required()
                 ->maxLength(255)
-                ->live(debounce: 250)
+                ->live(debounce: 1000)
                 ->afterStateUpdated(function ($state, callable $set) {
                     if ($state) {
                         $set('slug', \Illuminate\Support\Str::slug($state));

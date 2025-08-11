@@ -20,6 +20,7 @@ class Article extends Model
         'user_id',
         'sort',
         'status',
+        'category_article_id'
     ];
 
     public function author()

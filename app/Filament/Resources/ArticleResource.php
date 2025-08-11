@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ArticleResource\Pages;
 use App\Models\Article;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Form;
@@ -51,6 +52,11 @@ class ArticleResource extends Resource
                             ->directory('articles')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jfif'])
                             ->maxSize(2048),
+                        SelectTree::make('category_article_id')
+                            ->label('Danh mục')
+                            ->relationship('category', 'name', 'parent_id')
+                            ->searchable()
+                            ->required(),
                     ])
                     ->columns(2),
 
