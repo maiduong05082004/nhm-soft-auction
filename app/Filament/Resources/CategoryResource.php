@@ -103,16 +103,18 @@ class CategoryResource extends Resource
                 Tables\Columns\TextColumn::make('parent.full_path')
                     ->label('Danh mục cha')
                     ->sortable()
-                    ->placeholder('Không có danh mục cha')
+                    ->placeholder('Không có')
                     ->limit(50),
 
                 Tables\Columns\TextColumn::make('children_count')
                     ->label('Số lượng danh mục con')
+                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.'))
                     ->counts('children')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('products_count')
                     ->label('Số lượng sản phẩm')
+                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.'))
                     ->counts('products')
                     ->sortable(),
 
@@ -152,11 +154,11 @@ class CategoryResource extends Resource
                     ->options(function () {
                         $categories = Category::all();
                         $options = [];
-                        
+
                         foreach ($categories as $category) {
                             $options[$category->id] = $category->full_path;
                         }
-                        
+
                         return $options;
                     })
                     ->placeholder('Tất cả danh mục'),
