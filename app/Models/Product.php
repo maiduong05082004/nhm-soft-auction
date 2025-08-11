@@ -4,12 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Product extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    
+
+    protected $casts = [
+        'seo' => 'array'
+    ];
+
     protected $fillable = [
         'name',
         'slug',
@@ -24,6 +30,9 @@ class Product extends Model
         'start_time',
         'end_time',
         'status',
+        'is_hot',
+        'created_by',
+        'seo'
     ];
 
     public function category()
@@ -54,5 +63,9 @@ class Product extends Model
     public function orderDetails()
     {
         return $this->hasMany(OrderDetail::class);
+    }
+    public function firstImage()
+    {   
+        return $this->hasOne(ProductImage::class, 'product_id')->latest();
     }
 }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('product_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained('products');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->string('image_url');
             $table->integer('position')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('active');

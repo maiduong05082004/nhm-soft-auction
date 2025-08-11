@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ArticleSeeder::class,
             OrderSeeder::class,
             EvaluateSeeder::class,
+            TransactionSeeder::class,
         ]);
     }
 }

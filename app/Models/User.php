@@ -71,7 +71,6 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
-    // Relationships
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
@@ -99,7 +98,7 @@ class User extends Authenticatable
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Transaction::class)->orderBy('created_at', 'desc');
     }
 
     public function articles()
@@ -116,4 +115,31 @@ class User extends Authenticatable
     {
         return $this->hasMany(Auction::class, 'winner_id');
     }
+
+    public function getDynamicCurrentBalanceAttribute()
+    {
+        $balance = $this->transactions()->sum('point_change');
+        return $balance < 0 ? 0 : $balance;
+    }
+
+    public function getTransactionCountAttribute()
+    {
+        return $this->transactions()->count();
+    }
+
+    public function getTotalRechargeAttribute()
+    {
+        return $this->transactions()->where('type_transaction', 'recharge_point')->sum('point_change');
+    }
+
+    public function getTotalBidAttribute()
+    {
+        return $this->transactions()->where('type_transaction', 'bid')->sum('point_change');
+    }
+
+    public function getTotalBuyProductAttribute()
+    {
+        return $this->transactions()->where('type_transaction', 'buy_product')->sum('point_change');
+    }
+
 }

@@ -12,15 +12,23 @@ class CreateCategory extends CreateRecord
 {
     protected static string $resource = CategoryResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Danh mục',
+            '' => 'Tạo danh mục',
+        ];
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (Category::where('name', $data['name'])->exists()) {
             Notification::make()
-                ->title('Error')
-                ->body('Category name already exists.')
+                ->title('Lỗi')
+                ->body('Tên danh mục đã tồn tại.')
                 ->danger()
                 ->send();
-            
+
             $this->halt();
         }
 

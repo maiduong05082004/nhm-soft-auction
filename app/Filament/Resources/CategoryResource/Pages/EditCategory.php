@@ -12,19 +12,27 @@ class EditCategory extends EditRecord
 {
     protected static string $resource = CategoryResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Danh mục',
+            '' => 'Sửa danh mục',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
             Actions\DeleteAction::make()
-                ->label('Delete permanently')
+                ->label('Xóa vĩnh viễn')
                 ->requiresConfirmation()
-                ->modalHeading('Confirm delete permanently')
-                ->modalDescription('Are you sure you want to delete this category permanently? This action cannot be undone.')
+                ->modalHeading('Xác nhận xóa vĩnh viễn')
+                ->modalDescription('Bạn có chắc chắn muốn xóa danh mục này vĩnh viễn? Thao tác này không thể được hoàn tác.')
                 ->action(function (Category $record) {
                     if ($record->children()->exists()) {
                         Notification::make()
-                            ->title('Error')
-                            ->body('Cannot delete category because it has subcategories.')
+                            ->title('Lỗi')
+                            ->body('Không thể xóa danh mục vì nó có danh mục con.')
                             ->danger()
                             ->send();
                         return;
@@ -32,8 +40,8 @@ class EditCategory extends EditRecord
 
                     if ($record->products()->exists()) {
                         Notification::make()
-                            ->title('Error')
-                            ->body('Cannot delete category because it has related products.')
+                            ->title('Lỗi')
+                            ->body('Không thể xóa danh mục vì nó có sản phẩm liên quan.')
                             ->danger()
                             ->send();
                         return;
@@ -41,8 +49,8 @@ class EditCategory extends EditRecord
 
                     $record->forceDelete();
                     Notification::make()
-                        ->title('Success')
-                        ->body('Category has been deleted permanently successfully!')
+                        ->title('Thành công')
+                        ->body('Danh mục đã được xóa vĩnh viễn thành công!')
                         ->success()
                         ->send();
                 }),
@@ -53,11 +61,11 @@ class EditCategory extends EditRecord
     {
         if (Category::where('name', $data['name'])->where('id', '!=', $this->record->id)->exists()) {
             Notification::make()
-                ->title('Error')
-                ->body('Category name already exists.')
+                ->title('Lỗi')
+                ->body('Tên danh mục đã tồn tại.')
                 ->danger()
                 ->send();
-            
+
             $this->halt();
         }
 

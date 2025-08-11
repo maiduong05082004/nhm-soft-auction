@@ -24,7 +24,7 @@ class OrderSeeder extends Seeder
                 'subtotal' => 25000000,
                 'total' => 25030000,
                 'note' => 'Giao hàng vào buổi sáng',
-                'status' => 'completed',
+                'status' => 1,
             ],
             [
                 'code_orders' => 'ORD002',
@@ -36,7 +36,7 @@ class OrderSeeder extends Seeder
                 'subtotal' => 35000000,
                 'total' => 35025000,
                 'note' => 'Giao hàng vào buổi chiều',
-                'status' => 'completed',
+                'status' => 1,
             ],
             [
                 'code_orders' => 'ORD003',
@@ -48,7 +48,7 @@ class OrderSeeder extends Seeder
                 'subtotal' => 3500000,
                 'total' => 3520000,
                 'note' => 'Giao hàng nhanh',
-                'status' => 'completed',
+                'status' => 1,
             ],
             [
                 'code_orders' => 'ORD004',
@@ -60,7 +60,7 @@ class OrderSeeder extends Seeder
                 'subtotal' => 15000000,
                 'total' => 15035000,
                 'note' => 'Giao hàng vào cuối tuần',
-                'status' => 'completed',
+                'status' => 1,
             ],
             [
                 'code_orders' => 'ORD005',
@@ -72,7 +72,7 @@ class OrderSeeder extends Seeder
                 'subtotal' => 150000,
                 'total' => 180000,
                 'note' => 'Giao hàng vào sáng sớm',
-                'status' => 'completed',
+                'status' => 2,
             ],
             [
                 'code_orders' => 'ORD006',
@@ -84,7 +84,7 @@ class OrderSeeder extends Seeder
                 'subtotal' => 500000,
                 'total' => 525000,
                 'note' => 'Giao hàng vào buổi tối',
-                'status' => 'completed',
+                'status' => 2,
             ],
             [
                 'code_orders' => 'ORD007',
@@ -96,7 +96,7 @@ class OrderSeeder extends Seeder
                 'subtotal' => 8000000,
                 'total' => 8040000,
                 'note' => 'Giao hàng vào cuối tuần',
-                'status' => 'completed',
+                'status' => 2,
             ],
             [
                 'code_orders' => 'ORD008',
@@ -108,7 +108,7 @@ class OrderSeeder extends Seeder
                 'subtotal' => 2500000,
                 'total' => 2520000,
                 'note' => 'Giao hàng nhanh',
-                'status' => 'completed',
+                'status' => 2,
             ],
             [
                 'code_orders' => 'ORD009',
@@ -120,7 +120,7 @@ class OrderSeeder extends Seeder
                 'subtotal' => 12000000,
                 'total' => 12030000,
                 'note' => 'Giao hàng vào buổi sáng',
-                'status' => 'completed',
+                'status' => 2,
             ],
             [
                 'code_orders' => 'ORD010',
@@ -132,7 +132,7 @@ class OrderSeeder extends Seeder
                 'subtotal' => 80000000,
                 'total' => 80050000,
                 'note' => 'Giao hàng đặc biệt',
-                'status' => 'completed',
+                'status' => 3,
             ],
         ];
 

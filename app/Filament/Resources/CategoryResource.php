@@ -13,26 +13,21 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Str;
 
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $navigationLabel = 'Categories';
-
-    protected static ?string $modelLabel = 'Categories';
-
-    protected static ?string $pluralModelLabel = 'Categories';
+    protected static ?string $pluralModelLabel = 'Danh mục';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->label('Name')
+                    ->label('Tên danh mục')
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true),
@@ -55,23 +50,23 @@ class CategoryResource extends Resource
                     ),
 
                 SelectTree::make('parent_id')
-                    ->label('Parent Category')
+                    ->label('Danh mục cha')
                     ->withCount()
                     ->searchable()
-                    ->placeholder('Select parent category')
+                    ->placeholder('Chọn danh mục cha')
                     ->relationship('parent', 'name', 'parent_id')
                     ->nullable(),
 
                 Forms\Components\Textarea::make('description')
-                    ->label('Description')
+                    ->label('Mô tả')
                     ->rows(3)
                     ->maxLength(1000),
 
                 Forms\Components\Select::make('status')
-                    ->label('Status')
+                    ->label('Trạng thái')
                     ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
+                        'active' => 'Hoạt động',
+                        'inactive' => 'Không hoạt động',
                     ])
                     ->default('active')
                     ->required(),
@@ -83,7 +78,7 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Tên danh mục')
                     ->formatStateUsing(fn ($state, $record) => str_repeat('&nbsp;&nbsp;&nbsp;', $record->level) . $state)
                     ->html()
                     ->sortable()
@@ -91,7 +86,7 @@ class CategoryResource extends Resource
                     ->weight('bold'),
 
                 Tables\Columns\TextColumn::make('full_path')
-                    ->label('Full Path')
+                    ->label('Đường dẫn')
                     ->limit(50)
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -101,84 +96,86 @@ class CategoryResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('parent.full_path')
-                    ->label('Parent Category')
+                    ->label('Danh mục cha')
                     ->sortable()
-                    ->placeholder('No parent')
+                    ->placeholder('Không có')
                     ->limit(50),
 
                 Tables\Columns\TextColumn::make('children_count')
-                    ->label('Number of subcategories')
+                    ->label('Số lượng danh mục con')
+                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.'))
                     ->counts('children')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('products_count')
-                    ->label('Number of products')
+                    ->label('Số lượng sản phẩm')
+                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.'))
                     ->counts('products')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('description')
-                    ->label('Description')
+                    ->label('Mô tả')
                     ->limit(50)
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Trạng thái')
                     ->badge()
                     ->color(fn (string $state): string => $state === 'active' ? 'success' : 'danger')
-                    ->formatStateUsing(fn (string $state): string => $state === 'active' ? 'Active' : 'Inactive'),
+                    ->formatStateUsing(fn (string $state): string => $state === 'active' ? 'Hoạt động' : 'Không hoạt động'),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created at')
+                    ->label('Ngày tạo')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated at')
+                    ->label('Ngày cập nhật')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
+                    ->label('Trạng thái')
                     ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
+                        'active' => 'Hoạt động',
+                        'inactive' => 'Không hoạt động',
                     ]),
 
                 Tables\Filters\SelectFilter::make('parent_id')
-                    ->label('Parent Category')
+                    ->label('Danh mục cha')
                     ->options(function () {
                         $categories = Category::all();
                         $options = [];
-                        
+
                         foreach ($categories as $category) {
                             $options[$category->id] = $category->full_path;
                         }
-                        
+
                         return $options;
                     })
-                    ->placeholder('All categories'),
+                    ->placeholder('Tất cả danh mục'),
 
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->label('Edit'),
+                    ->label('Chỉnh sửa'),
 
                 Tables\Actions\Action::make('softDelete')
-                    ->label('Delete')
+                    ->label('Xóa')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->modalHeading('Confirm delete category')
-                    ->modalDescription('Are you sure you want to delete this category? The category will be moved to the trash.')
+                    ->modalHeading('Xác nhận xóa danh mục')
+                    ->modalDescription('Bạn có chắc chắn muốn xóa danh mục này? Danh mục sẽ được chuyển vào thùng rác.')
                     ->action(function (Category $record) {
                         if ($record->children()->exists()) {
                             Notification::make()
-                                ->title('Error')
-                                ->body('Cannot delete category because it has subcategories.')
+                                ->title('Lỗi')
+                                ->body('Không thể xóa danh mục vì nó có danh mục con.')
                                 ->danger()
                                 ->send();
                             return;
@@ -186,8 +183,8 @@ class CategoryResource extends Resource
 
                         if ($record->products()->exists()) {
                             Notification::make()
-                                ->title('Error')
-                                ->body('Cannot delete category because it has related products.')
+                                ->title('Lỗi')
+                                ->body('Không thể xóa danh mục vì nó có sản phẩm liên quan.')
                                 ->danger()
                                 ->send();
                             return;
@@ -195,22 +192,22 @@ class CategoryResource extends Resource
 
                         $record->delete();
                         Notification::make()
-                            ->title('Success')
-                            ->body('Category has been moved to the trash successfully!')
+                            ->title('Thành công')
+                            ->body('Danh mục đã được chuyển vào thùng rác thành công!')
                             ->success()
                             ->send();
                     }),
 
                 Tables\Actions\Action::make('restore')
-                    ->label('Restore')
+                    ->label('Khôi phục')
                     ->icon('heroicon-o-arrow-path')
                     ->color('success')
                     ->visible(fn (Category $record): bool => $record->trashed())
                     ->action(function (Category $record) {
                         $record->restore();
                         Notification::make()
-                            ->title('Success')
-                            ->body('Category has been restored successfully!')
+                            ->title('Thành công')
+                            ->body('Danh mục đã được khôi phục thành công!')
                             ->success()
                             ->send();
                     }),
@@ -218,16 +215,16 @@ class CategoryResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->label('Delete permanently')
+                        ->label('Xóa vĩnh viễn')
                         ->requiresConfirmation()
-                        ->modalHeading('Confirm delete permanently')
-                        ->modalDescription('Are you sure you want to delete permanently the selected categories? This action cannot be undone.')
+                        ->modalHeading('Xác nhận xóa vĩnh viễn')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa vĩnh viễn các danh mục đã chọn? Thao tác này không thể được hoàn tác.')
                         ->action(function ($records) {
                             foreach ($records as $record) {
                                 if ($record->children()->exists()) {
                                     Notification::make()
-                                        ->title('Error')
-                                        ->body("Cannot delete category '{$record->name}' because it has subcategories.")
+                                        ->title('Lỗi')
+                                        ->body("Không thể xóa danh mục '{$record->name}' vì nó có danh mục con.")
                                         ->danger()
                                         ->send();
                                     return;
@@ -235,8 +232,8 @@ class CategoryResource extends Resource
 
                                 if ($record->products()->exists()) {
                                     Notification::make()
-                                        ->title('Error')
-                                        ->body("Cannot delete category '{$record->name}' because it has related products.")
+                                        ->title('Lỗi')
+                                        ->body("Không thể xóa danh mục '{$record->name}' vì nó có sản phẩm liên quan.")
                                         ->danger()
                                         ->send();
                                     return;
@@ -245,19 +242,19 @@ class CategoryResource extends Resource
 
                             $records->each->forceDelete();
                             Notification::make()
-                                ->title('Success')
-                                ->body('The categories have been deleted permanently successfully!')
+                                ->title('Thành công')
+                                ->body('Các danh mục đã được xóa vĩnh viễn thành công!')
                                 ->success()
                                 ->send();
                         }),
 
                     Tables\Actions\RestoreBulkAction::make()
-                        ->label('Restore')
+                        ->label('Khôi phục')
                         ->action(function ($records) {
                             $records->each->restore();
                             Notification::make()
-                                ->title('Success')
-                                ->body('The categories have been restored successfully!')
+                                ->title('Thành công')
+                                ->body('Các danh mục đã được khôi phục thành công!')
                                 ->success()
                                 ->send();
                         }),

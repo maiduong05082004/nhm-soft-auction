@@ -10,10 +10,19 @@ class ListUsers extends ListRecords
 {
     protected static string $resource = UserResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url()->previous() => 'Người dùng',
+            '' => 'Danh sách',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Tạo người dùng mới'),
         ];
     }
 }

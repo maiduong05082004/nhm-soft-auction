@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -25,12 +26,16 @@ class Order extends Model
         'status',
     ];
 
+    protected $casts = [
+        'status' => OrderStatus::class,
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function orderDetails()
+    public function items()
     {
         return $this->hasMany(OrderDetail::class);
     }
@@ -39,4 +44,5 @@ class Order extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
 }
