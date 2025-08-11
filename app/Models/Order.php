@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\OrderStatus;
+use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,8 +11,9 @@ class Order extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    
+
     protected $fillable = [
+        'id',
         'code_orders',
         'user_id',
         'email_receiver',
@@ -30,6 +32,13 @@ class Order extends Model
         'status' => OrderStatus::class,
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->id = HelperFunc::getTimestampAsId();
+        });
+    }
     public function user()
     {
         return $this->belongsTo(User::class);
