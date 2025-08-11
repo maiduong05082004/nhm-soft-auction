@@ -16,8 +16,9 @@ class ArticleResource extends Resource
 {
     protected static ?string $model = Article::class;
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
-    protected static ?string $modelLabel = 'Tin tức';
-    protected static ?string $navigationLabel = 'Tin tức';
+    public static ?string $navigationGroup = 'Tin tức';
+    protected static ?string $modelLabel = 'Bài viết';
+    protected static ?string $navigationLabel = 'Bài viết';
     protected static ?string $pluralModelLabel = 'Tin tức';
 
     public static function form(Form $form): Form
@@ -57,7 +58,7 @@ class ArticleResource extends Resource
                     ->schema([
                         TiptapEditor::make('content')
                             ->label('Nội dung bài viết')
-                            ->profile('default') // Sử dụng profile đã cấu hình
+                            ->profile('default')
                             ->required()
                             ->columnSpanFull()
                             ->disk('public')
@@ -69,12 +70,11 @@ class ArticleResource extends Resource
                                 'image/gif',
                                 'application/pdf'
                             ])
-                            ->maxFileSize(10240)
                             ->imageResizeMode('force')
                             ->imageResizeTargetWidth('800')
                             ->imageResizeTargetHeight('600')
                             ->extraInputAttributes([
-                                'style' => 'min-height: 400px;' // Chiều cao tối thiểu giống Word
+                                'style' => 'min-height: 400px;'
                             ])
                     ]),
 
@@ -106,7 +106,7 @@ class ArticleResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->modifyQueryUsing(fn(Builder $query) => $query->with('author', 'category'))
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Hình ảnh')
@@ -125,8 +125,13 @@ class ArticleResource extends Resource
                     ->limit(30)
                     ->searchable(),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('category.name')
+                    ->label('Danh mục')
+                    ->formatStateUsing(fn($state) => $state),
+
+                Tables\Columns\TextColumn::make('status')
                     ->label('Trạng thái')
+                    ->badge(true)
                     ->colors([
                         'success' => 'published',
                         'gray' => 'draft',
@@ -146,7 +151,10 @@ class ArticleResource extends Resource
                     ->label('Thứ tự')
                     ->sortable()
                     ->alignCenter(),
-
+                Tables\Columns\TextColumn::make('author.name')
+                    ->label('Tác giả')
+                    ->color('danger')
+                    ->url(fn($record): string => '/admin/users/' . $record->author->id),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
                     ->dateTime('d/m/Y H:i')

@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Category extends Model
+class CategoryArticle extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
+    protected $table = "categories_articles";
+
     protected $fillable = [
         'name',
         'slug',
@@ -19,9 +22,9 @@ class Category extends Model
         'image'
     ];
 
-    public function products()
+    public function article()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Article::class);
     }
 
     public function parent()

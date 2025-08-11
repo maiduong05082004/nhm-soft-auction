@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('product_images', function (Blueprint $table) {
-            $table->softDeletes();
+        Schema::table('articles', function (Blueprint $table) {
+            $table->unsignedBigInteger('category_article_id');
+            $table->foreign('category_article_id')->references('id')->on('categories_articles');
         });
     }
 
@@ -21,8 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('product_images', function (Blueprint $table) {
-            $table->dropSoftDeletes();
+        Schema::table('articles', function (Blueprint $table) {
+            
+            
         });
     }
 };
