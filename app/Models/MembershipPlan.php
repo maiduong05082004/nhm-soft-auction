@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Enums\ConfigMembership;
+use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +29,7 @@ class MembershipPlan extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'name',
         'description',
         'price',
@@ -40,6 +42,14 @@ class MembershipPlan extends Model
         'config' => 'array',
         'status' => 'boolean',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->id = HelperFunc::getTimestampAsId();
+        });
+    }
 
     public function getConfig(ConfigMembership $key, $default = null)
     {
