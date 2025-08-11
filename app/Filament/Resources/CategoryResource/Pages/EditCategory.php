@@ -65,7 +65,7 @@ class EditCategory extends EditRecord
                 ->body('Tên danh mục đã tồn tại.')
                 ->danger()
                 ->send();
-            
+
             $this->halt();
         }
 

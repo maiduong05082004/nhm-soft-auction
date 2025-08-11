@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,6 +18,7 @@ class Product extends Model
     ];
 
     protected $fillable = [
+        'id',
         'name',
         'slug',
         'price',
@@ -34,7 +36,13 @@ class Product extends Model
         'created_by',
         'seo'
     ];
-
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->id = HelperFunc::getTimestampAsId();
+        });
+    }
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -65,7 +73,7 @@ class Product extends Model
         return $this->hasMany(OrderDetail::class);
     }
     public function firstImage()
-    {   
+    {
         return $this->hasOne(ProductImage::class, 'product_id')->latest();
     }
 }

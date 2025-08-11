@@ -149,11 +149,11 @@ class CategoryResource extends Resource
                     ->options(function () {
                         $categories = Category::all();
                         $options = [];
-                        
+
                         foreach ($categories as $category) {
                             $options[$category->id] = $category->full_path;
                         }
-                        
+
                         return $options;
                     })
                     ->placeholder('Tất cả danh mục'),

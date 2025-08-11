@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,13 +11,23 @@ class Category extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
     protected $fillable = [
+        'id',
         'name',
         'slug',
         'parent_id',
         'description',
         'status',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->id = HelperFunc::getTimestampAsId();
+        });
+    }
 
     public function products()
     {

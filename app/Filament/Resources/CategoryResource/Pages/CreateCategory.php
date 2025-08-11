@@ -28,7 +28,7 @@ class CreateCategory extends CreateRecord
                 ->body('Tên danh mục đã tồn tại.')
                 ->danger()
                 ->send();
-            
+
             $this->halt();
         }
 
