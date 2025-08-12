@@ -103,7 +103,7 @@ class CreateOrder extends CreateRecord
                             ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
                     ]),
                 ]),
-                Step::make('Thanh toán')
+            Step::make('Thanh toán')
                 ->icon('heroicon-o-credit-card')
                 ->schema([
                     Section::make()->schema(OrderResource::getPaymentFormSchema()),
@@ -113,21 +113,12 @@ class CreateOrder extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $orderService = app(OrderService::class);
-        $data['subtotal'] = $orderService->calculateSubtotal($data['items'] ?? []);
-        $shippingFee = (float)($data['shipping_fee'] ?? 0);
-        $data['total'] = $orderService->calculateTotal($data['items'] ?? [], $shippingFee);
-        $data['created_at'] = now();
-        return $data;
+        return $this->orderService->calculateOrderTotals($data);
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $orderService = app(OrderService::class);
-        $data['subtotal'] = $orderService->calculateSubtotal($data['items'] ?? []);
-        $shippingFee = (float)($data['shipping_fee'] ?? 0);
-        $data['total'] = $orderService->calculateTotal($data['items'] ?? [], $shippingFee);
-        $data['updated_at'] = now();
-        return $data;
+        return $this->orderService->calculateOrderTotals($data);
     }
+
 }

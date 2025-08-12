@@ -6,8 +6,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Repositories\BaseRepository;
 use App\Repositories\BaseRepositoryInterface;
-use App\Repositories\OrderRepository;
-use App\Repositories\ProductRepository;
+use App\Repositories\Orders\OrderRepository;
+use App\Repositories\Products\ProductRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryProvider extends ServiceProvider
@@ -18,13 +18,8 @@ class RepositoryProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(BaseRepositoryInterface::class, BaseRepository::class);
-        $this->app->bind(OrderRepository::class, function ($app) {
-            return new OrderRepository(new Order());
-        });
-        
-        $this->app->bind(ProductRepository::class, function ($app) {
-            return new ProductRepository(new Product());
-        });
+        $this->app->bind(OrderRepository::class, OrderRepository::class);
+        $this->app->bind(ProductRepository::class, ProductRepository::class);
     }
 
     /**
