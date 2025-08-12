@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Exceptions\RepositoryException;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,14 +12,23 @@ abstract class BaseRepository implements BaseRepositoryInterface
 {
     protected Model $model;
 
-    public function __construct(Model $model)
+    /**
+     * @throws BindingResolutionException
+     */
+    public function __construct()
     {
-        $this->model = $model;
+        $this->setModel();
     }
-    public function getModel(): Model
+
+    /**
+     * @throws BindingResolutionException
+     */
+    private function setModel(): void
     {
-        return $this->model;
+        $this->model = app()->make($this->getModel());
     }
+
+    abstract public function getModel(): Model;
 
     public function getAll(array $conditions = [], array $with = [], array $joins = []): Collection
     {
