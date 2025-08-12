@@ -22,7 +22,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
+use App\Services\OrderService;
+
 
 class OrderResource extends Resource
 {
@@ -43,7 +44,7 @@ class OrderResource extends Resource
                             ->schema(static::getDetailsFormSchema())
                             ->columns(2),
 
-                        Forms\Components\Section::make('Order items')
+                        Forms\Components\Section::make('Sản phẩm trong đơn hàng')
                             ->headerActions([
                                 Action::make('reset')
                                     ->modalHeading('Are you sure?')
@@ -58,14 +59,8 @@ class OrderResource extends Resource
                                     ->label('Tổng tiền sản phẩm')
                                     ->content(function (Forms\Get $get): string {
                                         $items = $get('items') ?? [];
-                                        $subtotal = 0;
-                                        foreach ($items as $item) {
-                                            $qty = (float) ($item['quantity'] ?? 0);
-                                            $productId = $item['product_id'] ?? null;
-                                            $price = $productId ? (float) (Product::find($productId)?->price ?? 0) : (float) ($item['price'] ?? 0);
-                                            $subtotal += $qty * $price;
-                                        }
-                                        return number_format($subtotal, 0, ',', '.') . ' ₫';
+                                        $orderService = app(OrderService::class);
+                                        return $orderService->formatCurrency($orderService->calculateSubtotal($items));
                                     })
                                     ->columnSpan('full')
                                     ->extraAttributes(['class' => 'text-lg font-bold text-blue-600']),
@@ -81,16 +76,9 @@ class OrderResource extends Resource
                                     ->label('Tổng tiền đơn hàng')
                                     ->content(function (Forms\Get $get): string {
                                         $items = $get('items') ?? [];
-                                        $subtotal = 0;
-                                        foreach ($items as $item) {
-                                            $qty = (float) ($item['quantity'] ?? 0);
-                                            $productId = $item['product_id'] ?? null;
-                                            $price = $productId ? (float) (Product::find($productId)?->price ?? 0) : (float) ($item['price'] ?? 0);
-                                            $subtotal += $qty * $price;
-                                        }
                                         $shippingFee = (float) ($get('shipping_fee') ?: 0);
-                                        $total = $subtotal + $shippingFee;
-                                        return number_format($total, 0, ',', '.') . ' ₫';
+                                        $orderService = app(OrderService::class);
+                                        return $orderService->formatCurrency($orderService->calculateTotal($items, $shippingFee));
                                     })
                                     ->columnSpan('full')
                                     ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
@@ -480,12 +468,6 @@ class OrderResource extends Resource
                                 $set('price', $product->price);
                                 $set('quantity', 1);
                                 $set('subtotal', $product->price * 1);
-                                Log::debug('[OrderResource] product selected', [
-                                    'product_id' => $state,
-                                    'price' => (float) $product->price,
-                                    'quantity_set' => 1,
-                                    'line_subtotal' => (float) $product->price,
-                                ]);
                             }
                         }
                     })
@@ -505,16 +487,18 @@ class OrderResource extends Resource
                         $price = (float) ($get('price') ?: 0);
                         $line = $quantity * $price;
                         $set('subtotal', $line);
-                        Log::debug('[OrderResource] quantity updated', [
-                            'product_id' => $get('product_id'),
-                            'quantity' => (float) $quantity,
-                            'price' => $price,
-                            'line_subtotal' => $line,
-                        ]);
                     })
                     ->columnSpan([
                         'md' => 2,
                     ])
+                    ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
+                            $product = Product::find($get('product_id'));
+                            if ($product) {
+                                $set('price', $product->price);
+                                $set('quantity', 1);
+                                $set('subtotal', $product->price * 1);
+                            }
+                    })
                     ->required(),
 
                 Forms\Components\TextInput::make('price')
@@ -533,21 +517,10 @@ class OrderResource extends Resource
                     ->dehydrated()
                     ->numeric()
                     ->default(0)
-                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                        $quantity = (float) ($get('quantity') ?: 1);
-                        $price = (float) ($get('price') ?: 0);
-                        $line = $quantity * $price;
-                        $set('subtotal', $line);
-                        Log::debug('[OrderResource] subtotal recalculated', [
-                            'product_id' => $get('product_id'),
-                            'quantity' => $quantity,
-                            'price' => $price,
-                            'line_subtotal' => $line,
-                        ]);
-                    })
                     ->columnSpan([
                         'md' => 2,
                     ]),
+                    
                 Forms\Components\Hidden::make('total')
                     ->label('Tổng tiền')
                     ->disabled()
@@ -623,39 +596,4 @@ class OrderResource extends Resource
         ];
     }
 
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        $subtotal = 0.0;
-        if (!empty($data['items']) && is_array($data['items'])) {
-            foreach ($data['items'] as $item) {
-                $quantity = (float) ($item['quantity'] ?? 0);
-                $price = (float) ($item['price'] ?? 0);
-                $subtotal += $quantity * $price;
-            }
-        }
-
-        $data['subtotal'] = $subtotal;
-        $shippingFee = (float) ($data['shipping_fee'] ?? 0);
-        $data['total'] = $subtotal + $shippingFee;
-
-        return $data;
-    }
-
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        $subtotal = 0.0;
-        if (!empty($data['items']) && is_array($data['items'])) {
-            foreach ($data['items'] as $item) {
-                $quantity = (float) ($item['quantity'] ?? 0);
-                $price = (float) ($item['price'] ?? 0);
-                $subtotal += $quantity * $price;
-            }
-        }
-
-        $data['subtotal'] = $subtotal;
-        $shippingFee = (float) ($data['shipping_fee'] ?? 0);
-        $data['total'] = $subtotal + $shippingFee;
-
-        return $data;
-    }
 }
