@@ -4,7 +4,6 @@ namespace App\Repositories\Orders;
 
 use App\Repositories\BaseRepository;
 use App\Models\Order;
-use Illuminate\Database\Eloquent\Model;
 
 class OrderRepository extends BaseRepository implements OrderRepositoryInterface
 {
@@ -13,8 +12,8 @@ class OrderRepository extends BaseRepository implements OrderRepositoryInterface
         parent::__construct($model);
     }
 
-    public function getModel(): Model
+    public function getModel(): string
     {
-        return new Order();
+        return Order::class;
     }
 }
