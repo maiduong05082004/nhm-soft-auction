@@ -42,7 +42,7 @@ class ProductResource extends Resource
                     $baseSlug = \Illuminate\Support\Str::slug($state);
                     $slug = $baseSlug;
                     $i = 1;
-                    while (\App\Models\Product::where('slug', $slug)->exists()) {
+                    while (\App\Models\Product::withoutTrashed()->where('slug', $slug)->exists()) {
                         $slug = $baseSlug . '-' . $i++;
                     }
                     $set('slug', $slug);

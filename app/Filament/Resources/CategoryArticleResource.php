@@ -40,7 +40,7 @@ class CategoryArticleResource extends Resource
                         $baseSlug = \Illuminate\Support\Str::slug($state);
                         $slug = $baseSlug;
                         $i = 1;
-                        while (\App\Models\CategoryArticle::where('slug', $slug)->exists()) {
+                        while (\App\Models\CategoryArticle::withoutTrashed()->where('slug', $slug)->exists()) {
                             $slug = $baseSlug . '-' . $i++;
                         }
                         $set('slug', $slug);

@@ -11,6 +11,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -19,8 +20,8 @@ class CategoryResource extends Resource
     protected static ?string $model = Category::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
-
-    protected static ?string $pluralModelLabel = 'Danh mục';
+    protected static ?string $modelLabel = "Danh mục sản phẩm";
+    protected static ?string $pluralModelLabel = 'Danh mục sản phẩm';
 
     public static function form(Form $form): Form
     {
@@ -30,48 +31,40 @@ class CategoryResource extends Resource
                     ->label('Tên danh mục')
                     ->required()
                     ->maxLength(255)
-                    ->live(onBlur: true),
+                    ->live(debounce: 1000)
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if (!$state) return;
+                        $baseSlug = \Illuminate\Support\Str::slug($state);
+                        $slug = $baseSlug;
+                        $i = 1;
+                        while (\App\Models\Category::withoutTrashed()->where('slug', $slug)->exists()) {
+                            $slug = $baseSlug . '-' . $i++;
+                        }
+                        $set('slug', $slug);
+                    }),
 
                 Forms\Components\TextInput::make('slug')
                     ->label('Slug')
                     ->required()
                     ->maxLength(255)
-                    ->unique(ignoreRecord: true)
-                    ->suffixAction(
-                        \Filament\Forms\Components\Actions\Action::make('generateSlug')
-                            ->label('Auto generate')
-                            ->icon('heroicon-m-arrow-path')
-                            ->action(function ($get, $set) {
-                                $title = $get('name');
-                                if ($title) {
-                                    $set('slug', \Illuminate\Support\Str::slug($title));
-                                }
-                            })
-                    ),
+                    ->unique(ignoreRecord: true),
                 Forms\Components\FileUpload::make('image')
                     ->label('Hình ảnh')
                     ->directory('categories'),
                 SelectTree::make('parent_id')
                     ->label('Danh mục cha')
-                    ->options(function (?Category $record) {
-                        $options = [];
-                        foreach (Category::getTreeList() as $category) {
-                            if ($record && $record->id === $category->id) {
-                                continue;
-                            }
-                            $options[$category->id] = str_repeat('— ', $category->level) . $category->name;
-                        }
-                        return $options;
-                    })
+                    ->relationship('parent', 'name', 'parent_id')
                     ->searchable()
-                    ->preload()
                     ->placeholder('Chọn danh mục cha')
                     ->nullable(),
 
-                Forms\Components\Textarea::make('description')
-                    ->label('Mô tả')
-                    ->rows(3)
-                    ->maxLength(1000),
+                TiptapEditor::make('description')
+                    ->label('Miêu tả danh mục')
+                    ->extraInputAttributes([
+                        'style' => 'min-height: 400px;'
+                    ])
+                    ->required()
+                    ->columnSpanFull(),
 
                 Forms\Components\Select::make('status')
                     ->label('Trạng thái')
@@ -93,7 +86,7 @@ class CategoryResource extends Resource
                     ->disk('public'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên danh mục')
-                    ->formatStateUsing(fn ($state, $record) => str_repeat('&nbsp;&nbsp;&nbsp;', $record->level) . $state)
+                    ->formatStateUsing(fn($state, $record) => str_repeat('&nbsp;&nbsp;&nbsp;', $record->level) . $state)
                     ->html()
                     ->sortable()
                     ->searchable()
@@ -135,8 +128,8 @@ class CategoryResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Trạng thái')
                     ->badge()
-                    ->color(fn (string $state): string => $state === 'active' ? 'success' : 'danger')
-                    ->formatStateUsing(fn (string $state): string => $state === 'active' ? 'Hoạt động' : 'Không hoạt động'),
+                    ->color(fn(string $state): string => $state === 'active' ? 'success' : 'danger')
+                    ->formatStateUsing(fn(string $state): string => $state === 'active' ? 'Hoạt động' : 'Không hoạt động'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
@@ -216,7 +209,7 @@ class CategoryResource extends Resource
                     ->label('Khôi phục')
                     ->icon('heroicon-o-arrow-path')
                     ->color('success')
-                    ->visible(fn (Category $record): bool => $record->trashed())
+                    ->visible(fn(Category $record): bool => $record->trashed())
                     ->action(function (Category $record) {
                         $record->restore();
                         Notification::make()
@@ -302,5 +295,4 @@ class CategoryResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
-
 }

@@ -13,11 +13,13 @@ class ProductImageRelationManager extends RelationManager
 
     protected static ?string $title = 'Hình ảnh sản phẩm';
 
+    protected static ?string $modelLabel = "Hình ảnh sản phẩm";
+
     public function form(Forms\Form $form): Forms\Form
     {
         return $form->schema([
             Forms\Components\FileUpload::make('image_url')
-                ->label('Image')
+                ->label('Hình ảnh')
                 ->image()
                 ->directory('product-images')
                 ->required(),
