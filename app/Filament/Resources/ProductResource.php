@@ -14,8 +14,10 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class ProductResource extends Resource
 {
@@ -36,9 +38,14 @@ class ProductResource extends Resource
                 ->maxLength(255)
                 ->live(debounce: 1000)
                 ->afterStateUpdated(function ($state, callable $set) {
-                    if ($state) {
-                        $set('slug', \Illuminate\Support\Str::slug($state));
+                    if (!$state) return;
+                    $baseSlug = \Illuminate\Support\Str::slug($state);
+                    $slug = $baseSlug;
+                    $i = 1;
+                    while (\App\Models\Product::where('slug', $slug)->exists()) {
+                        $slug = $baseSlug . '-' . $i++;
                     }
+                    $set('slug', $slug);
                 }),
 
             Forms\Components\TextInput::make('slug')
@@ -58,14 +65,8 @@ class ProductResource extends Resource
                 ->live(),
             Forms\Components\TextInput::make('price')
                 ->label('Giá')
-
                 ->numeric()
                 ->required(),
-
-            Forms\Components\Textarea::make('description')
-                ->label('Miêu tả')
-                ->autosize(),
-
             Forms\Components\TextInput::make('stock')
                 ->label('Số lượng')
                 ->numeric()
@@ -123,6 +124,13 @@ class ProductResource extends Resource
                 ->reorderable()
                 ->columnSpanFull()
                 ->hidden(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
+            TiptapEditor::make('description')
+                ->label('Miêu tả sản phẩm')
+                ->extraInputAttributes([
+                    'style' => 'min-height: 400px;'
+                ])
+                ->required()
+                ->columnSpanFull(),
             Forms\Components\Toggle::make('is_hot')
                 ->label('Sản phẩm ưu tiên')
                 ->default(false),
@@ -162,6 +170,7 @@ class ProductResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('description')
                     ->label('Miêu tả')
+                    ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state))
                     ->searchable()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('view')
@@ -278,6 +287,9 @@ class ProductResource extends Resource
             ])
 
             ->actions([
+                Tables\Actions\ViewAction::make('View')
+                    ->label('Xem'),
+
                 Tables\Actions\EditAction::make('Edit')
                     ->label('Sửa'),
                 Tables\Actions\Action::make('delete')

@@ -34,9 +34,14 @@ class ArticleResource extends Resource
                             ->maxLength(255)
                             ->live(debounce: 1000)
                             ->afterStateUpdated(function ($state, callable $set) {
-                                if ($state) {
-                                    $set('slug', \Illuminate\Support\Str::slug($state));
+                                if (!$state) return;
+                                $baseSlug = \Illuminate\Support\Str::slug($state);
+                                $slug = $baseSlug;
+                                $i = 1;
+                                while (\App\Models\CategoryArticle::where('slug', $slug)->exists()) {
+                                    $slug = $baseSlug . '-' . $i++;
                                 }
+                                $set('slug', $slug);
                             }),
 
                         Forms\Components\TextInput::make('slug')
