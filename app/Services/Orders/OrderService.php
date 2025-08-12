@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Orders;
 
-use App\Repositories\OrderRepository;
-use App\Repositories\ProductRepository;
 use App\Models\Product;
+use App\Services\BaseService;
+use App\Repositories\Orders\OrderRepository;
+use App\Repositories\Products\ProductRepository;
+use App\Services\Orders\OrderServiceInterface;
 
-class OrderService extends BaseService
+class OrderService extends BaseService implements OrderServiceInterface
 {
     public function __construct(OrderRepository $orderRepo, ProductRepository $productRepo)
     {
@@ -14,6 +16,31 @@ class OrderService extends BaseService
             'order' => $orderRepo,
             'product' => $productRepo,
         ]);
+    }
+
+    public function getAll()
+    {
+        return $this->getRepository('order')->getAll();
+    }
+
+    public function getById($id)
+    {
+        return $this->getRepository('order')->find($id);
+    }
+
+    public function create(array $data)
+    {
+        return $this->createOrder($data);
+    }
+
+    public function update($id, array $data)
+    {
+        return $this->updateOrder($id, $data);
+    }
+
+    public function delete($id)
+    {
+        return $this->getRepository('order')->deleteOne($id);
     }
 
     public function calculateSubtotal(array $items): float
@@ -65,5 +92,13 @@ class OrderService extends BaseService
     public function getAllOrders(array $conditions = [])
     {
         return $this->getRepository('order')->getAll($conditions);
+    }
+
+    public function calculateOrderTotals(array $data): array
+    {
+        $data['subtotal'] = $this->calculateSubtotal($data['items'] ?? []);
+        $shippingFee = (float) ($data['shipping_fee'] ?? 0);
+        $data['total'] = $this->calculateTotal($data['items'] ?? [], $shippingFee);
+        return $data;
     }
 }

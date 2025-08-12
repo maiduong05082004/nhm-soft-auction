@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
-use App\Services\OrderService;
+use App\Services\Orders\OrderService;
 
 
 class OrderResource extends Resource
@@ -33,6 +33,13 @@ class OrderResource extends Resource
     protected static ?string $pluralModelLabel = 'Đơn hàng';
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?int $navigationSort = 1;
+
+    protected static ?OrderService $orderServiceInstance = null;
+
+    protected static function orderService(): OrderService
+    {
+        return static::$orderServiceInstance ??= app(OrderService::class);
+    }
 
     public static function form(Form $form): Form
     {
@@ -59,8 +66,7 @@ class OrderResource extends Resource
                                     ->label('Tổng tiền sản phẩm')
                                     ->content(function (Forms\Get $get): string {
                                         $items = $get('items') ?? [];
-                                        $orderService = app(OrderService::class);
-                                        return $orderService->formatCurrency($orderService->calculateSubtotal($items));
+                                        return static::orderService()->formatCurrency(static::orderService()->calculateSubtotal($items));
                                     })
                                     ->columnSpan('full')
                                     ->extraAttributes(['class' => 'text-lg font-bold text-blue-600']),
@@ -77,13 +83,10 @@ class OrderResource extends Resource
                                     ->content(function (Forms\Get $get): string {
                                         $items = $get('items') ?? [];
                                         $shippingFee = (float) ($get('shipping_fee') ?: 0);
-                                        $orderService = app(OrderService::class);
-                                        return $orderService->formatCurrency($orderService->calculateTotal($items, $shippingFee));
+                                        return static::orderService()->formatCurrency(static::orderService()->calculateTotal($items, $shippingFee));
                                     })
                                     ->columnSpan('full')
                                     ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
-
-
                             ]),
                     ])
                     ->columnSpan(['lg' => fn(?Order $record) => $record === null ? 3 : 2]),
