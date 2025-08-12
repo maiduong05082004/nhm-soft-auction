@@ -28,7 +28,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
         $this->model = app()->make($this->getModel());
     }
 
-    abstract public function getModel(): Model;
+    abstract public function getModel(): string;
 
     public function getAll(array $conditions = [], array $with = [], array $joins = []): Collection
     {

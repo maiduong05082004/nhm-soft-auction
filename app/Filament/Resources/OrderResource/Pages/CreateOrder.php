@@ -4,26 +4,28 @@ namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
-use App\Models\Product;
-use App\Models\User;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Notifications\Actions\Action;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
-use Illuminate\Support\Facades\Log;
-use App\Services\OrderService;
+use App\Services\Orders\OrderService;
 
 class CreateOrder extends CreateRecord
 {
     use HasWizard;
 
     protected static string $resource = OrderResource::class;
+
+    protected ?OrderService $orderService = null;
+
+    protected function Service(): OrderService
+    {
+        return $this->orderService ??= app(OrderService::class);
+    }
 
     public function calculateTotal(): void
     {
@@ -113,12 +115,7 @@ class CreateOrder extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        return $this->orderService->calculateOrderTotals($data);
-    }
-
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        return $this->orderService->calculateOrderTotals($data);
+        return $this->Service()->calculateOrderTotals($data);
     }
 
 }
