@@ -219,13 +219,13 @@ class UserResource extends Resource
                                         Components\TextEntry::make('type_transaction')
                                             ->label('Loại giao dịch')
                                             ->badge()
-                                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                            ->formatStateUsing(fn(string $state): string => match ($state) {
                                                 'recharge_point' => 'Nạp tiền',
                                                 'bid' => 'Đấu giá',
                                                 'buy_product' => 'Mua sản phẩm',
                                                 default => 'Khác',
                                             })
-                                            ->color(fn (string $state): string => match ($state) {
+                                            ->color(fn(string $state): string => match ($state) {
                                                 'recharge_point' => 'success',
                                                 'bid' => 'warning',
                                                 'buy_product' => 'danger',
@@ -233,13 +233,13 @@ class UserResource extends Resource
                                             }),
                                         Components\TextEntry::make('point_change')
                                             ->label('Số dư sau')
-                                            ->formatStateUsing(fn ($state) => 
-                                                ($state > 0 ? '+' : '') . number_format($state, 0, ',', '.') . ' ₫'
+                                            ->formatStateUsing(
+                                                fn($state) => ($state > 0 ? '+' : '') . number_format($state, 0, ',', '.') . ' ₫'
                                             )
-                                            ->color(fn ($state): string => $state > 0 ? 'success' : 'danger'),
+                                            ->color(fn($state): string => $state > 0 ? 'success' : 'danger'),
                                         Components\TextEntry::make('point')
                                             ->label('Số dư hiện tại')
-                                            ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' ₫'),
+                                            ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫'),
                                         Components\TextEntry::make('created_at')
                                             ->label('Ngày giao dịch')
                                             ->dateTime(),

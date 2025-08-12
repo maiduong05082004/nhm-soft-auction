@@ -19,3 +19,6 @@ yarn-error.log
 /.vscode
 /lang/vendor/filament/*
 !/lang/vendor/filament/vi/ // chỉ giữ tiếng Việt
+
+#add package.locl
+package-lock.json
