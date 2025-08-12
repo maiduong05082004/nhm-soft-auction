@@ -4,6 +4,7 @@ namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
@@ -16,6 +17,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 use Illuminate\Support\Facades\Log;
+use App\Services\OrderService;
 
 class CreateOrder extends CreateRecord
 {
@@ -75,12 +77,12 @@ class CreateOrder extends CreateRecord
     protected function getSteps(): array
     {
         return [
-            Step::make('Order Details')
+            Step::make('Chi tiết đơn hàng')
                 ->schema([
                     Section::make()->schema(OrderResource::getDetailsFormSchema())->columns(),
                 ]),
 
-            Step::make('Order Items')
+            Step::make('Sản phẩm trong đơn hàng')
                 ->schema([
                     Section::make()->schema([
                         OrderResource::getItemsRepeater(),
@@ -101,7 +103,7 @@ class CreateOrder extends CreateRecord
                             ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
                     ]),
                 ]),
-                Step::make('Payment')
+                Step::make('Thanh toán')
                 ->icon('heroicon-o-credit-card')
                 ->schema([
                     Section::make()->schema(OrderResource::getPaymentFormSchema()),
@@ -111,48 +113,21 @@ class CreateOrder extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $state = $this->form->getState();
-        $itemsState = is_array($state) ? ($state['items'] ?? []) : [];
-        $subtotal = $this->computeSubtotalWithDebug($itemsState);
+        $orderService = app(OrderService::class);
+        $data['subtotal'] = $orderService->calculateSubtotal($data['items'] ?? []);
         $shippingFee = (float)($data['shipping_fee'] ?? 0);
-        $data['subtotal'] = $subtotal;
-        $data['total'] = $subtotal + $shippingFee;
-        Log::debug('[OrderCreate] Totals', compact('subtotal', 'shippingFee') + ['total' => $data['total']]);
+        $data['total'] = $orderService->calculateTotal($data['items'] ?? [], $shippingFee);
+        $data['created_at'] = now();
         return $data;
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $state = $this->form->getState();
-        $itemsState = is_array($state) ? ($state['items'] ?? []) : [];
-        $subtotal = $this->computeSubtotalWithDebug($itemsState);
-
+        $orderService = app(OrderService::class);
+        $data['subtotal'] = $orderService->calculateSubtotal($data['items'] ?? []);
         $shippingFee = (float)($data['shipping_fee'] ?? 0);
-        $data['subtotal'] = $subtotal;
-        $data['total'] = $subtotal + $shippingFee;
-        Log::debug('[OrderSave] Totals', compact('subtotal', 'shippingFee') + ['total' => $data['total']]);
-
+        $data['total'] = $orderService->calculateTotal($data['items'] ?? [], $shippingFee);
+        $data['updated_at'] = now();
         return $data;
-    }
-
-    private function computeSubtotalWithDebug(array $items): float
-    {
-        $subtotal = 0.0;
-        foreach ($items as $index => $item) {
-            $quantity = (float)($item['quantity'] ?? 0);
-            $productId = $item['product_id'] ?? null;
-            $priceFromDb = $productId ? (float)(\App\Models\Product::find($productId)?->price ?? 0) : 0.0;
-            $line = $quantity * $priceFromDb;
-            $subtotal += $line;
-            Log::debug('[OrderSubtotal] Line', [
-                'idx' => $index,
-                'product_id' => $productId,
-                'quantity' => $quantity,
-                'price_from_db' => $priceFromDb,
-                'line_subtotal' => $line,
-            ]);
-        }
-        Log::debug('[OrderSubtotal] Subtotal computed', ['subtotal' => $subtotal]);
-        return $subtotal;
     }
 }
