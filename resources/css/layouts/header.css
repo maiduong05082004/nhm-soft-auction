@@ -1,0 +1,7 @@
+@layer utilities {
+    header {
+        @apply bg-white shadow-sm;
+    }
+
+
+};

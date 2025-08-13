@@ -1,4 +1,4 @@
-<title>@yield('title', 'Auctions Clone')</title>
+<title>@yield('title')</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="@yield('meta_description', 'Mô tả mặc định cho trang đấu giá của bạn')">
@@ -22,6 +22,6 @@
 <link rel="canonical" href="{{ url()->current() }}">
 
 <!-- JSON-LD Schema.org -->
-@include('layouts.schema')
+@include('partial.schema')
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])

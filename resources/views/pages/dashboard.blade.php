@@ -10,6 +10,23 @@
 @section('schema_name', 'Danh sách đấu giá')
 
 @section('content')
-    <h1 class="text-3xl font-bold mb-4">Danh sách đấu giá</h1>
-    {{-- Nội dung trang --}}
+    <div id="page-home" class="my-3">
+        <section class="slider-banner overflow-hidden" id="slide-home">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <img src="/images/banner_buyeeEnPc.png" class="w-5/6 mx-auto" alt="Slide 1">
+                </div>
+                <div class="swiper-slide">
+                    <img src="/images/banner_buyeeEnPc.png" class="w-5/6  mx-auto" alt="Slide 2">
+                </div>
+                <div class="swiper-slide">
+                    <img src="/images/banner_buyeeEnPc.png" class="w-5/6   mx-auto" alt="Slide 3">
+                </div>
+            </div>
+{{-- 
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div> --}}
+            {{-- <div class="swiper-pagination"></div> --}}
+        </section>
+    </div>
 @endsection

@@ -1,13 +1,34 @@
-<header class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <a href="" class="text-2xl font-bold text-blue-600">AuctionsClone</a>
-        <form action="" method="get" class="flex items-center">
-            <label for="search" class="sr-only">Tìm kiếm</label>
-            <input id="search" name="q" type="search"
-                placeholder="Tìm kiếm..."
-                value="{{ request('q') }}"
-                class="px-3 py-2 border rounded-l-md focus:ring-2 focus:ring-blue-500" />
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-r-md">Tìm</button>
-        </form>
+<header class="bg-white">
+    <div class="navbar flex md:flex-row flex-col max-w-7xl mx-auto px-4 py-4 bg-base-100 shadow-sm">
+        <div class="navbar-t w-full">
+            <a class="btn btn-ghost text-xl">
+                <img src="/storage/images/logo.png" class="w-full" />
+            </a>
+        </div>
+        <div class="navbar-b">
+            <button class="btn btn-ghost btn-circle">
+                <x-heroicon-o-magnifying-glass class=" h-6" />
+            </button>
+            <button class="btn btn-ghost btn-circle">
+                <x-heroicon-o-user class=" h-6" />
+            </button><button class="btn btn-ghost btn-circle">
+                <x-heroicon-o-magnifying-glass class=" h-6" />
+            </button><button class="btn btn-ghost btn-circle">
+                <x-heroicon-o-magnifying-glass class=" h-6" />
+            </button>
+            <button class="btn btn-ghost btn-circle">
+                <x-heroicon-o-magnifying-glass class=" h-6" />
+            </button>
+            <button class="btn btn-ghost btn-circle">
+                <div class="indicator">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <span class="badge badge-xs badge-primary indicator-item"></span>
+                </div>
+            </button>
+        </div>
     </div>
 </header>
