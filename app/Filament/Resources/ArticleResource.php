@@ -6,6 +6,7 @@ use App\Filament\Resources\ArticleResource\Pages;
 use App\Models\Article;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -34,9 +35,10 @@ class ArticleResource extends Resource
                             ->maxLength(255)
                             ->live(debounce: 1000)
                             ->afterStateUpdated(function ($state, callable $set) {
-                                if ($state) {
-                                    $set('slug', \Illuminate\Support\Str::slug($state));
-                                }
+                                if (!$state) return;
+                                $baseSlug = \Illuminate\Support\Str::slug($state);
+                                $slug = $baseSlug . '-' . HelperFunc::getTimestampAsId();
+                                $set('slug', $slug);
                             }),
 
                         Forms\Components\TextInput::make('slug')
@@ -56,6 +58,9 @@ class ArticleResource extends Resource
                             ->label('Danh mục')
                             ->relationship('category', 'name', 'parent_id')
                             ->searchable()
+                            ->formatStateUsing(fn($state) => (string) $state)
+                            ->expandSelected(true)
+                            ->enableBranchNode()
                             ->required(),
                     ])
                     ->columns(2),

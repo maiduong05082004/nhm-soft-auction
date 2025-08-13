@@ -6,20 +6,25 @@ use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-class Notification extends Model
+class UserNotification extends Model
 {
     use HasFactory;
     use SoftDeletes;
 
     protected $fillable = [
         'id',
+        'user_id',
+        'title',
+        'message',
         'type',
-        'notifiable_type',
-        'notifiable_id',
-        'data',
+        'is_read',
         'read_at',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     protected static function boot()
     {

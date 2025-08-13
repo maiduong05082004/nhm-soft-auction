@@ -21,6 +21,7 @@ class PaymentsRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\TextInput::make('reference')
+                
                     ->columnSpan('full')
                     ->required(),
 
