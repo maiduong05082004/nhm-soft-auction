@@ -4,7 +4,6 @@ namespace App\Repositories\Products;
 
 use App\Repositories\BaseRepository;
 use App\Models\Product;
-use Illuminate\Database\Eloquent\Model;
 
 class ProductRepository extends BaseRepository implements ProductRepositoryInterface
 {
@@ -13,8 +12,8 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         parent::__construct($model);
     }
 
-    public function getModel(): Model
+    public function getModel(): string
     {
-        return new Product();
+        return Product::class;
     }
 }

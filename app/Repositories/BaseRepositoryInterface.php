@@ -5,12 +5,10 @@ namespace App\Repositories;
 use App\Exceptions\RepositoryException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 interface BaseRepositoryInterface
 {
 
-    public function getModel(): Model;
 
     public function getAll(array $conditions = [], array $with = [], array $joins = []): Collection;
 

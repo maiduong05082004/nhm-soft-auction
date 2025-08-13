@@ -136,10 +136,6 @@ class UserResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
@@ -213,6 +209,7 @@ class UserResource extends Resource
                 Components\Section::make('Lịch sử giao dịch')
                     ->schema([
                         Components\RepeatableEntry::make('transactions')
+                        ->hiddenLabel()
                             ->schema([
                                 Components\Grid::make(5)
                                     ->schema([
