@@ -24,7 +24,6 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 use App\Services\Orders\OrderService;
 
-
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
@@ -126,15 +125,6 @@ class OrderResource extends Resource
                     ->label('Trạng thái')
                     ->badge(),
 
-                Tables\Columns\TextColumn::make('total')
-                    ->label('Tổng tiền')
-                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫')
-                    ->searchable()
-                    ->sortable()
-                    ->summarize([
-                        Tables\Columns\Summarizers\Sum::make()
-                            ->money(),
-                    ]),
                 Tables\Columns\TextColumn::make('shipping_fee')
                     ->label('Phí vận chuyển')
                     ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫')
@@ -143,8 +133,19 @@ class OrderResource extends Resource
                     ->toggleable()
                     ->summarize([
                         Tables\Columns\Summarizers\Sum::make()
-                            ->money(),
+                            ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫'),
                     ]),
+
+                Tables\Columns\TextColumn::make('total')
+                    ->label('Tổng tiền')
+                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫')
+                    ->searchable()
+                    ->sortable()
+                    ->summarize([
+                        Tables\Columns\Summarizers\Sum::make()
+                        ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫'),
+                    ]),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày đặt hàng')
                     ->date()
@@ -279,6 +280,7 @@ class OrderResource extends Resource
             Forms\Components\Select::make('user_id')
                 ->label('Khách hàng')
                 ->relationship('user', 'name')
+                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->name} - {$record->phone}")
                 ->searchable()
                 ->required()
                 ->live()
@@ -287,6 +289,7 @@ class OrderResource extends Resource
                         $user = \App\Models\User::find($state);
                         if ($user && $user->address) {
                             $set('ship_address', $user->address);
+                            $set('email_receiver', $user->email);
                         }
                     }
                 })
@@ -400,7 +403,7 @@ class OrderResource extends Resource
                 })
                 ->suffixAction(
                     Forms\Components\Actions\Action::make('useUserEmail')
-                        ->label('Dùng email user')
+                        ->label('Dùng email người dùng')
                         ->icon('heroicon-o-user')
                         ->color('info')
                         ->tooltip('Sử dụng email của khách hàng đã chọn')
@@ -448,7 +451,8 @@ class OrderResource extends Resource
 
 
 
-            Forms\Components\MarkdownEditor::make('notes')
+            Forms\Components\MarkdownEditor::make('note')
+                ->label('Ghi chú')
                 ->columnSpan('full'),
         ];
     }
@@ -495,12 +499,11 @@ class OrderResource extends Resource
                         'md' => 2,
                     ])
                     ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
-                            $product = Product::find($get('product_id'));
-                            if ($product) {
-                                $set('price', $product->price);
-                                $set('quantity', 1);
-                                $set('subtotal', $product->price * 1);
-                            }
+                        $product = Product::find($get('product_id'));
+                        if ($product) {
+                            $set('price', $product->price);
+                            $set('subtotal', $product->price * $get('quantity'));
+                        }
                     })
                     ->required(),
 
@@ -523,7 +526,7 @@ class OrderResource extends Resource
                     ->columnSpan([
                         'md' => 2,
                     ]),
-                    
+
                 Forms\Components\Hidden::make('total')
                     ->label('Tổng tiền')
                     ->disabled()
@@ -598,5 +601,4 @@ class OrderResource extends Resource
                 ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
         ];
     }
-
 }
