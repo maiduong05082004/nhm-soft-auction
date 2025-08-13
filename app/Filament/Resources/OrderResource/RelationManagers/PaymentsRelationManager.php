@@ -20,33 +20,26 @@ class PaymentsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('reference')
-                
+                Forms\Components\TextInput::make('order_id')
+                    ->label('Mã thanh toán')
+                    ->disabled()
                     ->columnSpan('full')
                     ->required(),
 
                 Forms\Components\TextInput::make('amount')
+                    ->label('Số tiền thanh toán')
                     ->numeric()
                     ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
                     ->required(),
 
-                Forms\Components\ToggleButtons::make('provider')
-                    ->inline()
-                    ->grouped()
+                Forms\Components\Select::make('payment_method')
+                    ->label('Phương thức thanh toán')
                     ->options([
-                        'stripe' => 'Stripe',
-                        'paypal' => 'PayPal',
+                        '0' => 'Giao dịch trực tiếp',
+                        '1' => 'Chuyển khoản ngân hàng',
                     ])
-                    ->required(),
-
-                Forms\Components\ToggleButtons::make('method')
-                    ->inline()
-                    ->options([
-                        'credit_card' => 'Credit card',
-                        'bank_transfer' => 'Bank transfer',
-                        'paypal' => 'PayPal',
-                    ])
-                    ->required(),
+                    ->required()
+                    ->default('0'),
             ]);
     }
 
@@ -56,22 +49,27 @@ class PaymentsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\ColumnGroup::make('Details')
                     ->columns([
-                        Tables\Columns\TextColumn::make('reference')
+                        Tables\Columns\TextColumn::make('order_id')
+                            ->label('Mã đơn hàng')
                             ->searchable(),
 
                         Tables\Columns\TextColumn::make('amount')
+                            ->label('Số tiền thanh toán')
                             ->sortable()
-                            ->money(fn ($record) => $record->currency),
+                            ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫'),
                     ]),
 
                 Tables\Columns\ColumnGroup::make('Context')
                     ->columns([
-                        Tables\Columns\TextColumn::make('provider')
-                            ->formatStateUsing(fn ($state) => Str::headline($state))
-                            ->sortable(),
-
-                        Tables\Columns\TextColumn::make('method')
-                            ->formatStateUsing(fn ($state) => Str::headline($state))
+                        Tables\Columns\TextColumn::make('payment_method')
+                            ->label('Phương thức thanh toán')
+                            ->formatStateUsing(function ($state) {
+                                if ($state == '1') {
+                                    return 'Chuyển khoản ngân hàng';
+                                } else {
+                                    return 'Giao dịch trực tiếp';
+                                }
+                            })
                             ->sortable(),
                     ]),
             ])
