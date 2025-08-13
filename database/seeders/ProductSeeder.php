@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Product;
@@ -13,6 +14,7 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
+        $categories = Category::all();
         $products = [
             [
                 'name' => 'iPhone 15 Pro Max',
@@ -24,7 +26,7 @@ class ProductSeeder extends Seeder
                 'min_bid_amount' => 20000000,
                 'max_bid_amount' => 30000000,
                 'type_sale' => 'auction',
-                'category_id' => 1,
+                'category_id' => $categories->random()->id,
                 'start_time' => now(),
                 'end_time' => now()->addDays(7),
                 'status' => 'active',
@@ -39,7 +41,7 @@ class ProductSeeder extends Seeder
                 'min_bid_amount' => 30000000,
                 'max_bid_amount' => 40000000,
                 'type_sale' => 'auction',
-                'category_id' => 1,
+                'category_id' => $categories->random()->id,
                 'start_time' => now(),
                 'end_time' => now()->addDays(5),
                 'status' => 'active',
@@ -54,7 +56,7 @@ class ProductSeeder extends Seeder
                 'min_bid_amount' => 3000000,
                 'max_bid_amount' => 4000000,
                 'type_sale' => 'sale',
-                'category_id' => 2,
+                'category_id' => $categories->random()->id,
                 'status' => 'active',
             ],
             [
@@ -67,7 +69,7 @@ class ProductSeeder extends Seeder
                 'min_bid_amount' => 12000000,
                 'max_bid_amount' => 18000000,
                 'type_sale' => 'sale',
-                'category_id' => 3,
+                'category_id' => $categories->first()->id,
                 'status' => 'active',
             ],
             [
@@ -80,7 +82,7 @@ class ProductSeeder extends Seeder
                 'min_bid_amount' => 100000,
                 'max_bid_amount' => 200000,
                 'type_sale' => 'sale',
-                'category_id' => 4,
+                'category_id' => $categories->random()->id,
                 'status' => 'active',
             ],
             [
@@ -93,7 +95,7 @@ class ProductSeeder extends Seeder
                 'min_bid_amount' => 400000,
                 'max_bid_amount' => 600000,
                 'type_sale' => 'sale',
-                'category_id' => 5,
+                'category_id' => $categories->random()->id,
                 'status' => 'active',
             ],
             [
@@ -106,7 +108,7 @@ class ProductSeeder extends Seeder
                 'min_bid_amount' => 7000000,
                 'max_bid_amount' => 9000000,
                 'type_sale' => 'sale',
-                'category_id' => 6,
+                'category_id' => $categories->random()->id,
                 'status' => 'active',
             ],
             [
@@ -119,7 +121,7 @@ class ProductSeeder extends Seeder
                 'min_bid_amount' => 2000000,
                 'max_bid_amount' => 3000000,
                 'type_sale' => 'sale',
-                'category_id' => 7,
+                'category_id' => $categories->random()->id,
                 'status' => 'active',
             ],
             [
@@ -132,7 +134,7 @@ class ProductSeeder extends Seeder
                 'min_bid_amount' => 10000000,
                 'max_bid_amount' => 15000000,
                 'type_sale' => 'auction',
-                'category_id' => 9,
+                'category_id' => $categories->random()->id,
                 'start_time' => now(),
                 'end_time' => now()->addDays(10),
                 'status' => 'active',
@@ -147,7 +149,7 @@ class ProductSeeder extends Seeder
                 'min_bid_amount' => 750000000,
                 'max_bid_amount' => 850000000,
                 'type_sale' => 'auction',
-                'category_id' => 10,
+                'category_id' => $categories->random()->id,
                 'start_time' => now(),
                 'end_time' => now()->addDays(15),
                 'status' => 'active',
