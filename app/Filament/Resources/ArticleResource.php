@@ -6,6 +6,7 @@ use App\Filament\Resources\ArticleResource\Pages;
 use App\Models\Article;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -36,11 +37,7 @@ class ArticleResource extends Resource
                             ->afterStateUpdated(function ($state, callable $set) {
                                 if (!$state) return;
                                 $baseSlug = \Illuminate\Support\Str::slug($state);
-                                $slug = $baseSlug;
-                                $i = 1;
-                                while (\App\Models\CategoryArticle::withoutTrashed()->where('slug', $slug)->exists()) {
-                                    $slug = $baseSlug . '-' . $i++;
-                                }
+                                $slug = $baseSlug . '-' . HelperFunc::getTimestampAsId();
                                 $set('slug', $slug);
                             }),
 

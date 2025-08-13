@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CategoryArticleResource\Pages;
-use App\Filament\Resources\CategoryArticleResource\RelationManagers;
+use App\Utils\HelperFunc;
 use App\Models\CategoryArticle;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
@@ -38,11 +38,7 @@ class CategoryArticleResource extends Resource
                     ->afterStateUpdated(function ($state, callable $set) {
                         if (!$state) return;
                         $baseSlug = \Illuminate\Support\Str::slug($state);
-                        $slug = $baseSlug;
-                        $i = 1;
-                        while (\App\Models\CategoryArticle::withoutTrashed()->where('slug', $slug)->exists()) {
-                            $slug = $baseSlug . '-' . $i++;
-                        }
+                        $slug = $baseSlug . '-' . HelperFunc::getTimestampAsId();
                         $set('slug', $slug);
                     }),
 

@@ -16,7 +16,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Utils\HelperFunc;
 use Illuminate\Support\HtmlString;
 
 class ProductResource extends Resource
@@ -40,11 +40,7 @@ class ProductResource extends Resource
                 ->afterStateUpdated(function ($state, callable $set) {
                     if (!$state) return;
                     $baseSlug = \Illuminate\Support\Str::slug($state);
-                    $slug = $baseSlug;
-                    $i = 1;
-                    while (\App\Models\Product::withoutTrashed()->where('slug', $slug)->exists()) {
-                        $slug = $baseSlug . '-' . $i++;
-                    }
+                    $slug = $baseSlug . '-' . HelperFunc::getTimestampAsId();
                     $set('slug', $slug);
                 }),
 

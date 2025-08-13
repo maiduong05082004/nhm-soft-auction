@@ -7,6 +7,7 @@ use App\Models\Category;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Form;
+use App\Utils\HelperFunc;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -35,11 +36,7 @@ class CategoryResource extends Resource
                     ->afterStateUpdated(function ($state, callable $set) {
                         if (!$state) return;
                         $baseSlug = \Illuminate\Support\Str::slug($state);
-                        $slug = $baseSlug;
-                        $i = 1;
-                        while (\App\Models\Category::withoutTrashed()->where('slug', $slug)->exists()) {
-                            $slug = $baseSlug . '-' . $i++;
-                        }
+                        $slug = $baseSlug . '-' . HelperFunc::getTimestampAsId();
                         $set('slug', $slug);
                     }),
 
