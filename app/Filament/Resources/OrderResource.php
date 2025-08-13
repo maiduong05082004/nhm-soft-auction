@@ -157,9 +157,9 @@ class OrderResource extends Resource
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
-                            ->placeholder(fn($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
+                            ->placeholder(fn(): string => 'Dec 18, ' . now()->subYear()->format('Y')),
                         Forms\Components\DatePicker::make('created_until')
-                            ->placeholder(fn($state): string => now()->format('M d, Y')),
+                            ->placeholder(fn(): string => now()->format('M d, Y')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -227,6 +227,7 @@ class OrderResource extends Resource
             'index' => Pages\ListOrders::route('/'),
             'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
+            'qr-code' => Pages\QrPayment::route('/{record}/qr-code'),
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Services\Orders;
 
+use App\Models\Order;
 use App\Services\ServiceInterface;
 
 interface OrderServiceInterface extends ServiceInterface
@@ -20,4 +21,6 @@ interface OrderServiceInterface extends ServiceInterface
     public function getOrderById($id);
 
     public function getAllOrders(array $conditions = []);
+
+    public function afterCreate(Order $order, string $paymentMethod): void;
 }

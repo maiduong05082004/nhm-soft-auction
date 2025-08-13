@@ -4,6 +4,7 @@ namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
+use App\Models\Payment;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Wizard;
@@ -13,6 +14,8 @@ use Filament\Forms\Get;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 use App\Services\Orders\OrderService;
+use App\Utils\HelperFunc;
+use Filament\Notifications\Notification;
 
 class CreateOrder extends CreateRecord
 {
@@ -25,21 +28,6 @@ class CreateOrder extends CreateRecord
     protected function Service(): OrderService
     {
         return $this->orderService ??= app(OrderService::class);
-    }
-
-    public function calculateTotal(): void
-    {
-        $items = $this->form->getState()['items'] ?? [];
-        $total = 0;
-
-        foreach ($items as $item) {
-            if (isset($item['quantity']) && isset($item['price'])) {
-                $subtotal = $item['quantity'] * $item['price'];
-                $total += $subtotal;
-            }
-        }
-
-        $this->form->fill(['total' => $total]);
     }
 
     public function form(Form $form): Form
@@ -60,19 +48,34 @@ class CreateOrder extends CreateRecord
     {
         /** @var Order $order */
         $order = $this->record;
+        $formData = $this->form->getState();
+        $paymentMethod = $formData['payment_method'] ?? '0';
 
-        $order->loadMissing('items', 'items.product');
-        $subtotal = 0.0;
-        foreach ($order->items as $item) {
-            $qty = (float) ($item->quantity ?? 0);
-            $price = (float) ($item->product?->price ?? 0);
-            $subtotal += $qty * $price;
+        $this->Service()->afterCreate($order, $paymentMethod);
+        
+        if ($paymentMethod === '1') {
+            Notification::make()
+                ->title('Đã chuyển đến trang QR code thanh toán!')
+                ->info()
+                ->send();
+        } else {
+            Notification::make()
+                ->title('Đơn hàng đã được tạo thành công!')
+                ->success()
+                ->send();
         }
-        $shippingFee = (float) ($order->shipping_fee ?? 0);
-        $order->forceFill([
-            'subtotal' => $subtotal,
-            'total' => $subtotal + $shippingFee,
-        ])->save();
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        $formData = $this->form->getState();
+        $paymentMethod = $formData['payment_method'] ?? '0';
+
+        if ($paymentMethod === '1') {
+            return route('filament.admin.resources.orders.qr-code', ['record' => $this->record]);
+        }
+
+        return parent::getRedirectUrl();
     }
 
     /** @return Step[] */
@@ -92,14 +95,7 @@ class CreateOrder extends CreateRecord
                             ->label('Tổng tiền đơn hàng')
                             ->content(function (Get $get): string {
                                 $items = $get('items') ?? [];
-                                $total = 0;
-                                foreach ($items as $item) {
-                                    if (isset($item['quantity']) && isset($item['price'])) {
-                                        $subtotal = $item['quantity'] * $item['price'];
-                                        $total += $subtotal;
-                                    }
-                                }
-                                return number_format($total, 0, ',', '.') . ' ₫';
+                                return $this->Service()->formatCurrency($this->Service()->calculateSubtotal($items));
                             })
                             ->columnSpan('full')
                             ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
@@ -117,5 +113,4 @@ class CreateOrder extends CreateRecord
     {
         return $this->Service()->calculateOrderTotals($data);
     }
-
 }

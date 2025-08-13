@@ -2,11 +2,14 @@
 
 namespace App\Services\Orders;
 
+use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Services\BaseService;
 use App\Repositories\Orders\OrderRepository;
 use App\Repositories\Products\ProductRepository;
 use App\Services\Orders\OrderServiceInterface;
+use App\Utils\HelperFunc;
 
 class OrderService extends BaseService implements OrderServiceInterface
 {
@@ -100,5 +103,38 @@ class OrderService extends BaseService implements OrderServiceInterface
         $shippingFee = (float) ($data['shipping_fee'] ?? 0);
         $data['total'] = $this->calculateTotal($data['items'] ?? [], $shippingFee);
         return $data;
+    }
+
+    public function afterCreate(Order $order, string $paymentMethod): void
+    {
+        $order->loadMissing('items', 'items.product');
+        $subtotal = 0.0;
+        
+        foreach ($order->items as $item) {
+            $qty = (float) ($item->quantity ?? 0);
+            $price = (float) ($item->product?->price ?? 0);
+            $subtotal += $qty * $price;
+        }
+        
+        $shippingFee = (float) ($order->shipping_fee ?? 0);
+        
+        $order->forceFill([
+            'subtotal' => $subtotal,
+            'total' => $subtotal + $shippingFee,
+        ])->save();
+    
+        Payment::create([
+            'order_id' => $order->id,
+            'user_id' => $order->user_id,
+            'payment_method' => $paymentMethod,
+            'amount' => $order->total,
+            'transaction_id' => HelperFunc::getTimestampAsId(),
+            'payer_id' => HelperFunc::getTimestampAsId(),
+            'pay_date' => now(),
+            'currency_code' => 'VND',
+            'payer_email' => $order->email_receiver,
+            'transaction_fee' => 0,
+            'status' => $paymentMethod === '1' ? 'pending' : 'success',
+        ]);
     }
 }
