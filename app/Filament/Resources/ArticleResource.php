@@ -61,6 +61,9 @@ class ArticleResource extends Resource
                             ->label('Danh mục')
                             ->relationship('category', 'name', 'parent_id')
                             ->searchable()
+                            ->formatStateUsing(fn($state) => (string) $state)
+                            ->expandSelected(true)
+                            ->enableBranchNode()
                             ->required(),
                     ])
                     ->columns(2),

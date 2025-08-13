@@ -104,8 +104,11 @@ class ProductResource extends Resource
                 ->visible(fn($get) => $get('type_sale') === 'auction'),
             SelectTree::make('category_id')
                 ->label('Danh mục')
+                ->formatStateUsing(fn($state) => (string) $state)
                 ->relationship('category', 'name', 'parent_id')
                 ->searchable()
+                ->expandSelected(true)
+                ->enableBranchNode()
                 ->required(),
 
             Forms\Components\Select::make('status')

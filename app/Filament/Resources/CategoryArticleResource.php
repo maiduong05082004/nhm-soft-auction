@@ -58,8 +58,11 @@ class CategoryArticleResource extends Resource
                     ->label('Danh mục cha')
                     ->withCount()
                     ->searchable()
+                    ->formatStateUsing(fn($state) => (string) $state)
                     ->placeholder('Chọn danh mục cha')
                     ->relationship('parent', 'name', 'parent_id')
+                    ->expandSelected(true)
+                    ->enableBranchNode()
                     ->nullable(),
 
                 TiptapEditor::make('description')

@@ -53,10 +53,13 @@ class CategoryResource extends Resource
                     ->directory('categories'),
                 SelectTree::make('parent_id')
                     ->label('Danh mục cha')
+                    ->formatStateUsing(fn($state) => (string) $state)
                     ->relationship('parent', 'name', 'parent_id')
                     ->searchable()
                     ->placeholder('Chọn danh mục cha')
-                    ->nullable(),
+                    ->nullable()
+                    ->expandSelected(true)
+                    ->enableBranchNode(),
 
                 TiptapEditor::make('description')
                     ->label('Miêu tả danh mục')
