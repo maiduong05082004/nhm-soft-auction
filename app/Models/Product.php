@@ -34,7 +34,10 @@ class Product extends Model
         'status',
         'is_hot',
         'created_by',
-        'seo'
+        'seo',
+        'pay_method',
+        'state',
+        'brand'
     ];
     protected static function boot()
     {
