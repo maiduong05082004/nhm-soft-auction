@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Permission\RoleConstant;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
@@ -22,6 +23,10 @@ class CategoryResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Danh mục';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -53,18 +58,8 @@ class CategoryResource extends Resource
                     ->directory('categories'),
                 SelectTree::make('parent_id')
                     ->label('Danh mục cha')
-                    ->options(function (?Category $record) {
-                        $options = [];
-                        foreach (Category::getTreeList() as $category) {
-                            if ($record && $record->id === $category->id) {
-                                continue;
-                            }
-                            $options[$category->id] = str_repeat('— ', $category->level) . $category->name;
-                        }
-                        return $options;
-                    })
+                    ->relationship('parent','name','parent_id')
                     ->searchable()
-                    ->preload()
                     ->placeholder('Chọn danh mục cha')
                     ->nullable(),
 

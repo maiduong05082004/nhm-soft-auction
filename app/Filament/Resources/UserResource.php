@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Permission\RoleConstant;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms;
@@ -9,6 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Infolists\Components;
 use Filament\Infolists\Infolist;
+use Filament\Navigation\NavigationItem;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -21,6 +23,11 @@ class UserResource extends Resource
     protected static ?string $navigationLabel = 'Người dùng';
     protected static ?string $modelLabel = 'Người dùng';
     protected static ?string $pluralModelLabel = 'Người dùng';
+
+    public static function canAccess(): bool
+    {
+       return auth()->user()->hasRole(RoleConstant::ADMIN);
+    }
 
     public static function form(Form $form): Form
     {
@@ -76,7 +83,7 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Select::make('role')
                     ->required()
-                    ->label('Role')
+                    ->label('RoleConstant')
                     ->options(function () {
                         if (auth()->user()->role === 'admin') {
                             return [
@@ -169,7 +176,6 @@ class UserResource extends Resource
                 ]),
             ]);
     }
-
 
     public static function infolist(Infolist $infolist): Infolist
     {

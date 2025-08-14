@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Permission\RoleConstant;
 use App\Filament\Resources\CategoryArticleResource\Pages;
 use App\Utils\HelperFunc;
 use App\Models\CategoryArticle;
@@ -25,7 +26,10 @@ class CategoryArticleResource extends Resource
     public static ?string $navigationLabel = 'Danh mục bài viết';
     protected static ?string $modelLabel = 'Danh mục bài viết';
     public static ?int $navigationSort = 2;
-
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
+    }
     public static function form(Form $form): Form
     {
         return $form
