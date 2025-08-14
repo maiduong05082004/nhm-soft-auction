@@ -4,9 +4,8 @@ namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
 use App\Models\CreditCard;
-use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\Payment;
-use App\Utils\HelperFunc;
 use Filament\Resources\Pages\Page;
 use Filament\Notifications\Notification;
 
@@ -15,14 +14,14 @@ class QrPayment extends Page
     protected static string $resource = OrderResource::class;
     protected static string $view = 'filament.admin.resources.orders.qr-code';
     
-    public Order $record;
+    public OrderDetail $record;
     public Payment $payment;
     public CreditCard $creditCard;
 
-    public function mount(Order $record): void
+    public function mount(OrderDetail $record): void
     {
         $this->record = $record;
-        $this->payment = Payment::where('order_id', $record->id)->first();
+        $this->payment = Payment::where('order_detail_id', $record->id)->first();
         $this->creditCard = CreditCard::first();
 
         if (!$this->payment) {

@@ -13,7 +13,7 @@ class Payment extends Model
 
     protected $fillable = [
         'id',
-        'order_id',
+        'order_detail_id',
         'user_id',
         'payment_method',
         'amount',
@@ -33,9 +33,9 @@ class Payment extends Model
             $model->id = HelperFunc::getTimestampAsId();
         });
     }
-    public function order()
+    public function orderDetail()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(OrderDetail::class);
     }
 
     public function user()

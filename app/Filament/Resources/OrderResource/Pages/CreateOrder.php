@@ -3,8 +3,7 @@
 namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
-use App\Models\Order;
-use App\Models\Payment;
+use App\Models\OrderDetail;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Wizard;
@@ -13,8 +12,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
-use App\Services\Orders\OrderService;
-use App\Utils\HelperFunc;
+use App\Services\Orders\OrderDetailService;
 use Filament\Notifications\Notification;
 
 class CreateOrder extends CreateRecord
@@ -23,11 +21,11 @@ class CreateOrder extends CreateRecord
 
     protected static string $resource = OrderResource::class;
 
-    protected ?OrderService $orderService = null;
+    protected ?OrderDetailService $orderDetailService = null;
 
-    protected function Service(): OrderService
+    protected function Service(): OrderDetailService
     {
-        return $this->orderService ??= app(OrderService::class);
+        return $this->orderDetailService ??= app(OrderDetailService::class);
     }
 
     public function form(Form $form): Form
@@ -46,12 +44,12 @@ class CreateOrder extends CreateRecord
 
     protected function afterCreate(): void
     {
-        /** @var Order $order */
-        $order = $this->record;
+        /** @var OrderDetail $orderDetail */
+        $orderDetail = $this->record;
         $formData = $this->form->getState();
         $paymentMethod = $formData['payment_method'] ?? '0';
 
-        $this->Service()->afterCreate($order, $paymentMethod);
+        $this->Service()->afterCreate($orderDetail, $paymentMethod);
 
         if ($paymentMethod === '1') {
             Notification::make()

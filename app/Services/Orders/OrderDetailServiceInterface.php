@@ -2,10 +2,10 @@
 
 namespace App\Services\Orders;
 
-use App\Models\Order;
-use App\Services\BaseServiceInterface;
+use App\Models\OrderDetail;
+use App\Services\ServiceInterface;
 
-interface OrderServiceInterface extends BaseServiceInterface
+interface OrderDetailServiceInterface extends ServiceInterface
 {
 
     public function calculateSubtotal(array $items): float;
@@ -22,5 +22,5 @@ interface OrderServiceInterface extends BaseServiceInterface
 
     public function getAllOrders(array $conditions = []);
 
-    public function afterCreate(Order $order, string $paymentMethod): void;
+    public function afterCreate(OrderDetail $orderDetail, string $paymentMethod): void;
 }

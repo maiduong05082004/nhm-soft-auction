@@ -5,7 +5,7 @@ namespace App\Repositories\Orders;
 use App\Repositories\BaseRepository;
 use App\Models\Order;
 
-class OrderRepository extends BaseRepository implements OrderRepositoryInterface
+class OrderDetailRepository extends BaseRepository implements OrderDetailRepositoryInterface
 {
     public function getModel(): string
     {

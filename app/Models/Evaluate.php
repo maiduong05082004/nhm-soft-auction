@@ -15,7 +15,7 @@ class Evaluate extends Model
         'id',
         'user_id',
         'product_id',
-        'order_id',
+        'order_detail_id',
         'star_rating',
         'comment',
         'status',

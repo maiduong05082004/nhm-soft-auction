@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use App\Enums\OrderStatus;
 use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Product;
 class Order extends Model
 {
     use HasFactory;
@@ -14,22 +14,15 @@ class Order extends Model
 
     protected $fillable = [
         'id',
-        'code_orders',
-        'user_id',
-        'email_receiver',
-        'ship_address',
-        'payment_method',
-        'shipping_fee',
-        'subtotal',
+        'order_detail_id',
+        'product_id',
+        'quantity',
         'total',
-        'note',
-        'canceled_reason',
-        'canceled_at',
-        'status',
     ];
 
     protected $casts = [
-        'status' => OrderStatus::class,
+        'quantity' => 'float',
+        'total' => 'float',
     ];
 
     protected static function boot()
@@ -38,20 +31,26 @@ class Order extends Model
         static::creating(function ($model) {
             $model->id = HelperFunc::getTimestampAsId();
         });
-    }
-    public function user()
-    {
-        return $this->belongsTo(User::class);
+
+        static::saving(function (Order $model) {
+            $price = 0.0;
+            if ($model->relationLoaded('product') && $model->product) {
+                $price = (float) $model->product->price;
+            } else if (! empty($model->product_id)) {
+                $price = (float) (Product::find($model->product_id)?->price ?? 0);
+            }
+            $quantity = (float) ($model->quantity ?? 0);
+            $model->total = $quantity * $price;
+        });
     }
 
-    public function items()
+    public function order()
     {
-        return $this->hasMany(OrderDetail::class);
+        return $this->belongsTo(Order::class);
     }
 
-    public function payments()
+    public function product()
     {
-        return $this->hasMany(Payment::class);
+        return $this->belongsTo(Product::class);
     }
-
 }

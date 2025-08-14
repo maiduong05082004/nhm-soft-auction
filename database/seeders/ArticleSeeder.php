@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\CategoryArticle;
+use App\Models\User;
 
 class ArticleSeeder extends Seeder
 {
@@ -13,6 +15,8 @@ class ArticleSeeder extends Seeder
      */
     public function run(): void
     {
+        $category_articles = CategoryArticle::all();
+        $users = User::all();
         $articles = [
             [
                 'title' => 'Hướng dẫn đấu giá online cho người mới',
@@ -20,8 +24,8 @@ class ArticleSeeder extends Seeder
                 'content' => 'Bài viết hướng dẫn chi tiết cách tham gia đấu giá online cho những người mới bắt đầu...',
                 'image' => 'articles/auction-guide.jpg',
                 'view' => 150,
-                'user_id' => 1,
-                'category_article_id' => 1,
+                'user_id' => $users->random()->first()->id,
+                'category_article_id' => $category_articles->random()->first()->id,
                 'sort' => 1,
                 'status' => 'published',
             ],
@@ -31,9 +35,9 @@ class ArticleSeeder extends Seeder
                 'content' => 'Danh sách 10 sản phẩm đấu giá được quan tâm nhiều nhất trong tháng...',
                 'image' => 'articles/hot-products.jpg',
                 'view' => 320,
-                'user_id' => 1,
+                'user_id' => $users->random()->first()->id,
                 'sort' => 2,
-                'category_article_id' => 1,
+                'category_article_id' => $category_articles->random()->first()->id,
                 'status' => 'published',
             ],
             [
@@ -42,9 +46,9 @@ class ArticleSeeder extends Seeder
                 'content' => 'Những chiến lược và mẹo đấu giá thông minh để giành chiến thắng...',
                 'image' => 'articles/auction-strategy.jpg',
                 'view' => 280,
-                'user_id' => 1,
+                'user_id' => $users->random()->first()->id,
                 'sort' => 3,
-                'category_article_id' => 1,
+                'category_article_id' => $category_articles->random()->first()->id,
                 'status' => 'published',
             ],
             [
@@ -53,9 +57,9 @@ class ArticleSeeder extends Seeder
                 'content' => 'Những câu chuyện thú vị về lịch sử đấu giá trên thế giới...',
                 'image' => 'articles/auction-history.jpg',
                 'view' => 95,
-                'user_id' => 1,
+                'user_id' => $users->random()->first()->id,
                 'sort' => 4,
-                'category_article_id' => 1,
+                'category_article_id' => $category_articles->random()->first()->id,
                 'status' => 'published',
             ],
             [
@@ -64,8 +68,8 @@ class ArticleSeeder extends Seeder
                 'content' => 'Hướng dẫn cách phân biệt hàng thật và hàng giả khi tham gia đấu giá...',
                 'image' => 'articles/fake-detection.jpg',
                 'view' => 420,
-                'category_article_id' => 1,
-                'user_id' => 1,
+                'category_article_id' => $category_articles->random()->first()->id,
+                'user_id' => $users->random()->first()->id,
                 'sort' => 5,
                 'status' => 'published',
             ],
@@ -75,8 +79,8 @@ class ArticleSeeder extends Seeder
                 'content' => 'Kiến thức cơ bản về đấu giá các tác phẩm nghệ thuật...',
                 'image' => 'articles/art-auction.jpg',
                 'view' => 180,
-                'user_id' => 1,
-                'category_article_id' => 1,
+                'user_id' => $users->random()->first()->id,
+                'category_article_id' => $category_articles->random()->first()->id,
                 'sort' => 6,
                 'status' => 'published',
             ],
@@ -86,8 +90,8 @@ class ArticleSeeder extends Seeder
                 'content' => 'Các biện pháp bảo mật thông tin cá nhân khi tham gia đấu giá online...',
                 'image' => 'articles/security.jpg',
                 'view' => 250,
-                'category_article_id' => 1,
-                'user_id' => 1,
+                'category_article_id' => $category_articles->random()->first()->id,
+                'user_id' => $users->random()->first()->id,
                 'sort' => 7,
                 'status' => 'published',
             ],
@@ -97,8 +101,8 @@ class ArticleSeeder extends Seeder
                 'content' => 'Những bí quyết để thành công khi đấu giá các món đồ cổ...',
                 'image' => 'articles/antique-auction.jpg',
                 'view' => 160,
-                'user_id' => 1,
-                'category_article_id' => 1,
+                'user_id' => $users->random()->first()->id,
+                'category_article_id' => $category_articles->random()->first()->id,
                 'sort' => 8,
                 'status' => 'published',
             ],
@@ -108,8 +112,8 @@ class ArticleSeeder extends Seeder
                 'content' => 'Những xu hướng mới trong lĩnh vực đấu giá năm 2024...',
                 'image' => 'articles/trends-2024.jpg',
                 'view' => 300,
-                'user_id' => 1,
-                'category_article_id' => 1,
+                'user_id' => $users->random()->first()->id,
+                'category_article_id' => $category_articles->random()->first()->id,
                 'sort' => 9,
                 'status' => 'published',
             ],
@@ -119,8 +123,8 @@ class ArticleSeeder extends Seeder
                 'content' => 'Những vấn đề pháp lý cần lưu ý khi tham gia đấu giá online...',
                 'image' => 'articles/legal-issues.jpg',
                 'view' => 120,
-                'category_article_id' => 1,
-                'user_id' => 1,
+                'category_article_id' => $category_articles->random()->first()->id,
+                'user_id' => $users->random()->first()->id,
                 'sort' => 10,
                 'status' => 'published',
             ],
