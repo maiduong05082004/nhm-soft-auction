@@ -338,8 +338,8 @@
 
                                     <h1>Xin chào</h1>
                                     <p>Vui lòng click vào nút bên dưới để xác minh địa chỉ email của bạn.</p>
-                                    <div style="display: flex; align-items: center; justify-content: center">
-                                        <a class="button button-primary" style="text-align: center; align-content: center" href="{{ $url }}" target="_blank">
+                                    <div style="text-align: center;">
+                                        <a class="button button-primary" style="text-align: center; align-content: center; color: #ffffff" href="{{ $url }}" target="_blank">
                                             Xác minh địa chỉ Email
                                         </a>
                                     </div>
