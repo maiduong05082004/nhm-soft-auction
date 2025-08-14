@@ -2,21 +2,21 @@
 
 namespace App\Services\Orders;
 
-use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Services\BaseService;
-use App\Repositories\Orders\OrderRepository;
+use App\Repositories\Orders\OrderDetailRepository;
 use App\Repositories\Products\ProductRepository;
-use App\Services\Orders\OrderServiceInterface;
+use App\Services\Orders\OrderDetailServiceInterface;
 use App\Utils\HelperFunc;
 
-class OrderService extends BaseService implements OrderServiceInterface
+class OrderDetailService extends BaseService implements OrderDetailServiceInterface
 {
-    public function __construct(OrderRepository $orderRepo, ProductRepository $productRepo)
+    public function __construct(OrderDetailRepository $orderDetailRepo, ProductRepository $productRepo)
     {
         parent::__construct([
-            'order' => $orderRepo,
+            'orderDetail' => $orderDetailRepo,
             'product' => $productRepo,
         ]);
     }
@@ -50,7 +50,7 @@ class OrderService extends BaseService implements OrderServiceInterface
         $shippingFee = (float)($data['shipping_fee'] ?? 0);
         $data['total'] = $this->calculateTotal($data['items'] ?? [], $shippingFee);
 
-        return $this->create('order', $data);
+        return $this->create('orderDetail', $data);
     }
 
     public function updateOrder($id, array $data)
@@ -58,17 +58,17 @@ class OrderService extends BaseService implements OrderServiceInterface
         $data['subtotal'] = $this->calculateSubtotal($data['items'] ?? []);
         $shippingFee = (float)($data['shipping_fee'] ?? 0);
         $data['total'] = $this->calculateTotal($data['items'] ?? [], $shippingFee);
-        return $this->update('order', $id, $data);
+        return $this->update('orderDetail', $id, $data);
     }
 
     public function getOrderById($id)
     {
-        return $this->getRepository('order')->find($id);
+        return $this->getRepository('orderDetail')->find($id);
     }
 
     public function getAllOrders(array $conditions = [])
     {
-        return $this->getRepository('order')->getAll($conditions);
+        return $this->getRepository('orderDetail')->getAll($conditions);
     }
 
     public function calculateOrderTotals(array $data): array
@@ -79,34 +79,34 @@ class OrderService extends BaseService implements OrderServiceInterface
         return $data;
     }
 
-    public function afterCreate(Order $order, string $paymentMethod): void
+    public function afterCreate(OrderDetail $orderDetail, string $paymentMethod): void
     {
-        $order->loadMissing('items', 'items.product');
+        $orderDetail->loadMissing('items', 'items.product');
         $subtotal = 0.0;
 
-        foreach ($order->items as $item) {
-            $qty = (float)($item->quantity ?? 0);
-            $price = (float)($item->product?->price ?? 0);
+        foreach ($orderDetail->items as $item) {
+            $qty = (float) ($item->quantity ?? 0);
+            $price = (float) ($item->product?->price ?? 0);
             $subtotal += $qty * $price;
         }
 
-        $shippingFee = (float)($order->shipping_fee ?? 0);
+        $shippingFee = (float) ($orderDetail->shipping_fee ?? 0);
 
-        $order->forceFill([
+        $orderDetail->forceFill([
             'subtotal' => $subtotal,
             'total' => $subtotal + $shippingFee,
         ])->save();
 
         Payment::create([
-            'order_id' => $order->id,
-            'user_id' => $order->user_id,
+            'order_detail_id' => $orderDetail->id,
+            'user_id' => $orderDetail->user_id,
             'payment_method' => $paymentMethod,
-            'amount' => $order->total,
+            'amount' => $orderDetail->total,
             'transaction_id' => HelperFunc::getTimestampAsId(),
             'payer_id' => HelperFunc::getTimestampAsId(),
             'pay_date' => now(),
             'currency_code' => 'VND',
-            'payer_email' => $order->email_receiver,
+            'payer_email' => $orderDetail->email_receiver,
             'transaction_fee' => 0,
             'status' => $paymentMethod === '1' ? 'pending' : 'success',
         ]);

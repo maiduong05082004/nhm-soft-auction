@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\Product;
 
 class AuctionSeeder extends Seeder
 {
@@ -13,9 +14,10 @@ class AuctionSeeder extends Seeder
      */
     public function run(): void
     {
+        $products = Product::all();
         $auctions = [
             [
-                'product_id' => 1,
+                'product_id' => $products->random()->first()->id,
                 'start_price' => 20000000,
                 'step_price' => 500000,
                 'start_time' => now(),
@@ -23,7 +25,7 @@ class AuctionSeeder extends Seeder
                 'status' => 'active',
             ],
             [
-                'product_id' => 2,
+                'product_id' => $products->random()->first()->id,
                 'start_price' => 30000000,
                 'step_price' => 1000000,
                 'start_time' => now(),
@@ -31,7 +33,7 @@ class AuctionSeeder extends Seeder
                 'status' => 'active',
             ],
             [
-                'product_id' => 3,
+                'product_id' => $products->random()->first()->id,
                 'start_price' => 3000000,
                 'step_price' => 100000,
                 'start_time' => now(),
@@ -39,7 +41,7 @@ class AuctionSeeder extends Seeder
                 'status' => 'active',
             ],
             [
-                'product_id' => 4,
+                'product_id' => $products->random()->first()->id,
                 'start_price' => 12000000,
                 'step_price' => 500000,
                 'start_time' => now(),
@@ -47,7 +49,7 @@ class AuctionSeeder extends Seeder
                 'status' => 'active',
             ],
             [
-                'product_id' => 5,
+                'product_id' => $products->random()->first()->id,
                 'start_price' => 100000,
                 'step_price' => 10000,
                 'start_time' => now(),
@@ -55,7 +57,7 @@ class AuctionSeeder extends Seeder
                 'status' => 'active',
             ],
             [
-                'product_id' => 6,
+                'product_id' => $products->random()->first()->id,
                 'start_price' => 400000,
                 'step_price' => 25000,
                 'start_time' => now(),
@@ -63,7 +65,7 @@ class AuctionSeeder extends Seeder
                 'status' => 'active',
             ],
             [
-                'product_id' => 7,
+                'product_id' => $products->random()->first()->id,
                 'start_price' => 7000000,
                 'step_price' => 200000,
                 'start_time' => now(),
@@ -71,7 +73,7 @@ class AuctionSeeder extends Seeder
                 'status' => 'active',
             ],
             [
-                'product_id' => 8,
+                'product_id' => $products->random()->first()->id,
                 'start_price' => 2000000,
                 'step_price' => 100000,
                 'start_time' => now(),
@@ -79,7 +81,7 @@ class AuctionSeeder extends Seeder
                 'status' => 'active',
             ],
             [
-                'product_id' => 9,
+                'product_id' => $products->random()->first()->id,
                 'start_price' => 10000000,
                 'step_price' => 500000,
                 'start_time' => now(),
@@ -87,7 +89,7 @@ class AuctionSeeder extends Seeder
                 'status' => 'active',
             ],
             [
-                'product_id' => 10,
+                'product_id' => $products->random()->first()->id,
                 'start_price' => 750000000,
                 'step_price' => 10000000,
                 'start_time' => now(),
