@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Constants\ProductConstants;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Helpers\SlugHelper;
@@ -58,6 +59,7 @@ class ProductResource extends Resource
                     'auction' => 'Đấu giá',
                 ])
                 ->required()
+                ->default('sale')
                 ->live(),
             Forms\Components\TextInput::make('price')
                 ->label('Giá')
@@ -114,6 +116,18 @@ class ProductResource extends Resource
                     'inactive' => 'Dừng hoạt động',
                 ])
                 ->required(),
+            Forms\Components\Select::make('state')
+                ->label('Tình trạng sản phẩm')
+                ->required()
+                ->options(ProductConstants::options('states'))
+                ->default(0),
+            Forms\Components\Select::make('pay_method')
+                ->label('Phương thức thanh toán')
+                ->required()
+                ->options(ProductConstants::options('pay_methods'))
+                ->default(2),
+            Forms\Components\TextInput::make('brand')
+                ->label('Thương hiệu'),
             Forms\Components\FileUpload::make('images')
                 ->label('Hình ảnh')
                 ->multiple()
@@ -226,6 +240,14 @@ class ProductResource extends Resource
                         1 => 'danger'
                     })
                     ->formatStateUsing(fn($state) =>  $state ? 'có' : 'không'),
+                Tables\Columns\TextColumn::make('state')
+                    ->label('Tình trạng sản phẩm')
+                    ->formatStateUsing(fn($state) => ProductConstants::label('states', $state)),
+                Tables\Columns\TextColumn::make('pay_method')
+                    ->label('Phương thức thanh toán')
+                    ->formatStateUsing(fn($state) => ProductConstants::label('pay_methods', $state)),
+                Tables\Columns\TextColumn::make('brand')
+                    ->label("Thương hiệu"),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('category_id')
