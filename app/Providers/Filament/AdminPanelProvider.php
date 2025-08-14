@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Auth\Register;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -24,9 +26,14 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
+            ->authGuard('web')
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)
+            ->registration(Register::class)
+            ->passwordReset()
+            ->emailVerification()
+            ->profile()
             ->brandLogo(asset('images/logo.png'))
             ->brandLogoHeight('1.4rem')
             ->colors([

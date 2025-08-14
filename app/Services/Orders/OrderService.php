@@ -21,38 +21,13 @@ class OrderService extends BaseService implements OrderServiceInterface
         ]);
     }
 
-    public function getAll()
-    {
-        return $this->getRepository('order')->getAll();
-    }
-
-    public function getById($id)
-    {
-        return $this->getRepository('order')->find($id);
-    }
-
-    public function create(array $data)
-    {
-        return $this->createOrder($data);
-    }
-
-    public function update($id, array $data)
-    {
-        return $this->updateOrder($id, $data);
-    }
-
-    public function delete($id)
-    {
-        return $this->getRepository('order')->deleteOne($id);
-    }
-
     public function calculateSubtotal(array $items): float
     {
         $subtotal = 0.0;
         foreach ($items as $item) {
-            $quantity = (float) ($item['quantity'] ?? 0);
+            $quantity = (float)($item['quantity'] ?? 0);
             $productId = $item['product_id'] ?? null;
-            $price = $productId ? (float) (Product::find($productId)?->price ?? 0) : (float) ($item['price'] ?? 0);
+            $price = $productId ? (float)(Product::find($productId)?->price ?? 0) : (float)($item['price'] ?? 0);
             $subtotal += $quantity * $price;
         }
         return $subtotal;
@@ -72,19 +47,18 @@ class OrderService extends BaseService implements OrderServiceInterface
     public function createOrder(array $data)
     {
         $data['subtotal'] = $this->calculateSubtotal($data['items'] ?? []);
-        $shippingFee = (float) ($data['shipping_fee'] ?? 0);
+        $shippingFee = (float)($data['shipping_fee'] ?? 0);
         $data['total'] = $this->calculateTotal($data['items'] ?? [], $shippingFee);
 
-        return $this->getRepository('order')->insertOne($data);
+        return $this->create('order', $data);
     }
 
     public function updateOrder($id, array $data)
     {
         $data['subtotal'] = $this->calculateSubtotal($data['items'] ?? []);
-        $shippingFee = (float) ($data['shipping_fee'] ?? 0);
+        $shippingFee = (float)($data['shipping_fee'] ?? 0);
         $data['total'] = $this->calculateTotal($data['items'] ?? [], $shippingFee);
-
-        return $this->getRepository('order')->updateOne($id, $data);
+        return $this->update('order', $id, $data);
     }
 
     public function getOrderById($id)
@@ -100,7 +74,7 @@ class OrderService extends BaseService implements OrderServiceInterface
     public function calculateOrderTotals(array $data): array
     {
         $data['subtotal'] = $this->calculateSubtotal($data['items'] ?? []);
-        $shippingFee = (float) ($data['shipping_fee'] ?? 0);
+        $shippingFee = (float)($data['shipping_fee'] ?? 0);
         $data['total'] = $this->calculateTotal($data['items'] ?? [], $shippingFee);
         return $data;
     }
@@ -111,12 +85,12 @@ class OrderService extends BaseService implements OrderServiceInterface
         $subtotal = 0.0;
 
         foreach ($order->items as $item) {
-            $qty = (float) ($item->quantity ?? 0);
-            $price = (float) ($item->product?->price ?? 0);
+            $qty = (float)($item->quantity ?? 0);
+            $price = (float)($item->product?->price ?? 0);
             $subtotal += $qty * $price;
         }
 
-        $shippingFee = (float) ($order->shipping_fee ?? 0);
+        $shippingFee = (float)($order->shipping_fee ?? 0);
 
         $order->forceFill([
             'subtotal' => $subtotal,

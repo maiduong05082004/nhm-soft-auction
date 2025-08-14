@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Panel;
 use App\Utils\HelperFunc;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,8 +12,9 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Filament\Models\Contracts\FilamentUser;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasApiTokens;
     use HasFactory;
@@ -21,6 +23,15 @@ class User extends Authenticatable
     use TwoFactorAuthenticatable;
     use SoftDeletes;
 
+    /**
+     * Phải xác thực email mới được truy cập vào admin
+     * @param Panel $panel
+     * @return bool
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->hasVerifiedEmail();
+    }
     /**
      * The attributes that are mass assignable.
      *
@@ -152,5 +163,6 @@ class User extends Authenticatable
     {
         return $this->transactions()->where('type_transaction', 'buy_product')->sum('point_change');
     }
+
 
 }
