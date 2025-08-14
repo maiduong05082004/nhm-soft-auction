@@ -5,18 +5,20 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
-class OrderSeeder extends Seeder
+class OrderDetailSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $orders = [
+        $users = User::all();
+        $order_details = [
             [
                 'code_orders' => 'ORD001',
-                'user_id' => 2,
+                'user_id' => $users->random()->first()->id,
                 'email_receiver' => 'nguyenvanan@email.com',
                 'ship_address' => '123 Nguyễn Huệ, TP.HCM',
                 'payment_method' => 1,
@@ -28,10 +30,10 @@ class OrderSeeder extends Seeder
             ],
             [
                 'code_orders' => 'ORD002',
-                'user_id' => 3,
+                'user_id' => $users->random()->first()->id,
                 'email_receiver' => 'tranthibinh@email.com',
                 'ship_address' => '456 Lê Lợi, Đà Nẵng',
-                'payment_method' => 2,
+                'payment_method' => 0,
                 'shipping_fee' => 25000,
                 'subtotal' => 35000000,
                 'total' => 35025000,
@@ -40,7 +42,7 @@ class OrderSeeder extends Seeder
             ],
             [
                 'code_orders' => 'ORD003',
-                'user_id' => 4,
+                'user_id' => $users->random()->first()->id,
                 'email_receiver' => 'levancuong@email.com',
                 'ship_address' => '789 Trần Phú, Hải Phòng',
                 'payment_method' => 1,
@@ -52,10 +54,10 @@ class OrderSeeder extends Seeder
             ],
             [
                 'code_orders' => 'ORD004',
-                'user_id' => 5,
+                'user_id' => $users->random()->first()->id,
                 'email_receiver' => 'phamthidung@email.com',
                 'ship_address' => '321 Võ Văn Tần, Cần Thơ',
-                'payment_method' => 2,
+                'payment_method' => 0,
                 'shipping_fee' => 35000,
                 'subtotal' => 15000000,
                 'total' => 15035000,
@@ -64,7 +66,7 @@ class OrderSeeder extends Seeder
             ],
             [
                 'code_orders' => 'ORD005',
-                'user_id' => 6,
+                'user_id' => $users->random()->first()->id,
                 'email_receiver' => 'hoangvanem@email.com',
                 'ship_address' => '654 Nguyễn Thị Minh Khai, Nha Trang',
                 'payment_method' => 1,
@@ -76,10 +78,10 @@ class OrderSeeder extends Seeder
             ],
             [
                 'code_orders' => 'ORD006',
-                'user_id' => 7,
+                'user_id' => $users->random()->first()->id,
                 'email_receiver' => 'vuthiphuong@email.com',
                 'ship_address' => '987 Phan Đình Phùng, Huế',
-                'payment_method' => 2,
+                'payment_method' => 0,
                 'shipping_fee' => 25000,
                 'subtotal' => 500000,
                 'total' => 525000,
@@ -88,7 +90,7 @@ class OrderSeeder extends Seeder
             ],
             [
                 'code_orders' => 'ORD007',
-                'user_id' => 8,
+                'user_id' => $users->random()->first()->id,
                 'email_receiver' => 'dangvangiang@email.com',
                 'ship_address' => '147 Trần Hưng Đạo, Vũng Tàu',
                 'payment_method' => 1,
@@ -100,10 +102,10 @@ class OrderSeeder extends Seeder
             ],
             [
                 'code_orders' => 'ORD008',
-                'user_id' => 9,
+                'user_id' => $users->random()->first()->id,
                 'email_receiver' => 'ngothihoa@email.com',
                 'ship_address' => '258 Lê Thánh Tông, Quảng Ninh',
-                'payment_method' => 2,
+                'payment_method' => 0,
                 'shipping_fee' => 20000,
                 'subtotal' => 2500000,
                 'total' => 2520000,
@@ -112,7 +114,7 @@ class OrderSeeder extends Seeder
             ],
             [
                 'code_orders' => 'ORD009',
-                'user_id' => 10,
+                'user_id' => $users->random()->first()->id,
                 'email_receiver' => 'lyvaninh@email.com',
                 'ship_address' => '369 Đồng Khởi, Bình Dương',
                 'payment_method' => 1,
@@ -124,10 +126,10 @@ class OrderSeeder extends Seeder
             ],
             [
                 'code_orders' => 'ORD010',
-                'user_id' => 1,
+                'user_id' => $users->random()->first()->id,
                 'email_receiver' => 'admin@auction.com',
                 'ship_address' => '741 Nguyễn Trãi, Hà Nội',
-                'payment_method' => 2,
+                'payment_method' => 0,
                 'shipping_fee' => 50000,
                 'subtotal' => 80000000,
                 'total' => 80050000,
@@ -136,8 +138,8 @@ class OrderSeeder extends Seeder
             ],
         ];
 
-        foreach ($orders as $order) {
-            DB::table('orders')->insert($order);
+        foreach ($order_details as $order_detail) {
+            DB::table('order_details')->insert($order_detail);
         }
     }
 }

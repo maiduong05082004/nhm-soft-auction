@@ -6,8 +6,7 @@ use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Filament\Resources\OrderResource\Widgets\OrderStats;
-use App\Models\Order;
-use App\Models\Payment;
+use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Utils\HelperFunc;
 use Filament\Forms;
@@ -22,22 +21,22 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
-use App\Services\Orders\OrderService;
+use App\Services\Orders\OrderDetailService;
 
 class OrderResource extends Resource
 {
-    protected static ?string $model = Order::class;
+    protected static ?string $model = OrderDetail::class;
     protected static ?string $recordTitleAttribute = 'number';
     protected static ?string $navigationLabel = 'Đơn hàng';
     protected static ?string $pluralModelLabel = 'Đơn hàng';
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?int $navigationSort = 1;
 
-    protected static ?OrderService $orderServiceInstance = null;
+    protected static ?OrderDetailService $orderDetailServiceInstance = null;
 
-    protected static function orderService(): OrderService
+    protected static function orderDetailService(): OrderDetailService
     {
-        return static::$orderServiceInstance ??= app(OrderService::class);
+        return static::$orderDetailServiceInstance ??= app(OrderDetailService::class);
     }
 
     public static function form(Form $form): Form
@@ -65,7 +64,7 @@ class OrderResource extends Resource
                                     ->label('Tổng tiền sản phẩm')
                                     ->content(function (Forms\Get $get): string {
                                         $items = $get('items') ?? [];
-                                        return static::orderService()->formatCurrency(static::orderService()->calculateSubtotal($items));
+                                        return static::orderDetailService()->formatCurrency(static::orderDetailService()->calculateSubtotal($items));
                                     })
                                     ->columnSpan('full')
                                     ->extraAttributes(['class' => 'text-lg font-bold text-blue-600']),
@@ -82,26 +81,26 @@ class OrderResource extends Resource
                                     ->content(function (Forms\Get $get): string {
                                         $items = $get('items') ?? [];
                                         $shippingFee = (float) ($get('shipping_fee') ?: 0);
-                                        return static::orderService()->formatCurrency(static::orderService()->calculateTotal($items, $shippingFee));
+                                        return static::orderDetailService()->formatCurrency(static::orderDetailService()->calculateTotal($items, $shippingFee));
                                     })
                                     ->columnSpan('full')
                                     ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
                             ]),
                     ])
-                    ->columnSpan(['lg' => fn(?Order $record) => $record === null ? 3 : 2]),
+                    ->columnSpan(['lg' => fn(?OrderDetail $record) => $record === null ? 3 : 2]),
 
                 Forms\Components\Section::make()
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
                             ->label('Created at')
-                            ->content(fn(Order $record): ?string => $record->created_at?->diffForHumans()),
+                            ->content(fn(OrderDetail $record): ?string => $record->created_at?->diffForHumans()),
 
                         Forms\Components\Placeholder::make('updated_at')
                             ->label('Last modified at')
-                            ->content(fn(Order $record): ?string => $record->updated_at?->diffForHumans()),
+                            ->content(fn(OrderDetail $record): ?string => $record->updated_at?->diffForHumans()),
                     ])
                     ->columnSpan(['lg' => 1])
-                    ->hidden(fn(?Order $record) => $record === null),
+                    ->hidden(fn(?OrderDetail $record) => $record === null),
             ])
             ->columns(3);
     }
@@ -276,7 +275,7 @@ class OrderResource extends Resource
                 ->dehydrated()
                 ->required()
                 ->maxLength(32)
-                ->unique(Order::class, 'code_orders', ignoreRecord: true),
+                ->unique(OrderDetail::class, 'code_orders', ignoreRecord: true),
 
             Forms\Components\Select::make('user_id')
                 ->label('Khách hàng')

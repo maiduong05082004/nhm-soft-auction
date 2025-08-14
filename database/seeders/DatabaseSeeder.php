@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             BannerSeeder::class,
             AuctionSeeder::class,
             ArticleSeeder::class,
-            OrderSeeder::class,
+            OrderDetailSeeder::class,
             EvaluateSeeder::class,
             TransactionSeeder::class,
         ]);

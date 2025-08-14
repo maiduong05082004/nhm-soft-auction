@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Product;
 class OrderDetail extends Model
 {
     use HasFactory;
@@ -14,15 +14,22 @@ class OrderDetail extends Model
 
     protected $fillable = [
         'id',
-        'order_id',
-        'product_id',
-        'quantity',
+        'code_orders',
+        'user_id',
+        'email_receiver',
+        'ship_address',
+        'payment_method',
+        'shipping_fee',
+        'subtotal',
         'total',
+        'note',
+        'canceled_reason',
+        'canceled_at',
+        'status',
     ];
 
     protected $casts = [
-        'quantity' => 'float',
-        'total' => 'float',
+        'status' => OrderStatus::class,
     ];
 
     protected static function boot()
@@ -31,26 +38,20 @@ class OrderDetail extends Model
         static::creating(function ($model) {
             $model->id = HelperFunc::getTimestampAsId();
         });
-
-        static::saving(function (OrderDetail $model) {
-            $price = 0.0;
-            if ($model->relationLoaded('product') && $model->product) {
-                $price = (float) $model->product->price;
-            } else if (! empty($model->product_id)) {
-                $price = (float) (Product::find($model->product_id)?->price ?? 0);
-            }
-            $quantity = (float) ($model->quantity ?? 0);
-            $model->total = $quantity * $price;
-        });
     }
-
-    public function order()
+    public function user()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(User::class);
     }
 
-    public function product()
+    public function items()
     {
-        return $this->belongsTo(Product::class);
+        return $this->hasMany(Order::class);
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
 }
