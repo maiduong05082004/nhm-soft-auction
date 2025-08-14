@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Constants\ProductConstants;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
-use App\Helpers\SlugHelper;
 use App\Models\Product;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;

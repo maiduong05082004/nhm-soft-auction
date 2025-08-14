@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Permission\RoleConstant;
 use App\Filament\Resources\MembershipPlansResource\Pages;
 use App\Models\MembershipPlan;
 use Filament\Forms\Form;
@@ -22,6 +23,10 @@ class MembershipPlansResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Gói thành viên';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
+    }
     public static function form(Form $form): Form
     {
         return $form
