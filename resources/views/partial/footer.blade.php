@@ -1,14 +1,14 @@
-<footer class="footer footer-horizontal footer-center bg-white gap-y-2">
-    <img src="/images/logo-footer.png" class="w-32" alt="">
-    <div class="flex md:flex-col flex-row text-left">
-        <nav class="flex md:flex-row flex-col gap-4 mt-3">
-            <a class="link link-hover">Đấu giá Takada Ooku</a>
-            <a class="link link-hover">Chợ Trời Takada Ooku</a>
-            <a class="link link-hover">Mua Sắm Takada Ooku</a>
-            <a class="link link-hover">Takada Ooku Việt Name</a>
+<footer class=" bg-white gap-y-2 px-3 flex flex-col items-center ">
+    <h3 class="mt-2 font-bold">Giới Thiệu Về Takada Ooku</h3>
+    <div class="flex flex-col text-left w-full items-start">
+        <nav class="flex sm:flex-row flex-col gap-4 mt-1 sm:justify-center w-full">
+            <a class="link link-hover block">Đấu giá Takada Ooku</a>
+            <a class="link link-hover block">Chợ Trời Takada Ooku</a>
+            <a class="link link-hover block">Mua Sắm Takada Ooku</a>
+            <a class="link link-hover  block">Takada Ooku Việt Name</a>
         </nav>
 
-        <nav class="flex md:flex-row flex-col gap-4 mt-3">
+        <nav class="flex sm:flex-row flex-col gap-4 mt-3 flex-wrap sm:justify-center w-full">
             <a class="link link-hover">Chính Sách Bảo Mật</a>
             <a class="link link-hover">Trung Tâm Bảo Mật</a>
             <a class="link link-hover">Hướng Dẫn Sử Dụng Tài Khoản Hội Viên</a>
@@ -45,6 +45,6 @@
         </div>
     </nav>
     <aside>
-        <p>Copyright © 2025 - All right reserved by ACME Industries Ltd</p>
+        <p class="text-center text-sm my-4">Copyright © 2025 - All right reserved by ACME Industries Ltd</p>
     </aside>
 </footer>
