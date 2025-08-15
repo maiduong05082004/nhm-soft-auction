@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Permission\RoleConstant;
 use App\Filament\Resources\ArticleResource\Pages;
 use App\Models\Article;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
@@ -22,7 +23,10 @@ class ArticleResource extends Resource
     protected static ?string $modelLabel = 'Bài viết';
     protected static ?string $navigationLabel = 'Bài viết';
     protected static ?string $pluralModelLabel = 'Tin tức';
-
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
+    }
     public static function form(Form $form): Form
     {
         return $form

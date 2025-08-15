@@ -75,8 +75,20 @@ class Product extends Model
     {
         return $this->hasMany(OrderDetail::class);
     }
+
     public function firstImage()
     {
         return $this->hasOne(ProductImage::class, 'product_id')->latest();
+    }
+
+    public function mainImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('position', 0);
+    }
+
+    public function getMainImage()
+    {
+        $mainImage = $this->mainImage()->first();
+        return $mainImage ? $mainImage->image_url : null;
     }
 }
