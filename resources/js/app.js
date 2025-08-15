@@ -1,3 +1,7 @@
+import $ from 'jquery';
+
+window.$ = window.jQuery = $;
+
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/thumbs';

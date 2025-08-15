@@ -6,10 +6,14 @@ use App\Repositories\BaseRepository;
 use App\Repositories\BaseRepositoryInterface;
 use App\Repositories\Orders\OrderRepository;
 use App\Repositories\Orders\OrderRepositoryInterface;
-use App\Repositories\Products\ProductRepository;
-use App\Repositories\Products\ProductRepositoryInterface;
 use App\Repositories\Users\UserRepository;
 use App\Repositories\Users\UserRepositoryInterface;
+use App\Repositories\Cart\CartRepository;
+use App\Repositories\Cart\CartRepositoryInterface;
+use App\Repositories\Orders\OrderDetailRepository;
+use App\Repositories\Orders\OrderDetailRepositoryInterface;
+use App\Repositories\Products\ProductRepository;
+use App\Repositories\Products\ProductRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryProvider extends ServiceProvider
@@ -20,10 +24,11 @@ class RepositoryProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(BaseRepositoryInterface::class, BaseRepository::class);
-        $this->app->bind(OrderRepositoryInterface::class, OrderRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
-
+        $this->app->bind(CartRepositoryInterface::class, CartRepository::class);
+        $this->app->bind(OrderDetailRepositoryInterface::class, OrderDetailRepository::class);
+        $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
     }
 
     /**
