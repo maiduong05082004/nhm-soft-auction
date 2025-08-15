@@ -3,6 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Constants\ProductConstants;
+use App\Enums\Product\ProductPaymentMethod;
+use App\Enums\Product\ProductState;
+use App\Enums\Product\ProductStatus;
+use App\Enums\Product\ProductTypeSale;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
@@ -17,8 +21,7 @@ use Filament\Tables\Table;
 use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Database\Eloquent\Builder;
 use App\Utils\HelperFunc;
-use Illuminate\Support\HtmlString;
-
+use Filament\Tables\Actions\Action as TableAction;
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
@@ -53,12 +56,9 @@ class ProductResource extends Resource
 
             Forms\Components\Select::make('type_sale')
                 ->label('Dạng sản phẩm')
-                ->options([
-                    'sale' => 'Bán trực tiếp',
-                    'auction' => 'Đấu giá',
-                ])
+                ->options(ProductTypeSale::getOptions())
                 ->required()
-                ->default('sale')
+                ->default(ProductTypeSale::SALE)
                 ->live(),
             Forms\Components\TextInput::make('price')
                 ->label('Giá')
@@ -67,38 +67,38 @@ class ProductResource extends Resource
             Forms\Components\TextInput::make('stock')
                 ->label('Số lượng')
                 ->numeric()
+                ->minValue(1)
                 ->required(),
             Forms\Components\TextInput::make('min_bid_amount')
                 ->label('Giá Dưới')
                 ->numeric()
-                ->requiredIf('type_sale', 'auction')
-                ->visible(fn($get) => $get('type_sale') === 'auction'),
+                ->requiredIf('type_sale', ProductTypeSale::AUCTION)
+                ->visible(fn($get) => $get('type_sale') === ProductTypeSale::AUCTION),
             Forms\Components\TextInput::make('max_bid_amount')
                 ->label('Giá Trên')
                 ->numeric()
-                ->requiredIf('type_sale', 'auction')
+                ->requiredIf('type_sale', ProductTypeSale::AUCTION)
+                ->visible(fn($get) => $get('type_sale') === ProductTypeSale::AUCTION)
                 ->rules([
-                    fn($get) => function (string $attribute, $value, $fail) use ($get) {
-                        if ($get('type_sale') === 'auction') {
+                    fn($get) => function ($attribute, $value, $fail) use ($get) {
+                        if ($get('type_sale') === ProductTypeSale::AUCTION) {
                             $min = $get('min_bid_amount');
                             if ($min !== null && $value <= $min) {
                                 $fail('Giá trên phải lớn hơn giá dưới.');
                             }
                         }
                     }
-                ])
-                ->visible(fn($get) => $get('type_sale') === 'auction'),
+                ]),
             Forms\Components\DateTimePicker::make('start_time')
                 ->label('Thời gian bắt đầu')
                 ->seconds(true)
                 ->required()
-                ->visible(fn($get) => $get('type_sale') === 'auction'),
-
+                ->visible(fn($get) => $get('type_sale') === ProductTypeSale::AUCTION),
             Forms\Components\DateTimePicker::make('end_time')
                 ->label('Thời gian kết thúc')
                 ->seconds(true)
                 ->required()
-                ->visible(fn($get) => $get('type_sale') === 'auction'),
+                ->visible(fn($get) => $get('type_sale') === ProductTypeSale::AUCTION),
             SelectTree::make('category_id')
                 ->label('Danh mục')
                 ->formatStateUsing(fn($state) => (string) $state)
@@ -110,24 +110,22 @@ class ProductResource extends Resource
 
             Forms\Components\Select::make('status')
                 ->label('Trạng thái')
-                ->options([
-                    'active' => 'Hoạt động',
-                    'inactive' => 'Dừng hoạt động',
-                ])
+                ->options(ProductStatus::getOptions())
                 ->required(),
             Forms\Components\Select::make('state')
                 ->label('Tình trạng sản phẩm')
                 ->required()
-                ->options(ProductConstants::options('states'))
-                ->default(0),
+                ->options(ProductState::getOptions())
+                ->default(ProductState::UNUSED),
             Forms\Components\Select::make('pay_method')
                 ->label('Phương thức thanh toán')
                 ->required()
-                ->options(ProductConstants::options('pay_methods'))
-                ->default(2),
+                ->options(ProductPaymentMethod::getOptions())
+                ->default(ProductPaymentMethod::BOTH),
             Forms\Components\TextInput::make('brand')
                 ->label('Thương hiệu'),
             Forms\Components\FileUpload::make('images')
+                ->required()
                 ->label('Hình ảnh')
                 ->multiple()
                 ->image()
@@ -172,19 +170,11 @@ class ProductResource extends Resource
                     ->sortable()
                     ->label('Tên')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('slug')
-                    ->label('Đường Dẫn')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Giá')
                     ->money('VND')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('description')
-                    ->label('Miêu tả')
-                    ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state))
-                    ->searchable()
-                    ->limit(50),
                 Tables\Columns\TextColumn::make('view')
                     ->label('Lượt xem')
                     ->sortable(),
@@ -274,7 +264,6 @@ class ProductResource extends Resource
                         1 => 'Có',
                         0 => 'Không',
                     ]),
-
                 Tables\Filters\Filter::make('price_range')
                     ->form([
                         Forms\Components\TextInput::make('min_price')
@@ -305,7 +294,6 @@ class ProductResource extends Resource
 
                 Tables\Filters\TrashedFilter::make(),
             ])
-
             ->actions([
                 Tables\Actions\ViewAction::make('View')
                     ->label('Xem'),
@@ -365,6 +353,16 @@ class ProductResource extends Resource
                                 ->send();
                         })
                 ]),
+            ])
+            ->emptyStateHeading("Chưa có sản phẩm nào")
+            ->emptyStateDescription('Một khi bạn đăng bán 1 sản phẩm, nó sẽ xuất hiện ở đây.')
+            ->emptyStateIcon("heroicon-o-rectangle-stack")
+            ->emptyStateActions([
+                TableAction::make('create')
+                    ->label('Đăng sản phẩm')
+                    ->url(route('filament.admin.resources.products.create'))
+                    ->icon('heroicon-m-plus')
+                    ->button(),
             ]);
     }
 
@@ -381,6 +379,7 @@ class ProductResource extends Resource
             'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
+            'view' => Pages\ViewProducts::route('/{record}'),
         ];
     }
 }

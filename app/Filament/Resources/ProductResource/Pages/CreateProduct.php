@@ -11,6 +11,8 @@ class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
 
+    protected static ?string $title = "Đăng bán sản phẩm";
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if ($data['type_sale'] === 'sale') {
@@ -51,13 +53,5 @@ class CreateProduct extends CreateRecord
             ]);
             $nu++;
         }
-    }
-
-    public function getBreadcrumbs(): array
-    {
-        return [
-            'products' => 'Sản phẩm',
-            'products' => 'Tạo mới',
-        ];
     }
 }
