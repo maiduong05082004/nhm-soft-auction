@@ -6,20 +6,22 @@
         $mainImage = $images[0] ?? null;
     @endphp
 
-    <div class="breadcrumbs text-sm">
-        <ul>
-            <li><a>Trang chủ</a></li>
-            <li><a>Sản phẩm</a></li>
-            <li>{{ $product->name }}</li>
-        </ul>
-    </div>
+
     <div class="max-w-6xl mx-auto px-4 py-6">
-        <div class="grid grid-cols-12 gap-6">
+        <div class="breadcrumbs text-sm">
+            <ul>
+                <li><a>Trang chủ</a></li>
+                <li><a>Sản phẩm</a></li>
+                <li>{{ $product->name }}</li>
+            </ul>
+        </div>
+
+        <div class="grid grid-cols-12 gap-6 bg-white rounded-lg shadow p-4">
             <div class="col-span-12 lg:col-span-7">
                 <div class="bg-white rounded-lg shadow p-4">
                     <div class="aspect-[4/3] w-full overflow-hidden rounded mb-4">
                         <img id="main-image"
-                            src="{{ $product_images->first()->image_url ? asset('storage/' . $product_images->first()->image_url) : 'https://via.placeholder.com/800x600?text=No+Image' }}"
+                            src="{{ isset($product_images->first()->image_url) ? asset('storage/' . $product_images->first()->image_url) : 'https://via.placeholder.com/800x600?text=No+Image' }}"
                             class="w-full h-full object-contain" alt="{{ $product->name }}">
                     </div>
 
@@ -32,6 +34,21 @@
                             </button>
                         @endforeach
                     </div>
+                </div>
+                <div class="text-base font-bold text-gray-600 pt-4">Sản phẩm này cũng phổ biến</div>
+                <div class="grid grid-cols-4 gap-4 pt-4">
+                    @foreach ($product_category as $item)
+                        <a href="{{ route('products.show', $item) }}" class="block max-w-36">
+                            @php
+                                $thumb = optional($item->images->first())->image_url;
+                            @endphp
+                            <img class="w-36 h-36 object-cover rounded" src="{{ $thumb ? asset('storage/' . $thumb) : asset('images/default-user-icon.png') }}" alt="{{ $item->name }}" />
+                            <div class="mt-2">
+                                <h2 class="line-clamp-1 text-xs">{{ $item->name }}</h2>
+                                <p class="text-sm text-red-500 font-bold"><span class="text-[10px] text-[#6c6a69]">Mua ngay</span> {{ number_format($item->price, 0, ',', '.') }} ₫</p>
+                            </div>
+                        </a>
+                    @endforeach
                 </div>
             </div>
 
@@ -59,30 +76,40 @@
                         <span class="text-sm text-gray-600">Lượt xem: {{ number_format($product->view ?? 0) }}</span>
                     </div>
 
-                    <div class="text-3xl font-bold text-red-600">
-                        @if ($product->type_sale === 'auction')
+                    <div class="text-2xl font-bold text-red-600">
+                        @if (isset($auction) && $product->type_sale === 'auction')
                             {{ number_format($auction->step_price, 0, ',', '.') }} ₫
                         @else
-                            {{ number_format($product->price, 0, ',', '.') }} ₫
+                            <div>
+                                <span class="text-sm text-[#6c6a69]">Hiện tại</span>
+                                <span class="text-2xl font-bold text-red-600">
+                                    {{ number_format($product->price, 0, ',', '.') }} ₫
+                                </span>
+                            </div>
                         @endif
                     </div>
 
                     @if ($product->type_sale === 'auction')
-                        <div class="text-sm text-gray-700 space-y-1">
-                            <p>Mức đặt giá tối thiểu: <strong>{{ number_format($product->min_bid_amount, 0, ',', '.') }}
+                        <div class="text-sm text-[#6c6a69] space-y-1">
+                            <p><span class="font-bold">Mức đặt giá tối thiểu:</span> <strong
+                                    class="text-gray-900">{{ number_format($product->min_bid_amount, 0, ',', '.') }}
                                     ₫</strong></p>
                             @if ($product->max_bid_amount)
-                                <p>Mức đặt giá tối đa: <strong>{{ number_format($product->max_bid_amount, 0, ',', '.') }}
+                                <p><span class="font-bold">Mua ngay:</span> <strong
+                                        class="text-gray-900">{{ number_format($product->max_bid_amount, 0, ',', '.') }}
                                         ₫</strong></p>
                             @endif
                             @if ($product->start_time && $product->end_time)
-                                <p>Thời gian: {{ $product->start_time }} → {{ $product->end_time }}</p>
+                                <p><span class="font-bold">Thời gian:</span> <span
+                                        class="text-gray-900">{{ $product->start_time }} → {{ $product->end_time }}</span>
+                                </p>
                             @endif
                         </div>
                     @endif
 
                     <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Số lượng còn:</label>
+                        <label class="block text-sm font-medium text-gray-700"><span class="font-bold text-[#6c6a69]">Số
+                                lượng còn:</span></label>
                         <div class="inline-flex items-center px-3 py-1 rounded bg-gray-100 text-gray-700">
                             {{ $product->stock ?? 0 }}
                         </div>
@@ -91,7 +118,7 @@
                     <div class="pt-2">
                         @if ($product->type_sale === 'auction')
                             <a href="#"
-                                class="w-full inline-flex items-center justify-center px-4 py-3 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-lg">
+                                class="w-full inline-flex items-center justify-center px-4 py-3 btn btn-neutral text-white font-semibold rounded-lg">
                                 Đặt giá thầu
                             </a>
                         @else
@@ -102,7 +129,7 @@
                                     <input type="number" name="quantity" value="1" min="1"
                                         class="input input-bordered w-20">
                                 </div>
-                                <button type="submit" class="btn btn-primary w-full">
+                                <button type="submit" class="btn btn-neutral w-full">
                                     Thêm vào giỏ hàng
                                 </button>
                             </form>
@@ -186,10 +213,10 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="mt-6">
-            <h3 class="font-semibold mb-2">Mô tả sản phẩm</h3>
-            {!! $product->description ?? '' !!}
+            <div class="col-span-12 bg-white p-4">
+                <h3 class="font-semibold mb-2">Mô tả sản phẩm</h3>
+                {!! $product->description ?? '' !!}
+            </div>
         </div>
     </div>
 @endsection

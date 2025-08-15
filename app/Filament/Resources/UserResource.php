@@ -208,7 +208,7 @@ class UserResource extends Resource
                 Components\Section::make('Lịch sử dòng tiền')
                     ->schema([
                         Components\ViewEntry::make('transaction_stats')
-                            ->view('filament.user-transaction-stats')
+                            ->view('filament.admin.resources.users.user-transaction-stats')
                             ->columnSpanFull(),
                     ]),
 

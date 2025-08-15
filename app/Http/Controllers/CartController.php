@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\Cart\CartServiceInterface;
-use App\Services\Order\OrderServiceInterface;
+use App\Services\Orders\OrderDetailServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,7 +12,7 @@ class CartController extends Controller
     protected $cartService;
     protected $orderService;
 
-    public function __construct(CartServiceInterface $cartService, OrderServiceInterface $orderService)
+    public function __construct(CartServiceInterface $cartService, OrderDetailServiceInterface $orderService)
     {
         $this->cartService = $cartService;
         $this->orderService = $orderService;
@@ -20,10 +20,6 @@ class CartController extends Controller
 
     public function addToCart(Request $request, $productId)
     {
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!');
-        }
-
         $quantity = $request->input('quantity', 1);
         $userId = Auth::id();
 
@@ -38,10 +34,6 @@ class CartController extends Controller
 
     public function index()
     {
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để xem giỏ hàng!');
-        }
-
         $userId = Auth::id();
         $result = $this->cartService->getUserCart($userId);
 
@@ -57,10 +49,6 @@ class CartController extends Controller
 
     public function checkout()
     {
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để thanh toán!');
-        }
-
         $userId = Auth::id();
         $result = $this->cartService->getUserCart($userId);
 
@@ -80,10 +68,6 @@ class CartController extends Controller
 
     public function processCheckout(Request $request)
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
-
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -119,7 +103,7 @@ class CartController extends Controller
         if ($result['success']) {
             $orderDetail = $result['data']['orderDetail'];
             $payment = $result['data']['payment'];
-            return view('pages.payment.qr-payment', compact('orderDetail', 'payment'));
+            return view('filament.admin.resources.orders.qr-code', compact('orderDetail', 'payment'));
         } else {
             return redirect()->back()->with('error', $result['message']);
         }
@@ -150,10 +134,6 @@ class CartController extends Controller
 
     public function updateQuantity(Request $request)
     {
-        if (!Auth::check()) {
-            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập!'], 401);
-        }
-
         $request->validate([
             'product_id' => 'required|integer',
             'quantity' => 'required|integer|min:1|max:999'
@@ -171,10 +151,6 @@ class CartController extends Controller
 
     public function removeItem(Request $request)
     {
-        if (!Auth::check()) {
-            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập!'], 401);
-        }
-
         $request->validate([
             'product_id' => 'required|integer'
         ]);
@@ -191,10 +167,6 @@ class CartController extends Controller
 
     public function clearCart()
     {
-        if (!Auth::check()) {
-            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập!'], 401);
-        }
-
         $userId = Auth::id();
         $result = $this->cartService->clearCart($userId);
 

@@ -1,4 +1,4 @@
-@extends('components.layouts.app')
+@extends('layouts.app')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -29,9 +29,8 @@
                     </div>
                 </div>
             </div>
-            
             <div class="space-x-4">
-                <a href="{{ route('products.index') }}" class="btn btn-primary">
+                <a href="" class="btn btn-neutral">
                     Tiếp tục mua sắm
                 </a>
                 <a href="{{ route('cart.index') }}" class="btn btn-outline">

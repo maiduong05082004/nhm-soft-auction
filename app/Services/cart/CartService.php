@@ -109,7 +109,6 @@ class CartService implements CartServiceInterface
                 throw new Exception('Số lượng phải lớn hơn 0!');
             }
 
-            // Kiểm tra sản phẩm có tồn tại và active không
             $product = Product::where('id', $productId)
                             ->where('status', 'active')
                             ->whereNull('deleted_at')

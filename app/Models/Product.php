@@ -91,4 +91,10 @@ class Product extends Model
         $mainImage = $this->mainImage()->first();
         return $mainImage ? $mainImage->image_url : null;
     }
+
+    public function getRouteKey(): mixed
+    {
+        return $this->slug;
+    }
+
 }
