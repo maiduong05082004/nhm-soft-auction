@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -16,10 +17,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('pages.dashboard');
-
-});
+Route::get('/', [DashboardController::class,'index'])->name('home');
 
 Route::get('/verify/{id}/{hash}', [\App\Http\Controllers\AuthController::class, 'verify'])->name('verify');
 
@@ -31,6 +29,10 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+});
+
+Route::prefix('tin-tuc')->group(function () {
+    Route::get('{slug}',[\App\Http\Controllers\NewsController::class, 'article']);
 });
 
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');

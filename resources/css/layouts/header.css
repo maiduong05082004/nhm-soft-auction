@@ -1,7 +1,61 @@
-@layer utilities {
-    header {
-        @apply bg-white shadow-sm;
+
+@theme {
+  --animate-header-fade-in: fadeIn 0.3s ease-out;
+  
+  --animate-slide-in-right: slideInRight 0.3s ease-out forwards;
+  --animate-slide-out-right: slideOutRight 0.3s ease-out forwards;
+  
+  --animate-popup-fade-in: popupFadeIn 0.3s ease-out forwards;
+  --animate-popup-fade-out: popupFadeOut 0.3s ease-out forwards;
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
     }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
 
-};
+  @keyframes slideOutRight {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes popupFadeIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes popupFadeOut {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+  }
+}

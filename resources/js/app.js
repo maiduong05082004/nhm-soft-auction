@@ -1,10 +1,13 @@
-import $ from 'jquery';
 
-window.$ = window.jQuery = $;
 
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/thumbs';
+
+
+import $ from 'jquery';
+
+window.$ = window.jQuery = $;
 
 import Swiper from 'swiper';
 import { Navigation, Thumbs, FreeMode } from 'swiper/modules';

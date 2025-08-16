@@ -8,6 +8,9 @@
     <title>@yield('title', 'Auctions')</title>
     @include('partial.head')
     @vite(['resources/css/app.css'])
+    @livewireStyles
+    @livewireScripts
+    <script defer src="//unpkg.com/alpinejs"></script>
 </head>
 
 <body class="bg-[#F2F1EB] text-gray-800 font-roboto">

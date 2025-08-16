@@ -1,13 +1,13 @@
 import { defineConfig } from 'vite'
 import laravel, { refreshPaths } from 'laravel-vite-plugin'
-
+import tailwindcss from 'tailwindcss' // Sử dụng import thay vì require
+import autoprefixer from 'autoprefixer' // Sử dụng import thay vì require
 export default defineConfig({
     plugins: [
         laravel({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
-                'resources/js/partials/menu-mobile.js',
                 'resources/js/partials/slide.js'
             ],
             refresh: [
@@ -24,8 +24,8 @@ export default defineConfig({
     css: {
         postcss: {
             plugins: [
-                require('tailwindcss'),
-                require('autoprefixer'),
+                tailwindcss,  // Sử dụng require để gọi tailwindcss
+                autoprefixer,
             ],
         },
     },
