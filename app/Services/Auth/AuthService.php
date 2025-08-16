@@ -19,7 +19,7 @@ class AuthService extends BaseService implements AuthServiceInterface
     {
         try {
             /**
-             * @var $user User
+             * @var User $user
              */
             $user = $this->getRepository('user')->find($id);
             if (!$user) return false;

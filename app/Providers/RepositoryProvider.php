@@ -4,8 +4,6 @@ namespace App\Providers;
 
 use App\Repositories\BaseRepository;
 use App\Repositories\BaseRepositoryInterface;
-use App\Repositories\Orders\OrderRepository;
-use App\Repositories\Orders\OrderRepositoryInterface;
 use App\Repositories\Users\UserRepository;
 use App\Repositories\Users\UserRepositoryInterface;
 use App\Repositories\Cart\CartRepository;

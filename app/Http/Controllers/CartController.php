@@ -141,7 +141,6 @@ class CartController extends Controller
 
         $userId = Auth::id();
         $result = $this->cartService->updateQuantity($userId, $request->product_id, $request->quantity);
-
         if ($result['success']) {
             return response()->json($result);
         } else {
@@ -157,7 +156,6 @@ class CartController extends Controller
 
         $userId = Auth::id();
         $result = $this->cartService->removeItem($userId, $request->product_id);
-
         if ($result['success']) {
             return response()->json($result);
         } else {

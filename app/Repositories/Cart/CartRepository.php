@@ -12,21 +12,6 @@ class CartRepository extends BaseRepository implements CartRepositoryInterface
         return Cart::class;
     }
 
-    public function create(array $data)
-    {
-        return $this->insertOne($data);
-    }
-
-    public function update($id, array $data)
-    {
-        return $this->updateOne($id, $data);
-    }
-
-    public function delete($id)
-    {
-        return $this->deleteOne($id);
-    }
-
     public function findByUserAndProduct(int $userId, int $productId)
     {
         return $this->model
