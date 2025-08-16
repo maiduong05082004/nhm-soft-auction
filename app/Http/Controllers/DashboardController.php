@@ -20,9 +20,6 @@ class DashboardController extends Controller
     public function index()  {
         $products = $this->productService->getAll('product');
         $categories = $this->categoryService->getAll('category');
-        // dd($categories);
-        // $product::paginate(4);
-        // dd($products);
         return view('pages.dashboard', compact('products', 'categories'));
     }
 }
