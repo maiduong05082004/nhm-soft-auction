@@ -1,3 +1,4 @@
+@import './layouts/header.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
