@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,13 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 });
+
+
+
+Route::get('/file/{file_path}', [FileController::class, 'loadfile'])
+    ->where('file_path', '.*')
+    ->name('loadfile');
+
 
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 

@@ -32,8 +32,6 @@ class AdminPanelProvider extends PanelProvider
             ->login(Login::class)
             ->registration(Register::class)
             ->passwordReset()
-            ->emailVerification()
-            ->profile()
             ->brandLogo(asset('images/logo-removebg.png'))
             ->brandLogoHeight('1.4rem')
             ->colors([

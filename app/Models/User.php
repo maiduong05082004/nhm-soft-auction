@@ -140,6 +140,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Auction::class, 'winner_id');
     }
 
+    public function creditCards()
+    {
+        return $this->hasMany(CreditCard::class);
+    }
+
     public function getDynamicCurrentBalanceAttribute()
     {
         $balance = $this->transactions()->sum('point_change');

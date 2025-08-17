@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 interface BaseRepositoryInterface
 {
 
-
+    public function query() : \Illuminate\Database\Eloquent\Builder;
     public function getAll(array $conditions = [], array $with = [], array $joins = []): Collection;
 
     public function find($id): ?Model;

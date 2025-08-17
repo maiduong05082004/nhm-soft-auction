@@ -30,6 +30,11 @@ abstract class BaseRepository implements BaseRepositoryInterface
 
     abstract public function getModel(): string;
 
+    public function query(): \Illuminate\Database\Eloquent\Builder
+    {
+        return $this->model->query();
+    }
+
     public function getAll(array $conditions = [], array $with = [], array $joins = []): Collection
     {
         $query = $this->model->newQuery();

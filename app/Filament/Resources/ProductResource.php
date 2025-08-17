@@ -22,6 +22,8 @@ use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Database\Eloquent\Builder;
 use App\Utils\HelperFunc;
 use Filament\Tables\Actions\Action as TableAction;
+use Illuminate\Support\Str;
+
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
@@ -39,10 +41,13 @@ class ProductResource extends Resource
                 ->label('Tên')
                 ->required()
                 ->maxLength(255)
-                ->live(debounce: 1000)
+                ->live(debounce: 500)
                 ->afterStateUpdated(function ($state, callable $set) {
-                    if (!$state) return;
-                    $baseSlug = \Illuminate\Support\Str::slug($state);
+                    if (!$state){
+                        $set('slug', '');
+                        return;
+                    };
+                    $baseSlug = Str::slug($state);
                     $slug = $baseSlug . '-' . HelperFunc::getTimestampAsId();
                     $set('slug', $slug);
                 }),
