@@ -17,16 +17,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('pages.dashboard');
-
-});
+Route::get('/', [DashboardController::class,'index'])->name('home');
 
 Route::get('/verify/{id}/{hash}', [\App\Http\Controllers\AuthController::class, 'verify'])->name('verify');
-
-Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
-
-
 
 Route::get('/file/{file_path}', [FileController::class, 'loadfile'])
     ->where('file_path', '.*')
@@ -34,11 +27,15 @@ Route::get('/file/{file_path}', [FileController::class, 'loadfile'])
 
 
 Route::prefix('tin-tuc')->group(function () {
-    Route::get('/',[App\Http\Controllers\NewsController::class, 'list'])->name('news.list');
-    Route::get('{slug}',[\App\Http\Controllers\NewsController::class, 'article'])->name('news.detail');
+    Route::get('/', [App\Http\Controllers\NewsController::class, 'list'])->name('news.list');
+    Route::get('{slug}', [\App\Http\Controllers\NewsController::class, 'article'])->name('news.detail');
 });
 
-Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+Route::prefix('products')->group(function () {
+    Route::get('/', [ProductController::class, 'list'])->name('products.list');
+    Route::get('/{product:slug}', [ProductController::class, 'show'])->name('products.show');
+});
+
 Route::middleware(['auth:sanctum', 'verified'])->prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'index'])->name('cart.index');
     Route::post('/add/{product}', [CartController::class, 'addToCart'])->name('cart.add');
