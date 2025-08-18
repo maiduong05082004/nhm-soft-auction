@@ -32,7 +32,8 @@ Route::middleware([
 });
 
 Route::prefix('tin-tuc')->group(function () {
-    Route::get('{slug}',[\App\Http\Controllers\NewsController::class, 'article']);
+    Route::get('/',[App\Http\Controllers\NewsController::class, 'list'])->name('news.list');
+    Route::get('{slug}',[\App\Http\Controllers\NewsController::class, 'article'])->name('news.detail');
 });
 
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
