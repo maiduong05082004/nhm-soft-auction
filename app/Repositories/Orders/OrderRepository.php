@@ -6,7 +6,7 @@ use App\Repositories\BaseRepository;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 
-class OrderDetailRepository extends BaseRepository implements OrderDetailRepositoryInterface
+class OrderRepository extends BaseRepository implements OrderRepositoryInterface
 {
     public function getModel(): string
     {

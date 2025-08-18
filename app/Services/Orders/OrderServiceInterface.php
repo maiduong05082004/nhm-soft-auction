@@ -5,7 +5,7 @@ namespace App\Services\Orders;
 use App\Models\OrderDetail;
 use App\Services\BaseServiceInterface;
 
-interface OrderDetailServiceInterface extends BaseServiceInterface
+interface OrderServiceInterface extends BaseServiceInterface
 {
 
     public function calculateSubtotal(array $items): float;

@@ -46,7 +46,7 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('cart')->group(function 
     Route::post('/clear-cart', [CartController::class, 'clearCart'])->name('cart.clear-cart');
 
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-    Route::post('/process', [CartController::class, 'processCheckout'])->name('cart.process');
+    Route::post('/checkout/process', [CartController::class, 'processCheckout'])->name('cart.process');
 
     Route::get('/payment/qr/{order}', [CartController::class, 'qrPayment'])->name('payment.qr');
     Route::post('/payment/confirm/{order}', [CartController::class, 'confirmPayment'])->name('payment.confirm');

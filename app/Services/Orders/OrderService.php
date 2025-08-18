@@ -6,18 +6,18 @@ use App\Models\OrderDetail;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Services\BaseService;
-use App\Repositories\Orders\OrderDetailRepository;
+use App\Repositories\Orders\OrderRepository;
 use App\Repositories\Products\ProductRepository;
-use App\Services\Orders\OrderDetailServiceInterface;
+use App\Services\Orders\OrderServiceInterface;
 use App\Utils\HelperFunc;
 use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
 use App\Models\Cart;
 use App\Models\Order;
 
-class OrderDetailService extends BaseService implements OrderDetailServiceInterface
+class OrderService extends BaseService implements OrderServiceInterface
 {
-    public function __construct(OrderDetailRepository $orderDetailRepo, ProductRepository $productRepo)
+    public function __construct(OrderRepository $orderDetailRepo, ProductRepository $productRepo)
     {
         parent::__construct([
             'orderDetail' => $orderDetailRepo,

@@ -23,16 +23,12 @@
                             <h2 class="card-title text-base font-bold text-[#6c6a69]">Thông tin giao hàng</h2>
                         </div>
 
-                        <div>
-                            <div class="form-control">
-                                <div class="text-zinc-600"><span class="">Họ Tên:</span></div>
-                                <input type="text" id="name" class="input input-bordered w-full" placeholder="Ví dụ: Nguyễn Văn A">
-                            </div>
-                        </div>
-
-                        <input type="hidden" name="name" id="name" value="{{ old('name') }}">
-
                         <div class="grid grid-cols-1 gap-4">
+                            <div class="form-control">
+                                <div class="text-zinc-600"><span class="label-text">Họ và tên</span></div>
+                                <input type="text" name="name" class="input input-bordered w-full" value="{{ old('name', auth()->user()->name ?? '') }}" required>
+                            </div>
+
                             <div class="form-control">
                                 <div class="text-zinc-600"><span class="label-text">Email</span></div>
                                 <input type="email" name="email" class="input input-bordered w-full" value="{{ old('email', auth()->user()->email ?? '') }}" required>
@@ -45,23 +41,8 @@
 
                             <div>
                                 <div class="text-zinc-600">Địa chỉ</div>
-                                <input type="text" name="address" class="input input-bordered w-full" placeholder="Số nhà, đường" value="{{ old('address') }}" required>
+                                <input type="text" name="address" class="input input-bordered w-full" placeholder="Số nhà, đường" value="{{ old('address', auth()->user()->address ?? '') }}" required>
                             </div>
-
-                            {{-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="form-control">
-                                    <label class="label text-zinc-600"><span class="label-text">Phường/Xã</span></label>
-                                    <input type="text" class="input input-bordered" placeholder="Phường/Xã">
-                                </div>
-                                <div class="form-control">
-                                    <label class="label text-zinc-600"><span class="label-text">Quận/Huyện</span></label>
-                                    <input type="text" class="input input-bordered" placeholder="Quận/Huyện">
-                                </div>
-                                <div class="form-control">
-                                    <label class="label text-zinc-600"><span class="label-text">Tỉnh/Thành phố</span></label>
-                                    <input type="text" class="input input-bordered" placeholder="Tỉnh/Thành phố">
-                                </div>
-                            </div> --}}
 
                             <div>
                                 <div><span class="text-zinc-600">Ghi chú đơn hàng</span></div>
@@ -144,7 +125,7 @@
                     <div class="alert alert-success mt-3 text-xs">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-                          </svg>
+                        </svg>
                         <span>Thông tin của bạn được bảo mật an toàn</span>
                     </div>
 
@@ -156,16 +137,4 @@
         </aside>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const first = document.getElementById('first_name');
-    const last  = document.getElementById('last_name');
-    const full  = document.getElementById('full_name');
-    const sync  = () => full.value = [last.value, first.value].filter(Boolean).join(' ').trim();
-    first?.addEventListener('input', sync);
-    last?.addEventListener('input', sync);
-    sync();
-});
-</script>
 @endsection

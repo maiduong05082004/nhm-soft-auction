@@ -3,7 +3,7 @@
 namespace App\Services\Checkout;
 
 use App\Services\BaseService;
-use App\Repositories\Orders\OrderDetailRepository;
+use App\Repositories\Orders\OrderRepository;
 use App\Repositories\Payments\PaymentRepository;
 use App\Repositories\Cart\CartRepository;
 use App\Repositories\Users\UserRepository;
@@ -19,7 +19,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
     protected $userRepo;
 
     public function __construct(
-        OrderDetailRepository $orderRepo,
+        OrderRepository $orderRepo,
         PaymentRepository $paymentRepo,
         CartRepository $cartRepo,
         UserRepository $userRepo
