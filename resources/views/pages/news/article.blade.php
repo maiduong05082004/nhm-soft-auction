@@ -13,7 +13,12 @@
 @section('content')
 
 @section('content')
+    <section class="site-banner overflow-hidden max-w-7xl mx-auto" aria-label="Promotional Banner">
+        <img src="{{ asset('images/') }}" class="w-full h-auto object-cover" alt="AuctionsClone promotional banner"
+            loading="lazy">
+    </section>
     <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 my-6">
+
 
         <article class="lg:col-span-8 bg-base-100 p-6 rounded-lg shadow">
             <h1 class="text-4xl font-bold mb-4">{{ $article->title }}</h1>
@@ -41,7 +46,7 @@
                 {!! $article->content !!}
             </div>
 
-            @if ( isset($article->seo['meta_keywords']))
+            @if (isset($article->seo['meta_keywords']))
                 <div class="mt-6">
                     <span class="font-semibold">Từ khóa: </span>
                 </div>
@@ -70,8 +75,7 @@
                         <li class="flex gap-3">
                             <img src="{{ $featured->thumbnail_url ?? 'https://via.placeholder.com/80x60' }}"
                                 alt="{{ $featured->title }}" class="w-20 h-14 object-cover rounded">
-                            <a href=""
-                                class="text-sm font-semibold hover:text-primary">
+                            <a href="" class="text-sm font-semibold hover:text-primary">
                                 {{ Str::limit($featured->title, 60) }}
                             </a>
                         </li>
