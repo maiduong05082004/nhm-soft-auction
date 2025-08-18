@@ -12,7 +12,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
-use App\Services\Orders\OrderDetailService;
+use App\Services\Orders\OrderService;
 use Filament\Notifications\Notification;
 
 class CreateOrder extends CreateRecord
@@ -21,11 +21,11 @@ class CreateOrder extends CreateRecord
 
     protected static string $resource = OrderResource::class;
 
-    protected ?OrderDetailService $orderDetailService = null;
+    protected ?OrderService $orderService = null;
 
-    protected function Service(): OrderDetailService
+    protected function Service(): OrderService
     {
-        return $this->orderDetailService ??= app(OrderDetailService::class);
+        return $this->orderService ??= app(OrderService::class);
     }
 
     public function form(Form $form): Form

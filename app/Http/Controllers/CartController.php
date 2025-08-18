@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\Cart\CartServiceInterface;
-use App\Services\Orders\OrderDetailServiceInterface;
+use App\Services\Orders\OrderServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,7 +12,7 @@ class CartController extends Controller
     protected $cartService;
     protected $orderService;
 
-    public function __construct(CartServiceInterface $cartService, OrderDetailServiceInterface $orderService)
+    public function __construct(CartServiceInterface $cartService, OrderServiceInterface $orderService)
     {
         $this->cartService = $cartService;
         $this->orderService = $orderService;
@@ -75,7 +75,6 @@ class CartController extends Controller
             'address' => 'required|string|max:500',
             'payment_method' => 'required|in:0,1',
         ]);
-
         $userId = Auth::id();
         $checkoutData = [
             'address' => $request->address,
@@ -87,7 +86,7 @@ class CartController extends Controller
         $result = $this->orderService->processCheckout($userId, $checkoutData);
 
         if ($result['success']) {
-            if ($checkoutData['payment_method'] === '1') {
+            if ($checkoutData['payment_method'] == '1') {
                 return redirect()->route('payment.qr', $result['data']['order_id']);
             }
             return redirect()->route('order.success', $result['data']['order_id']);
