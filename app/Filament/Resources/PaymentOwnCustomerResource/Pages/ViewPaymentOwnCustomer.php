@@ -9,9 +9,14 @@ class ViewPaymentOwnCustomer extends Page
 {
     protected static string $resource = PaymentOwnCustomerResource::class;
 
-    protected static string $view = 'filament.admin.resources.users.user-info-edit';
+    protected static string $view = 'filament.admin.resources.payment-own-customer.view';
 
+    protected ?string $heading = 'Thống kê thanh toán';
 
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
     protected function getHeaderActions(): array
     {
         return [

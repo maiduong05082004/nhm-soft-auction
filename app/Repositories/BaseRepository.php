@@ -7,6 +7,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 abstract class BaseRepository implements BaseRepositoryInterface
 {
@@ -30,6 +31,10 @@ abstract class BaseRepository implements BaseRepositoryInterface
 
     abstract public function getModel(): string;
 
+    public function getQueryBuilder(): \Illuminate\Database\Query\Builder
+    {
+        return DB::table($this->model->getTable());
+    }
     public function query(): \Illuminate\Database\Eloquent\Builder
     {
         return $this->model->query();

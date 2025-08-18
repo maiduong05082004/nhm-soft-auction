@@ -14,6 +14,8 @@ use App\Services\Order\OrderService;
 use App\Services\Order\OrderServiceInterface;
 use App\Services\Orders\OrderDetailService;
 use App\Services\Orders\OrderDetailServiceInterface;
+use App\Services\Transaction\TransactionService;
+use App\Services\Transaction\TransactionServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class ServiceAppProvider extends ServiceProvider
@@ -29,6 +31,8 @@ class ServiceAppProvider extends ServiceProvider
         $this->app->bind(AuthServiceInterface::class, AuthService::class);
         $this->app->bind(OrderDetailServiceInterface::class, OrderDetailService::class);
         $this->app->bind(ConfigServiceInterface::class, ConfigService::class);
+        $this->app->bind(TransactionServiceInterface::class, TransactionService::class);
+
     }
 
     /**

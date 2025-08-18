@@ -6,6 +6,10 @@ use App\Repositories\BaseRepository;
 use App\Repositories\BaseRepositoryInterface;
 use App\Repositories\Config\ConfigRepository;
 use App\Repositories\Config\ConfigRepositoryInterface;
+use App\Repositories\TransactionPayment\TransactionPaymentRepository;
+use App\Repositories\TransactionPayment\TransactionPaymentRepositoryInterface;
+use App\Repositories\TransactionPoint\TransactionPointRepository;
+use App\Repositories\TransactionPoint\TransactionPointRepositoryInterface;
 use App\Repositories\Users\UserRepository;
 use App\Repositories\Users\UserRepositoryInterface;
 use App\Repositories\Cart\CartRepository;
@@ -30,7 +34,8 @@ class RepositoryProvider extends ServiceProvider
         $this->app->bind(OrderDetailRepositoryInterface::class, OrderDetailRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(ConfigRepositoryInterface::class, ConfigRepository::class);
-
+        $this->app->bind(TransactionPaymentRepositoryInterface::class, TransactionPaymentRepository::class);
+        $this->app->bind(TransactionPointRepositoryInterface::class, TransactionPointRepository::class);
     }
 
     /**

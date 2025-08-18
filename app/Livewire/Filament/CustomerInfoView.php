@@ -22,7 +22,6 @@ class CustomerInfoView extends Component implements HasForms, HasInfolists
 
     public ?Authenticatable $auth;
 
-
     public function boot(AuthServiceInterface $service)
     {
         $this->service = $service;
