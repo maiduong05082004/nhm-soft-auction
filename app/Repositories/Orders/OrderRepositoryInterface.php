@@ -4,7 +4,7 @@ namespace App\Repositories\Orders;
 
 use App\Repositories\BaseRepositoryInterface;
 
-interface OrderDetailRepositoryInterface extends BaseRepositoryInterface
+interface OrderRepositoryInterface extends BaseRepositoryInterface
 {
     public function createOrder(array $orderData);
     public function getOrderWithDetails($orderId);

@@ -64,7 +64,7 @@ class OrderResource extends Resource
                                     ->label('Tổng tiền sản phẩm')
                                     ->content(function (Forms\Get $get): string {
                                         $items = $get('items') ?? [];
-                                        return static::orderDetailService()->formatCurrency(static::orderDetailService()->calculateSubtotal($items));
+                                        return static::orderService()->formatCurrency(static::orderService()->calculateSubtotal($items));
                                     })
                                     ->columnSpan('full')
                                     ->extraAttributes(['class' => 'text-lg font-bold text-blue-600']),
@@ -81,7 +81,7 @@ class OrderResource extends Resource
                                     ->content(function (Forms\Get $get): string {
                                         $items = $get('items') ?? [];
                                         $shippingFee = (float) ($get('shipping_fee') ?: 0);
-                                        return static::orderDetailService()->formatCurrency(static::orderDetailService()->calculateTotal($items, $shippingFee));
+                                        return static::orderService()->formatCurrency(static::orderService()->calculateTotal($items, $shippingFee));
                                     })
                                     ->columnSpan('full')
                                     ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
