@@ -23,6 +23,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $data = $this->productService->show($product);
+        $this->productService->incrementViewCount($product['id']);
         return view('pages.products.product-details', $data);
     }
 
