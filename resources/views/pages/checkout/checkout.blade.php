@@ -48,7 +48,7 @@
                                 <input type="text" name="address" class="input input-bordered w-full" placeholder="Số nhà, đường" value="{{ old('address') }}" required>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {{-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="form-control">
                                     <label class="label text-zinc-600"><span class="label-text">Phường/Xã</span></label>
                                     <input type="text" class="input input-bordered" placeholder="Phường/Xã">
@@ -61,7 +61,7 @@
                                     <label class="label text-zinc-600"><span class="label-text">Tỉnh/Thành phố</span></label>
                                     <input type="text" class="input input-bordered" placeholder="Tỉnh/Thành phố">
                                 </div>
-                            </div>
+                            </div> --}}
 
                             <div>
                                 <div><span class="text-zinc-600">Ghi chú đơn hàng</span></div>
@@ -148,7 +148,7 @@
                         <span>Thông tin của bạn được bảo mật an toàn</span>
                     </div>
 
-                    <button type="submit" form="checkout-form" class="btn btn-primary btn-block mt-4">
+                    <button type="submit" form="checkout-form" class="btn btn-neutral btn-block mt-4">
                         Đặt hàng
                     </button>
                 </div>

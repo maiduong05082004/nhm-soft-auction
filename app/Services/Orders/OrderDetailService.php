@@ -10,8 +10,8 @@ use App\Repositories\Orders\OrderDetailRepository;
 use App\Repositories\Products\ProductRepository;
 use App\Services\Orders\OrderDetailServiceInterface;
 use App\Utils\HelperFunc;
+use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
-use Exception;
 use App\Models\Cart;
 use App\Models\Order;
 
@@ -115,6 +115,7 @@ class OrderDetailService extends BaseService implements OrderDetailServiceInterf
             'status' => $paymentMethod === '1' ? 'pending' : 'success',
         ]);
     }
+    
     public function processCheckout(int $userId, array $checkoutData): array
     {
         try {
@@ -126,7 +127,7 @@ class OrderDetailService extends BaseService implements OrderDetailServiceInterf
                 ->get();
 
             if ($cartItems->isEmpty()) {
-                throw new Exception('Giỏ hàng trống!');
+                throw new ServiceException('Giỏ hàng trống!');
             }
 
             $orderDetail = OrderDetail::create([
@@ -178,11 +179,18 @@ class OrderDetailService extends BaseService implements OrderDetailServiceInterf
                     'payment_method' => $checkoutData['payment_method']
                 ]
             ];
-        } catch (Exception $e) {
+        } catch (ServiceException $e) {
             DB::rollBack();
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi xử lý đơn hàng!',
                 'data' => null
             ];
         }
@@ -202,10 +210,10 @@ class OrderDetailService extends BaseService implements OrderDetailServiceInterf
                     'payment' => $payment
                 ]
             ];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Có lỗi xảy ra khi lấy thông tin đơn hàng!',
                 'data' => null
             ];
         }
@@ -220,7 +228,7 @@ class OrderDetailService extends BaseService implements OrderDetailServiceInterf
             $payment = $orderDetail->payments->first();
 
             if (!$payment) {
-                throw new Exception('Không tìm thấy thông tin thanh toán!');
+                throw new ServiceException('Không tìm thấy thông tin thanh toán!');
             }
 
             $payment->update([
@@ -239,11 +247,18 @@ class OrderDetailService extends BaseService implements OrderDetailServiceInterf
                     'order_id' => $orderId
                 ]
             ];
-        } catch (Exception $e) {
+        } catch (ServiceException $e) {
             DB::rollBack();
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi xác nhận thanh toán!',
                 'data' => null
             ];
         }

@@ -4,11 +4,10 @@ namespace App\Repositories\Users;
 
 use App\Models\User;
 use App\Repositories\BaseRepository;
-use App\Repositories\Products\ProductRepositoryInterface;
+use App\Repositories\Users\UserRepositoryInterface;
 
-class UserRepository extends BaseRepository implements ProductRepositoryInterface
+class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
-
     public function getModel(): string
     {
         return User::class;

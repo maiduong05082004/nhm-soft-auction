@@ -5,8 +5,8 @@ namespace App\Services\Cart;
 use App\Models\Product;
 use App\Repositories\Cart\CartRepository;
 use App\Services\BaseService;
+use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
 class CartService extends BaseService implements CartServiceInterface
 {
@@ -28,11 +28,11 @@ class CartService extends BaseService implements CartServiceInterface
             $product = Product::findOrFail($productId);
 
             if ($product->status !== 'active') {
-                throw new Exception('Sản phẩm không khả dụng!');
+                throw new ServiceException('Sản phẩm không khả dụng!');
             }
 
             if ($product->stock < $quantity) {
-                throw new Exception('Số lượng vượt quá tồn kho!');
+                throw new ServiceException('Số lượng vượt quá tồn kho!');
             }
 
             $existingCart = $this->cartRepository->findByUserAndProduct($userId, $productId);
@@ -40,7 +40,7 @@ class CartService extends BaseService implements CartServiceInterface
             if ($existingCart) {
                 $newQuantity = $existingCart->quantity + $quantity;
                 if ($product->stock < $newQuantity) {
-                    throw new Exception('Số lượng vượt quá tồn kho!');
+                    throw new ServiceException('Số lượng vượt quá tồn kho!');
                 }
 
                 $this->getRepository('cart')->updateOne($existingCart->id, [
@@ -65,11 +65,18 @@ class CartService extends BaseService implements CartServiceInterface
                 'message' => 'Sản phẩm đã được thêm vào giỏ hàng!',
                 'data' => null
             ];
-        } catch (Exception $e) {
+        } catch (ServiceException $e) {
             DB::rollBack();
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi thêm vào giỏ hàng!',
                 'data' => null
             ];
         }
@@ -95,10 +102,10 @@ class CartService extends BaseService implements CartServiceInterface
                     'count' => $validCartItems->count()
                 ]
             ];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Có lỗi xảy ra khi lấy giỏ hàng!',
                 'data' => null
             ];
         }
@@ -108,7 +115,7 @@ class CartService extends BaseService implements CartServiceInterface
     {
         try {
             if ($quantity < 1) {
-                throw new Exception('Số lượng phải lớn hơn 0!');
+                throw new ServiceException('Số lượng phải lớn hơn 0!');
             }
 
             $product = Product::where('id', $productId)
@@ -117,16 +124,16 @@ class CartService extends BaseService implements CartServiceInterface
                 ->first();
 
             if (!$product) {
-                throw new Exception('Sản phẩm không tồn tại hoặc không khả dụng!');
+                throw new ServiceException('Sản phẩm không tồn tại hoặc không khả dụng!');
             }
 
             if ($product->stock < $quantity) {
-                throw new Exception('Số lượng vượt quá tồn kho!');
+                throw new ServiceException('Số lượng vượt quá tồn kho!');
             }
 
             $cartItem = $this->cartRepository->findByUserAndProduct($userId, $productId);
             if (!$cartItem) {
-                throw new Exception('Không tìm thấy sản phẩm trong giỏ hàng!');
+                throw new ServiceException('Không tìm thấy sản phẩm trong giỏ hàng!');
             }
 
             $this->cartRepository->updateOne($cartItem->id, [
@@ -146,10 +153,16 @@ class CartService extends BaseService implements CartServiceInterface
                     'cart_count' => $cartSummary['data']['count']
                 ]
             ];
-        } catch (Exception $e) {
+        } catch (ServiceException $e) {
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi cập nhật số lượng!',
                 'data' => null
             ];
         }
@@ -160,31 +173,33 @@ class CartService extends BaseService implements CartServiceInterface
         try {
             $cartItem = $this->cartRepository->findByUserAndProduct($userId, $productId);
             if (!$cartItem) {
-                throw new Exception('Không tìm thấy sản phẩm trong giỏ hàng!');
+                throw new ServiceException('Không tìm thấy sản phẩm trong giỏ hàng!');
             }
 
             $this->cartRepository->deleteOne($cartItem->id);
 
             $cartSummary = $this->getCartSummary($userId);
-            $cartRepo = $this->getRepository('cart');
-            return dd($cartRepo);
-            // return [
-            //     'success' => true,
-            //     'message' => 'Xóa sản phẩm thành công!',
-            //     'data' => [
-            //         'cart_total' => $cartSummary['data']['total'],
-            //         'cart_count' => $cartSummary['data']['count']
-            //     ]
-            // ];
+            return [
+                'success' => true,
+                'message' => 'Xóa sản phẩm thành công!',
+                'data' => [
+                    'cart_total' => $cartSummary['data']['total'],
+                    'cart_count' => $cartSummary['data']['count']
+                ]
+            ];
 
-        } catch (Exception $e) {
-            $cartRepo = $this->getRepository('cart');
-            return dd($cartRepo);
-            // return [
-            //     'success' => false,
-            //     'message' => $e->getMessage(),
-            //     'data' => null
-            // ];
+        } catch (ServiceException $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi xóa sản phẩm!',
+                'data' => null
+            ];
         }
     }
 
@@ -201,10 +216,10 @@ class CartService extends BaseService implements CartServiceInterface
                     'cart_count' => 0
                 ]
             ];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Có lỗi xảy ra khi xóa giỏ hàng!',
                 'data' => null
             ];
         }
@@ -225,10 +240,10 @@ class CartService extends BaseService implements CartServiceInterface
                     'count' => $count
                 ]
             ];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Có lỗi xảy ra khi lấy thông tin giỏ hàng!',
                 'data' => null
             ];
         }

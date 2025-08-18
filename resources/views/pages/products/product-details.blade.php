@@ -7,7 +7,7 @@
     @endphp
 
 
-    <div class="max-w-6xl mx-auto px-4 py-6">
+    <div class="max-w-6xl mx-auto lg:px-4 py-6">
         <div class="breadcrumbs text-sm">
             <ul>
                 <li><a>Trang chủ</a></li>
@@ -25,7 +25,7 @@
                             class="w-full h-full object-contain" alt="{{ $product->name }}">
                     </div>
 
-                    <div class="grid grid-cols-6 gap-3">
+                    <div class="grid grid-cols-3 lg:grid-cols-6 gap-3">
                         @foreach ($product_images as $img)
                             <button type="button" class="rounded overflow-hidden bg-white hover:ring-2 hover:ring-blue-500"
                                 onclick="document.getElementById('main-image').src='{{ asset('storage/' . $img->image_url) }}'">
@@ -36,7 +36,7 @@
                     </div>
                 </div>
                 <div class="text-base font-bold text-gray-600 pt-4">Sản phẩm này cũng phổ biến</div>
-                <div class="grid grid-cols-4 gap-4 pt-4">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
                     @foreach ($product_category as $item)
                         <a href="{{ route('products.show', $item) }}" class="block max-w-36">
                             @php

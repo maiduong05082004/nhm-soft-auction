@@ -13,8 +13,10 @@ class ProductController extends Controller
     {
         $this->productService = $productService;
     }
-	public function show(Product $product)
-	{
-		return $this->productService->show($product);
-	}
+    
+    public function show(Product $product)
+    {
+        $data = $this->productService->show($product);
+        return view('pages.products.product-details', $data);
+    }
 }
