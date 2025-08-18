@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
-use App\Services\Orders\OrderDetailService;
+use App\Services\Orders\OrderService;
 
 class OrderResource extends Resource
 {
@@ -32,11 +32,11 @@ class OrderResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?int $navigationSort = 1;
 
-    protected static ?OrderDetailService $orderDetailServiceInstance = null;
+    protected static ?OrderService $orderServiceInstance = null;
 
-    protected static function orderDetailService(): OrderDetailService
+    protected static function orderService(): OrderService
     {
-        return static::$orderDetailServiceInstance ??= app(OrderDetailService::class);
+        return static::$orderServiceInstance ??= app(OrderService::class);
     }
 
     public static function form(Form $form): Form
