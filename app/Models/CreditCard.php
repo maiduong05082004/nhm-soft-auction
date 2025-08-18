@@ -5,18 +5,16 @@ namespace App\Models;
 use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 class CreditCard extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
     protected $fillable = [
         'id',
         'name',
         'card_number',
-        'bank',
-        'status',
+        'user_id',
+        'bin_bank',
     ];
 
     protected static function boot()
@@ -27,4 +25,8 @@ class CreditCard extends Model
         });
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -10,7 +10,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Infolists\Components;
 use Filament\Infolists\Infolist;
-use Filament\Navigation\NavigationItem;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -208,7 +207,7 @@ class UserResource extends Resource
                 Components\Section::make('Lịch sử dòng tiền')
                     ->schema([
                         Components\ViewEntry::make('transaction_stats')
-                            ->view('filament.user-transaction-stats')
+                            ->view('filament.admin.resources.users.user-transaction-stats')
                             ->columnSpanFull(),
                     ]),
 

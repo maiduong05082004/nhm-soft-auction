@@ -11,7 +11,6 @@ class ProductConstants
         3 => 'có một số vết xước và bụi bẩn',
         4 => 'có vết xước và vết bẩn',
         5 => 'tình trạng chung là kém'
-
     ];
 
     public const PAY_METHODS = [
@@ -19,7 +18,7 @@ class ProductConstants
         1 => 'pay qr bank',
         2 => 'cả 2 phương thức'
     ];
-    
+
     public static function label(string $type, int|string|null $value): string
     {
         return match ($type) {

@@ -135,9 +135,26 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Notification::class);
     }
 
+    // Các mối quan hệ với TransactionPayment
+    public function transactionPayments()
+    {
+        return $this->hasMany(TransactionPayment::class);
+    }
+
+    // Các mối quan hệ với TransactionPoint
+    public function transactionPoints()
+    {
+        return $this->hasMany(TransactionPoint::class);
+    }
+
     public function wonAuctions()
     {
         return $this->hasMany(Auction::class, 'winner_id');
+    }
+
+    public function creditCards()
+    {
+        return $this->hasMany(CreditCard::class);
     }
 
     public function getDynamicCurrentBalanceAttribute()

@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\ProductController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 
 
@@ -30,6 +30,13 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 });
+
+
+
+Route::get('/file/{file_path}', [FileController::class, 'loadfile'])
+    ->where('file_path', '.*')
+    ->name('loadfile');
+
 
 Route::prefix('tin-tuc')->group(function () {
     Route::get('{slug}',[\App\Http\Controllers\NewsController::class, 'article']);
