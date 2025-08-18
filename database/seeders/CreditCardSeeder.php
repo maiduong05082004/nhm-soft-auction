@@ -23,7 +23,7 @@ class CreditCardSeeder extends Seeder
                 'bank' => 'TPBank',
                 'card_number' => '19805082004',
                 'user_id' => $user->random()->first()->id,
-                'status' => 'active',
+                'status' => '1',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

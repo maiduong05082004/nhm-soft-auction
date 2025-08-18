@@ -120,9 +120,11 @@
                                 <article
                                     class="product-card group relative bg-white overflow-hidden transition-all duration-300 hover:shadow-lg">
                                     <div class="relative aspect-square overflow-hidden">
-                                        <img src="{{ $product['firstImage'] ? asset('storage/' . $product['firstImage']['image_url']) : asset('images/' . 'product_default.jpg') }}"
+                                        <a href="{{ route('products.show', $product['slug']) }}">
+                                            <img src="{{ $product['firstImage'] ? asset('storage/' . $product['firstImage']['image_url']) : asset('images/' . 'product_default.jpg') }}"
                                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                             alt="{{ $product['name'] }}" loading="lazy">
+                                        </a>
 
                                         <button type="button"
                                             class="heart-icon absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200"
@@ -132,14 +134,14 @@
                                     </div>
                                     <div class="p-3">
                                         <h2
-                                            class="text-sm font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                                            <a href="" class="hover:underline">
+                                            class="text-xs font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                            <a href="{{ route('products.show', $product['slug']) }}" class="hover:underline">
                                                 {{ $product['name'] }}
                                             </a>
                                         </h2>
                                         <div class="flex items-center justify-between">
                                             <span class="text-xs text-gray-500">Giá:</span>
-                                            <span class="text-lg font-bold text-orange-600">
+                                            <span class="text-xs font-bold text-orange-600">
                                                 {{ $product['price'] ? number_format($product['price']) : number_format($product['min_bid_price']) . ' - ' . number_format($product['max_bid_price']) }}
                                                 đ
                                             </span>
@@ -173,9 +175,11 @@
                                                         </span>
                                                     @endif
 
-                                                    <img src=" {{ $product['firstImage'] ? asset('storage/' . $product['firstImage']['image_url']) : asset('images/' . 'product_default.jpg') }}"
-                                                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                                        alt="{{ $product['name'] }}" loading="lazy">
+                                                    <a href="{{ route('products.show', $product['slug']) }}">
+                                                        <img src=" {{ $product['firstImage'] ? asset('storage/' . $product['firstImage']['image_url']) : asset('images/' . 'product_default.jpg') }}"
+                                                            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                            alt="{{ $product['name'] }}" loading="lazy">
+                                                    </a>
 
                                                     <button type="button"
                                                         class="heart-icon absolute bottom-2 right-2 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200"
@@ -187,7 +191,7 @@
                                                 <!-- Product Info -->
                                                 <div class="p-3">
                                                     <h3 class="text-sm font-semibold text-blue-700 mb-2 line-clamp-2">
-                                                        <a href="" class="hover:underline">
+                                                        <a href="{{ route('products.show', $product['slug']) }}" class="hover:underline">
                                                             {{ $product['name'] }}
                                                         </a>
                                                     </h3>

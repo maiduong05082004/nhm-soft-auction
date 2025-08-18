@@ -107,11 +107,10 @@
                         </div>
                     @endif
 
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700"><span class="font-bold text-[#6c6a69]">Số
-                                lượng còn:</span></label>
-                        <div class="inline-flex items-center px-3 py-1 rounded bg-gray-100 text-gray-700">
-                            {{ $product->stock ?? 0 }}
+                    <div class="flex" role="group" aria-labelledby="stock-label">
+                        <span id="stock-label" class="flex text-sm font-bold text-[#6c6a69]">Số lượng còn:</span>
+                        <div class="flex text-sm rounded bg-gray-100 text-gray-700">
+                            &nbsp;{{ $product->stock ?? 0 }}
                         </div>
                     </div>
 

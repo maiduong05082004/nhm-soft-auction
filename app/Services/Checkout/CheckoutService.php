@@ -3,11 +3,15 @@
 namespace App\Services\Checkout;
 
 use App\Services\BaseService;
+use App\Enums\OrderStatus;
 use App\Repositories\Orders\OrderRepository;
+use App\Repositories\OrderDetails\OrderDetailRepository;
 use App\Repositories\Payments\PaymentRepository;
 use App\Repositories\Cart\CartRepository;
 use App\Repositories\Users\UserRepository;
+use App\Repositories\Products\ProductRepository;
 use App\Exceptions\ServiceException;
+use App\Utils\HelperFunc;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -20,15 +24,19 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
 
     public function __construct(
         OrderRepository $orderRepo,
+        OrderDetailRepository $orderDetailRepo,
         PaymentRepository $paymentRepo,
         CartRepository $cartRepo,
-        UserRepository $userRepo
+        UserRepository $userRepo,
+        ProductRepository $productRepo
     ) {
         parent::__construct([
             'order' => $orderRepo,
+            'orderDetail' => $orderDetailRepo,
             'payment' => $paymentRepo,
             'cart' => $cartRepo,
             'user' => $userRepo,
+            'product' => $productRepo,
         ]);
         
         $this->orderRepo = $orderRepo;
@@ -43,10 +51,15 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             DB::beginTransaction();
 
             $cartResult = $this->cartRepo->getAll(['user_id' => $userId]);
+            if (!empty($checkoutData['selected'])) {
+                $ids = collect(explode(',', (string) $checkoutData['selected']))->filter()->map(fn($v) => (int) $v)->all();
+                if (!empty($ids)) {
+                    $cartResult = $cartResult->whereIn('product_id', $ids);
+                }
+            }
             if ($cartResult->isEmpty()) {
                 throw new ServiceException('Giỏ hàng trống!');
             }
-
             $user = $this->userRepo->getAll(['id' => $userId])->first();
             if (!$user) {
                 throw new ServiceException('Không tìm thấy thông tin người dùng!');
@@ -55,59 +68,72 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             $total = $cartResult->sum(function ($item) {
                 return $item->price * $item->quantity;
             });
-
-            $orderData = [
+            $orderDetailStatus = $checkoutData['payment_method'] == '1' ? 1 : 2;
+            $shippingFee = 0;
+            $subtotal = $total+$shippingFee;
+            $orderDetailData = [
+                'code_orders' => 'ORD-' . HelperFunc::getTimestampAsId(),
                 'user_id' => $userId,
-                'order_number' => 'ORD-' . strtoupper(Str::random(8)),
-                'total_amount' => $total,
-                'shipping_address' => $checkoutData['address'],
-                'shipping_email' => $checkoutData['email'],
-                'shipping_phone' => $checkoutData['phone'] ?? $user->phone,
+                'email_receiver' => $checkoutData['email'],
+                'ship_address' => $checkoutData['address'],
                 'payment_method' => $checkoutData['payment_method'],
-                'status' => $checkoutData['payment_method'] == '1' ? 'pending' : 'confirmed',
+                'shipping_fee' => $shippingFee,
+                'subtotal' => $subtotal,
+                'total' => $total,
                 'note' => $checkoutData['note'] ?? '',
+                'status' => $orderDetailStatus,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
 
-            $order = $this->orderRepo->createOrder($orderData);
-
+            $orderDetail = $this->getRepository('orderDetail')->insertOne($orderDetailData);
+            
             foreach ($cartResult as $cartItem) {
-                $orderDetailData = [
-                    'order_id' => $order->id,
+                $orderData = [
                     'product_id' => $cartItem->product_id,
+                    'order_detail_id' => $orderDetail->id,
                     'quantity' => $cartItem->quantity,
                     'price' => $cartItem->price,
                     'total' => $cartItem->price * $cartItem->quantity,
                 ];
                 
-                $this->repositories['orderDetail']->create($orderDetailData);
+                $this->getRepository('order')->insertOne($orderData);
+                $this->getRepository('product')->updateMany(
+                    ['id' => $cartItem->product_id],
+                    ['stock' => DB::raw('GREATEST(stock - ' . (int) $cartItem->quantity . ', 0)')]
+                );
             }
 
             if ($checkoutData['payment_method'] == '1') {
                 $paymentData = [
-                    'order_id' => $order->id,
+                    'user_id' => $userId,
+                    'order_detail_id' => $orderDetail->id,
                     'amount' => $total,
-                    'payment_method' => 'bank_transfer',
+                    'payment_method' => $checkoutData['payment_method'],
                     'status' => 'pending',
-                    'transaction_id' => 'TXN-' . strtoupper(Str::random(8)),
+                    'transaction_id' => 'TXN-' . HelperFunc::getTimestampAsId(),
+                    'payer_id' => HelperFunc::getTimestampAsId(),
+                    'pay_date' => now(),
+                    'currency_code' => 'VND',
+                    'payer_email' => $checkoutData['email'],
+                    'transaction_fee' => 0,
+                    'status' => $checkoutData['payment_method'] === '1' ? 'pending' : 'success',
                 ];
                 
-                $this->paymentRepo->createPayment($paymentData);
+                $this->getRepository('payment')->insertOne($paymentData);
             }
 
-            $this->cartRepo->getAll(['user_id' => $userId])->each(function ($item) {
+            $cartResult->each(function ($item) {
                 $item->delete();
             });
 
             DB::commit();
-
             return [
                 'success' => true,
                 'message' => 'Đặt hàng thành công!',
                 'data' => [
-                    'order_id' => $order->id,
-                    'order_number' => $order->order_number,
+                    'order_detail_id' => $orderDetail->id,
+                    'code_orders' => $orderDetail->code_orders,
                 ]
             ];
 
@@ -123,7 +149,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             return [
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi xử lý đơn hàng!',
-                'data' => null
+                'data' => $e->getMessage()
             ];
         }
     }
@@ -131,22 +157,21 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
     public function getOrderDetails(int $orderId): array
     {
         try {
-            $order = $this->orderRepo->getOrderWithDetails($orderId);
-            
-            if (!$order) {
+            $orderDetail = $this->getRepository('orderDetail')->find($orderId);
+            if (!$orderDetail) {
                 throw new ServiceException('Không tìm thấy đơn hàng!');
             }
 
             $payment = null;
-            if ($order->payment_method == '1') {
-                $payment = $this->paymentRepo->getPaymentByOrderId($orderId);
+            if ($orderDetail->payment_method == '1') {
+                $payment = $this->getRepository('payment')->getAll(['order_detail_id' => $orderId])->first();
             }
 
             return [
                 'success' => true,
                 'message' => 'Lấy thông tin đơn hàng thành công!',
                 'data' => [
-                    'orderDetail' => $order,
+                    'orderDetail' => $orderDetail,
                     'payment' => $payment,
                 ]
             ];
@@ -171,20 +196,19 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
         try {
             DB::beginTransaction();
 
-            $order = $this->orderRepo->getAll(['id' => $orderId])->first();
-            if (!$order) {
+            $orderDetail = $this->getRepository('orderDetail')->find($orderId);
+            if (!$orderDetail) {
                 throw new ServiceException('Không tìm thấy đơn hàng!');
             }
-
-            if ($order->status !== 'pending') {
+            if (($orderDetail->status instanceof OrderStatus ? $orderDetail->status->value : (int) $orderDetail->status) !== OrderStatus::New->value) {
                 throw new ServiceException('Đơn hàng không ở trạng thái chờ thanh toán!');
             }
 
-            $this->orderRepo->updateOrderStatus($orderId, 'confirmed');
+            $this->getRepository('orderDetail')->updateOne($orderId, ['status' => OrderStatus::Processing->value]);
 
-            $payment = $this->paymentRepo->getPaymentByOrderId($orderId);
+            $payment = $this->getRepository('payment')->getAll(['order_detail_id' => $orderId])->first();
             if ($payment) {
-                $this->paymentRepo->updatePaymentStatus($payment->id, 'completed');
+                $this->getRepository('payment')->updateOne($payment->id, ['status' => 'success']);
             }
 
             DB::commit();
@@ -208,7 +232,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             DB::rollBack();
             return [
                 'success' => false,
-                'message' => 'Có lỗi xảy ra khi xác nhận thanh toán!',
+                'message' => $e->getMessage(),
                 'data' => null
             ];
         }
@@ -217,13 +241,12 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
     public function generatePaymentQR(int $orderId): array
     {
         try {
-            $order = $this->orderRepo->getOrderWithDetails($orderId);
-            
-            if (!$order) {
+            $orderDetail = $this->getRepository('orderDetail')->find($orderId);
+            if (!$orderDetail) {
                 throw new ServiceException('Không tìm thấy đơn hàng!');
             }
 
-            $payment = $this->paymentRepo->getPaymentByOrderId($orderId);
+            $payment = $this->getRepository('payment')->getAll(['order_detail_id' => $orderId])->first();
             if (!$payment) {
                 throw new ServiceException('Không tìm thấy thông tin thanh toán!');
             }
@@ -233,7 +256,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 'account_number' => '1234567890',
                 'account_name' => 'CONG TY ABC',
                 'amount' => $payment->amount,
-                'description' => 'Thanh toan don hang ' . $order->order_number,
+                'description' => 'Thanh toan don hang ' . ($orderDetail->code_orders ?? ''),
             ];
 
             return [
@@ -242,7 +265,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 'data' => [
                     'qr_data' => $qrData,
                     'payment' => $payment,
-                    'order' => $order,
+                    'order' => $orderDetail,
                 ]
             ];
 

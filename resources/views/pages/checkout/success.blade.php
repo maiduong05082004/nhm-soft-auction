@@ -30,7 +30,7 @@
                 </div>
             </div>
             <div class="space-x-4">
-                <a href="" class="btn btn-neutral">
+                <a href="{{ route('home') }}" class="btn btn-neutral">
                     Tiếp tục mua sắm
                 </a>
                 <a href="{{ route('cart.index') }}" class="btn btn-outline">
