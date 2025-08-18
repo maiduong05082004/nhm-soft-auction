@@ -8,4 +8,5 @@ use App\Services\BaseServiceInterface;
 interface ProductServiceInterface extends BaseServiceInterface
 {
     public function show(Product $product);
+
 }

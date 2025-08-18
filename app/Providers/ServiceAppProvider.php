@@ -14,8 +14,6 @@ use App\Services\Config\ConfigService;
 use App\Services\Config\ConfigServiceInterface;
 use App\Services\Category\CategoryService;
 use App\Services\Category\CategoryServiceInterface;
-use App\Services\Order\OrderService;
-use App\Services\Order\OrderServiceInterface;
 use App\Services\Orders\OrderDetailService;
 use App\Services\Orders\OrderDetailServiceInterface;
 use App\Services\Transaction\TransactionService;
@@ -33,9 +31,9 @@ class ServiceAppProvider extends ServiceProvider
     {
         $this->app->bind(BaseServiceInterface::class, BaseService::class);
         $this->app->bind(CartServiceInterface::class, CartService::class);
-        $this->app->bind(OrderServiceInterface::class, OrderService::class);
         $this->app->bind(AuthServiceInterface::class, AuthService::class);
         $this->app->bind(OrderDetailServiceInterface::class, OrderDetailService::class);
+        $this->app->bind(ProductServiceInterface::class, ProductService::class);
         $this->app->bind(ProductServiceInterface::class, ProductService::class);
         $this->app->bind(CategoryServiceInterface::class, CategoryService::class);
         $this->app->bind(ArticleServiceInterface::class, ArticleService::class);

@@ -387,4 +387,9 @@ class ProductResource extends Resource
             'view' => Pages\ViewProducts::route('/{record}'),
         ];
     }
+    
+    public static function getRecordRouteKeyName(): ?string
+    {
+        return 'slug';
+    }
 }

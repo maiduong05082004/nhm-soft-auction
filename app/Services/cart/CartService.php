@@ -3,17 +3,21 @@
 namespace App\Services\Cart;
 
 use App\Models\Product;
-use App\Repositories\Cart\CartRepositoryInterface;
+use App\Repositories\Cart\CartRepository;
+use App\Services\BaseService;
+use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
-class CartService implements CartServiceInterface
+class CartService extends BaseService implements CartServiceInterface
 {
-    protected $cartRepository;
+    protected CartRepository $cartRepository;
 
-    public function __construct(CartRepositoryInterface $cartRepository)
+    public function __construct(CartRepository $cartRepo)
     {
-        $this->cartRepository = $cartRepository;
+        parent::__construct([
+            'cart' => $cartRepo,
+        ]);
+        $this->cartRepository = $cartRepo;
     }
 
     public function addToCart(int $userId, int $productId, int $quantity): array
@@ -22,13 +26,13 @@ class CartService implements CartServiceInterface
             DB::beginTransaction();
 
             $product = Product::findOrFail($productId);
-            
+
             if ($product->status !== 'active') {
-                throw new Exception('Sản phẩm không khả dụng!');
+                throw new ServiceException('Sản phẩm không khả dụng!');
             }
-            
+
             if ($product->stock < $quantity) {
-                throw new Exception('Số lượng vượt quá tồn kho!');
+                throw new ServiceException('Số lượng vượt quá tồn kho!');
             }
 
             $existingCart = $this->cartRepository->findByUserAndProduct($userId, $productId);
@@ -36,15 +40,15 @@ class CartService implements CartServiceInterface
             if ($existingCart) {
                 $newQuantity = $existingCart->quantity + $quantity;
                 if ($product->stock < $newQuantity) {
-                    throw new Exception('Số lượng vượt quá tồn kho!');
+                    throw new ServiceException('Số lượng vượt quá tồn kho!');
                 }
 
-                $this->cartRepository->update($existingCart->id, [
+                $this->getRepository('cart')->updateOne($existingCart->id, [
                     'quantity' => $newQuantity,
                     'total' => $newQuantity * $existingCart->price
                 ]);
             } else {
-                $this->cartRepository->create([
+                $this->getRepository('cart')->insertOne([
                     'user_id' => $userId,
                     'product_id' => $productId,
                     'quantity' => $quantity,
@@ -61,12 +65,18 @@ class CartService implements CartServiceInterface
                 'message' => 'Sản phẩm đã được thêm vào giỏ hàng!',
                 'data' => null
             ];
-
-        } catch (Exception $e) {
+        } catch (ServiceException $e) {
             DB::rollBack();
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi thêm vào giỏ hàng!',
                 'data' => null
             ];
         }
@@ -76,11 +86,11 @@ class CartService implements CartServiceInterface
     {
         try {
             $cartItems = $this->cartRepository->getUserActiveCart($userId);
-            
+
             $validCartItems = $cartItems->filter(function ($cartItem) {
                 return $cartItem->product && $cartItem->product->exists;
             });
-            
+
             $total = $validCartItems->sum('total');
 
             return [
@@ -92,11 +102,10 @@ class CartService implements CartServiceInterface
                     'count' => $validCartItems->count()
                 ]
             ];
-
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Có lỗi xảy ra khi lấy giỏ hàng!',
                 'data' => null
             ];
         }
@@ -106,36 +115,34 @@ class CartService implements CartServiceInterface
     {
         try {
             if ($quantity < 1) {
-                throw new Exception('Số lượng phải lớn hơn 0!');
+                throw new ServiceException('Số lượng phải lớn hơn 0!');
             }
 
-            // Kiểm tra sản phẩm có tồn tại và active không
             $product = Product::where('id', $productId)
-                            ->where('status', 'active')
-                            ->whereNull('deleted_at')
-                            ->first();
-            
+                ->where('status', 'active')
+                ->whereNull('deleted_at')
+                ->first();
+
             if (!$product) {
-                throw new Exception('Sản phẩm không tồn tại hoặc không khả dụng!');
+                throw new ServiceException('Sản phẩm không tồn tại hoặc không khả dụng!');
             }
-            
+
             if ($product->stock < $quantity) {
-                throw new Exception('Số lượng vượt quá tồn kho!');
+                throw new ServiceException('Số lượng vượt quá tồn kho!');
             }
 
             $cartItem = $this->cartRepository->findByUserAndProduct($userId, $productId);
             if (!$cartItem) {
-                throw new Exception('Không tìm thấy sản phẩm trong giỏ hàng!');
+                throw new ServiceException('Không tìm thấy sản phẩm trong giỏ hàng!');
             }
 
-            $this->cartRepository->update($cartItem->id, [
+            $this->cartRepository->updateOne($cartItem->id, [
                 'quantity' => $quantity,
                 'total' => $quantity * $cartItem->price
             ]);
-            
+
             $updatedCartItem = $this->cartRepository->find($cartItem->id);
             $cartSummary = $this->getCartSummary($userId);
-
             return [
                 'success' => true,
                 'message' => 'Cập nhật số lượng thành công!',
@@ -146,11 +153,16 @@ class CartService implements CartServiceInterface
                     'cart_count' => $cartSummary['data']['count']
                 ]
             ];
-
-        } catch (Exception $e) {
+        } catch (ServiceException $e) {
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi cập nhật số lượng!',
                 'data' => null
             ];
         }
@@ -161,13 +173,12 @@ class CartService implements CartServiceInterface
         try {
             $cartItem = $this->cartRepository->findByUserAndProduct($userId, $productId);
             if (!$cartItem) {
-                throw new Exception('Không tìm thấy sản phẩm trong giỏ hàng!');
+                throw new ServiceException('Không tìm thấy sản phẩm trong giỏ hàng!');
             }
 
-            $this->cartRepository->delete($cartItem->id);
-            
-            $cartSummary = $this->getCartSummary($userId);
+            $this->cartRepository->deleteOne($cartItem->id);
 
+            $cartSummary = $this->getCartSummary($userId);
             return [
                 'success' => true,
                 'message' => 'Xóa sản phẩm thành công!',
@@ -177,10 +188,16 @@ class CartService implements CartServiceInterface
                 ]
             ];
 
-        } catch (Exception $e) {
+        } catch (ServiceException $e) {
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi xóa sản phẩm!',
                 'data' => null
             ];
         }
@@ -199,11 +216,10 @@ class CartService implements CartServiceInterface
                     'cart_count' => 0
                 ]
             ];
-
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Có lỗi xảy ra khi xóa giỏ hàng!',
                 'data' => null
             ];
         }
@@ -224,11 +240,10 @@ class CartService implements CartServiceInterface
                     'count' => $count
                 ]
             ];
-
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Có lỗi xảy ra khi lấy thông tin giỏ hàng!',
                 'data' => null
             ];
         }

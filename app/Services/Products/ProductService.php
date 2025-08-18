@@ -2,27 +2,39 @@
 
 namespace App\Services\Products;
 
-use App\Models\Auction;
-use App\Models\Product;
 use App\Services\BaseService;
 use App\Repositories\Products\ProductRepository;
-use App\Models\ProductImage;
-use App\Models\User;
+use App\Repositories\ProductImages\ProductImageRepository;
+use App\Repositories\Users\UserRepository;
+use App\Repositories\Auctions\AuctionRepository;
 use App\Services\Products\ProductServiceInterface;
 
 class ProductService extends BaseService implements ProductServiceInterface
 {
-public function __construct(ProductRepository $productRepo)
-    {
+    public function __construct(
+        ProductRepository $productRepo,
+        ProductImageRepository $productImageRepo,
+        UserRepository $userRepo,
+        AuctionRepository $auctionRepo
+    ) {
         parent::__construct([
-            'product' => $productRepo
+            'product' => $productRepo,
+            'productImage' => $productImageRepo,
+            'user' => $userRepo,
+            'auction' => $auctionRepo,
         ]);
     }
-    public function show(Product $product){
-        $user = User::where('id', $product->created_by)->first();
+
+    public function show($product){
+        $user = $this->repositories['user']->getAll(['id' => $product->created_by])->first();
         $product->load(['images', 'category']);
-        $product_images = ProductImage::where('product_id', $product->id)->get();
-        $auction = Auction::where('product_id', $product->id)->first();
-        return view('pages.products.product-details', compact('product', 'product_images', 'auction', 'user'));
+        $product_images = $this->repositories['productImage']->getAll(['product_id' => $product->id]);
+        $product_category = $this->repositories['product']->getAll(
+            ['category_id' => $product->category_id],
+            ['images']
+        )->where('id', '!=', $product->id)->take(8);
+        $auction = $this->repositories['auction']->getAll(['product_id' => $product->id])->first();
+
+        return compact('product', 'product_images', 'auction', 'user', 'product_category');
     }
 }

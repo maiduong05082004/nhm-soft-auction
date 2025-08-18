@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Services\Order;
+namespace App\Services\Checkout;
 
-interface OrderServiceInterface
+use App\Services\BaseServiceInterface;
+
+interface CheckoutServiceInterface extends BaseServiceInterface
 {
     public function processCheckout(int $userId, array $checkoutData): array;
     public function getOrderDetails(int $orderId): array;
     public function confirmPayment(int $orderId): array;
+    public function generatePaymentQR(int $orderId): array;
 }

@@ -2,7 +2,9 @@
 
 namespace App\Services\Cart;
 
-interface CartServiceInterface
+use App\Services\BaseServiceInterface;
+
+interface CartServiceInterface extends BaseServiceInterface
 {
     public function addToCart(int $userId, int $productId, int $quantity): array;
     public function getUserCart(int $userId): array;

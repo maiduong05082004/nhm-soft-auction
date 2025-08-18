@@ -3,19 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\ProductImage;
-use App\Models\Auction;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use App\Services\Products\ProductServiceInterface;
 
 class ProductController extends Controller
 {
-	public function show(Product $product)
-	{
-		$user = User::where('id', $product->created_by)->first();
-		$product->load(['images', 'category']);
-		$product_images = ProductImage::where('product_id', $product->id)->get();
-		$auction = Auction::where('product_id', $product->id)->first();
-		return view('pages.products.product-details', compact('product', 'product_images', 'auction', 'user'));
-	}
+    protected $productService;
+
+    public function __construct(ProductServiceInterface $productService)
+    {
+        $this->productService = $productService;
+    }
+    
+    public function show(Product $product)
+    {
+        $data = $this->productService->show($product);
+        return view('pages.products.product-details', $data);
+    }
 }
