@@ -1,9 +1,7 @@
-{{-- File: resources/views/vendor/pagination/tailwind.blade.php --}}
-
 @if ($paginator->hasPages())
     <nav role="navigation" aria-label="Pagination Navigation"
         class="flex flex-col sm:flex-row items-center justify-between bg-white rounded-xl shadow-lg p-6">
-        {{-- Mobile Pagination Info --}}
+
         <div class="mb-4 sm:mb-0">
             <p class="text-sm text-gray-700">
                 Hiển thị
@@ -12,7 +10,6 @@
                 <span class="font-medium text-gray-900">{{ $paginator->lastItem() }}</span>
                 trong tổng số
                 <span class="font-medium text-gray-900">{{ $paginator->total() }}</span>
-                bài viết
             </p>
         </div>
 

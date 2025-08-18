@@ -8,7 +8,8 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
-                'resources/js/partials/slide.js'
+                'resources/js/partials/slide.js',
+                'resources/js/partials/filter.js',
             ],
             refresh: [
                 ...refreshPaths,

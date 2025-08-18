@@ -44,7 +44,7 @@
         @yield('content')
     </main>
     @include('partial.footer')
-    @vite(['resources/js/app.js', 'resources/js/partials/menu-mobile.js', 'resources/js/partials/slide.js'])
+    @vite(['resources/js/app.js', 'resources/js/partials/slide.js'])
 </body>
 
 </html>
