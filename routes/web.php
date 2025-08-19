@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\AuctionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
-use App\Http\Controllers\ProductController;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 
 /*
@@ -50,4 +54,9 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('cart')->group(function 
     Route::get('/payment/qr/{order}', [CartController::class, 'qrPayment'])->name('payment.qr');
     Route::post('/payment/confirm/{order}', [CartController::class, 'confirmPayment'])->name('payment.confirm');
     Route::get('/order/success/{order}', [CartController::class, 'orderSuccess'])->name('order.success');
+});
+
+Route::middleware(['auth:sanctum', 'verified'])->prefix('auctions')->group(function () {
+    Route::get('/', [AuctionController::class, 'getActiveAuctions'])->name('auctions.index');
+    Route::get('/{productId}', [AuctionController::class, 'show'])->name('auctions.show');
 });

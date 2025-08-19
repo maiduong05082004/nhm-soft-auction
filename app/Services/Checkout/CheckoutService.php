@@ -11,6 +11,7 @@ use App\Repositories\Cart\CartRepository;
 use App\Repositories\Users\UserRepository;
 use App\Repositories\Products\ProductRepository;
 use App\Exceptions\ServiceException;
+use App\Repositories\CreditCards\CreditCardRepository;
 use App\Utils\HelperFunc;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -21,6 +22,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
     protected $paymentRepo;
     protected $cartRepo;
     protected $userRepo;
+    protected $creditCardRepo;
 
     public function __construct(
         OrderRepository $orderRepo,
@@ -28,7 +30,8 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
         PaymentRepository $paymentRepo,
         CartRepository $cartRepo,
         UserRepository $userRepo,
-        ProductRepository $productRepo
+        ProductRepository $productRepo,
+        CreditCardRepository $creditCardRepo
     ) {
         parent::__construct([
             'order' => $orderRepo,
@@ -37,12 +40,14 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             'cart' => $cartRepo,
             'user' => $userRepo,
             'product' => $productRepo,
+            'creditCard' => $creditCardRepo,
         ]);
         
         $this->orderRepo = $orderRepo;
         $this->paymentRepo = $paymentRepo;
         $this->cartRepo = $cartRepo;
         $this->userRepo = $userRepo;
+        $this->creditCardRepo = $creditCardRepo;
     }
 
     public function processCheckout(int $userId, array $checkoutData): array
@@ -191,6 +196,24 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
         }
     }
 
+    public function hasCreditCardConfig(): bool
+    {
+        return (bool) $this->creditCardRepo->getAll([])->first();
+    }
+
+    public function buildVietQrUrl(object $orderDetail, ?object $payment): string
+    {
+        $creditCard = $this->creditCardRepo->getAll([])->first();
+        if (!$creditCard) {
+            return '';
+        }
+        $vietqrUrl = 'https://img.vietqr.io/image/' . $creditCard->bin_bank . '-' . $creditCard->card_number . '-compact2.jpg';
+        $vietqrUrl .= '?amount=' . ($payment->amount ?? 0);
+        $vietqrUrl .= '&addInfo=' . urlencode('Thanh toan don hang ' . ($orderDetail->code_orders ?? ''));
+        $vietqrUrl .= '&accountName=' . urlencode($creditCard->name);
+        return $vietqrUrl;
+    }
+
     public function confirmPayment(int $orderId): array
     {
         try {
@@ -233,52 +256,6 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
-                'data' => null
-            ];
-        }
-    }
-
-    public function generatePaymentQR(int $orderId): array
-    {
-        try {
-            $orderDetail = $this->getRepository('orderDetail')->find($orderId);
-            if (!$orderDetail) {
-                throw new ServiceException('Không tìm thấy đơn hàng!');
-            }
-
-            $payment = $this->getRepository('payment')->getAll(['order_detail_id' => $orderId])->first();
-            if (!$payment) {
-                throw new ServiceException('Không tìm thấy thông tin thanh toán!');
-            }
-
-            $qrData = [
-                'bank_code' => 'VCB',
-                'account_number' => '1234567890',
-                'account_name' => 'CONG TY ABC',
-                'amount' => $payment->amount,
-                'description' => 'Thanh toan don hang ' . ($orderDetail->code_orders ?? ''),
-            ];
-
-            return [
-                'success' => true,
-                'message' => 'Tạo QR code thành công!',
-                'data' => [
-                    'qr_data' => $qrData,
-                    'payment' => $payment,
-                    'order' => $orderDetail,
-                ]
-            ];
-
-        } catch (ServiceException $e) {
-            return [
-                'success' => false,
-                'message' => $e->getMessage(),
-                'data' => null
-            ];
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => 'Có lỗi xảy ra khi tạo QR code!',
                 'data' => null
             ];
         }

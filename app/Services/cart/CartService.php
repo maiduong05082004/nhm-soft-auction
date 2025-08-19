@@ -27,8 +27,12 @@ class CartService extends BaseService implements CartServiceInterface
 
             $product = Product::findOrFail($productId);
 
-            if ($product->status !== 'active') {
+            if ($product->status != 1) {
                 throw new ServiceException('Sản phẩm không khả dụng!');
+            }
+
+            if ($product->type_sale != 1) {
+                throw new ServiceException('Sản phẩm đấu giá không thể thêm vào giỏ hàng!');
             }
 
             if ($product->stock < $quantity) {
@@ -119,7 +123,7 @@ class CartService extends BaseService implements CartServiceInterface
             }
 
             $product = Product::where('id', $productId)
-                ->where('status', 'active')
+                ->where('status', 1)
                 ->whereNull('deleted_at')
                 ->first();
 

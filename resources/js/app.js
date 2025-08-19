@@ -2,8 +2,9 @@ import $ from "jquery";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/thumbs";
+import "swiper/css/pagination";
 import Swiper from "swiper";
-import { Navigation, Thumbs, FreeMode } from "swiper/modules";
+import { Navigation, Thumbs, FreeMode, Pagination } from "swiper/modules";
 
 window.$ = window.jQuery = $;
 
@@ -29,5 +30,38 @@ document.addEventListener("DOMContentLoaded", () => {
             prevEl: ".swiper-button-prev",
         },
         thumbs: { swiper: thumbs },
+    });
+
+    const popularProducts = new Swiper(".popularProductsSwiper", {
+        modules: [Navigation, Pagination],
+        spaceBetween: 16,
+        slidesPerView: 1,
+        navigation: {
+            nextEl: ".popularProductsSwiper .swiper-button-next",
+            prevEl: ".popularProductsSwiper .swiper-button-prev",
+        },
+        pagination: {
+            el: ".popularProductsSwiper .swiper-pagination",
+            clickable: true,
+            dynamicBullets: true,
+        },
+        breakpoints: {
+            480: {
+                slidesPerView: 2,
+                spaceBetween: 16,
+            },
+            640: {
+                slidesPerView: 3,
+                spaceBetween: 16,
+            },
+            768: {
+                slidesPerView: 4,
+                spaceBetween: 16,
+            },
+            1024: {
+                slidesPerView: 4,
+                spaceBetween: 16,
+            },
+        },
     });
 });

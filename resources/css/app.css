@@ -2,10 +2,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 @source "../**/*.blade.php";
 @source "../**/*.js";
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 @source "../../storage/framework/views/*.php";
 
 @plugin "daisyui";
+
+.popularProductsSwiper .swiper-button-next,
+.popularProductsSwiper .swiper-button-prev {
+    width: 32px !important;
+    height: 32px !important;
+    background-color: white !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    color: #6b7280 !important;
+    transition: all 0.3s ease;
+}
+
+.popularProductsSwiper .swiper-button-next:hover,
+.popularProductsSwiper .swiper-button-prev:hover {
+    background-color: #f3f4f6 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.popularProductsSwiper .swiper-button-next::after,
+.popularProductsSwiper .swiper-button-prev::after {
+    font-size: 14px !important;
+    font-weight: bold;
+}
+
+.popularProductsSwiper .swiper-pagination {
+    position: relative !important;
+    bottom: 0 !important;
+    margin-top: 16px !important;
+}
+
+.popularProductsSwiper .swiper-pagination-bullet {
+    width: 8px !important;
+    height: 8px !important;
+    background-color: #d1d5db !important;
+    opacity: 1 !important;
+    transition: all 0.3s ease;
+}
+
+.popularProductsSwiper .swiper-pagination-bullet-active {
+    background-color: #6b7280 !important;
+    transform: scale(1.2);
+}
+
+@media (max-width: 640px) {
+    .popularProductsSwiper .swiper-button-next,
+    .popularProductsSwiper .swiper-button-prev {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    .popularProductsSwiper .swiper-button-next::after,
+    .popularProductsSwiper .swiper-button-prev::after {
+        font-size: 12px !important;
+    }
+    
+    .popularProductsSwiper .swiper-pagination-bullet {
+        width: 6px !important;
+        height: 6px !important;
+    }
+}
+

@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Products;
 
+use App\Enums\Product\ProductTypeSale;
 use App\Repositories\BaseRepository;
 use App\Models\Product;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -24,7 +25,12 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         }
 
         if (!empty($query['type'])) {
-            $builder->where('type_sale', $query['type']);
+            $typeMap = [
+                'sale' => ProductTypeSale::SALE,
+                'auction' => ProductTypeSale::AUCTION
+            ];
+            $typeValue = isset($typeMap[$query['type']]) ? $typeMap[$query['type']] : $query['type'];
+            $builder->where('type_sale', $typeValue);
         }
 
         if (!empty($query['min_price'])) {
