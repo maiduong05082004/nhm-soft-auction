@@ -4,6 +4,7 @@ namespace App\Services\Membership;
 
 use App\Enums\CommonConstant;
 use App\Enums\Membership\MembershipTransactionStatus;
+use App\Models\MembershipUser;
 use App\Repositories\MembershipPlan\MembershipPlanRepositoryInterface;
 use App\Repositories\MembershipTransaction\MembershipTransactionRepositoryInterface;
 use App\Repositories\MembershipUser\MembershipUserRepositoryInterface;
@@ -69,5 +70,32 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
             DB::rollBack();
             return false;
         }
+    }
+
+    public function reActivateMembershipForUser(MembershipUser $membershipUser): bool
+    {
+        try {
+            DB::beginTransaction();
+            $membershipUser->status = true;
+            $membershipUser->save();
+            // Cập nhật trạng thái của các MembershipUser khác cùng user
+            $this->getRepository('membershipUser')->query()
+                ->where('user_id', $membershipUser->user_id)
+                ->where('id', '!=', $membershipUser->id)
+                ->update(['status' => false]);
+            DB::commit();
+            return true;
+        }catch (\Exception $exception){
+            DB::rollBack();
+            return false;
+        }
+    }
+
+    public function validateActiveMembership(MembershipUser $item): bool
+    {
+        $now = now();
+        return $item->status == CommonConstant::INACTIVE
+            && $item->end_date >= $now
+            && $item->membershipTransaction->where('status', MembershipTransactionStatus::ACTIVE->value)->isNotEmpty();
     }
 }
