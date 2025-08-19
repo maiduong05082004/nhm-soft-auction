@@ -37,7 +37,7 @@
         <nav class="flex items-center justify-between h-16 lg:h-20" aria-label="Main navigation">
 
             <div class="flex-1 flex items-center lg:justify-start justify-center">
-                <a href="#"
+                <a href="{{ route('home') }}"
                     class="logo-gradient uppercase text-2xl sm:text-3xl lg:text-4xl xl:text-5xl 
                           tracking-wider sm:tracking-widest lg:tracking-[0.2em] xl:tracking-[0.3em]
                           font-bold transition-transform duration-300 hover:scale-[1.02]"

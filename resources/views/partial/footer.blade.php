@@ -1,4 +1,4 @@
-<footer class=" bg-white gap-y-2 px-3 flex flex-col items-center ">
+<footer class=" bg-white gap-y-2 px-3 pt-4 flex flex-col items-center ">
     <h3 class="mt-2 font-bold">Giới Thiệu Về Takada Ooku</h3>
     <div class="flex flex-col text-left w-full items-start">
         <nav class="flex sm:flex-row flex-col gap-4 mt-1 sm:justify-center w-full">

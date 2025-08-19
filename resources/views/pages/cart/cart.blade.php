@@ -37,7 +37,7 @@
         @if ($cartItems->count() == 0)
             <div class="text-center py-8 sm:py-12">
                 <h2 class="text-xl sm:text-2xl font-semibold text-gray-600 mb-4">Giỏ hàng trống</h2>
-                <a href="" class="btn btn-primary">Tiếp tục mua sắm</a>
+                <a href="{{ route('home') }}" class="btn btn-primary">Tiếp tục mua sắm</a>
             </div>
         @else
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 pt-4">
@@ -47,6 +47,17 @@
                             id="cart-item-{{ $cartItem->product_id }}">
                             <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 py-3 sm:py-6">
                                 <div class="flex items-center gap-3 sm:gap-4 flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <input
+                                            id="select-item-{{ $cartItem->product_id }}"
+                                            name="selected_items[]"
+                                            value="{{ $cartItem->product_id }}"
+                                            type="checkbox"
+                                            checked="checked"
+                                            class="select-item checkbox checkbox-neutral checked:!bg-black checked:hover:!bg-black checked:focus:!bg-black checked:!border-transparent"
+                                            data-product-id="{{ $cartItem->product_id }}"
+                                        />
+                                    </div>
                                     <div class="flex-shrink-0">
                                         <div
                                             class="relative h-16 w-16 sm:h-20 sm:w-20 rounded-lg overflow-hidden ring-2 ring-gray-100 hover:ring-blue-300 transition-all duration-200">
@@ -127,30 +138,30 @@
                     @endforeach
                 </div>
                 @if ($cartItems->count() > 0)
-                <div class="flex sm:hidden sm:flex-row justify-end items-stretch sm:items-center gap-2 sm:gap-3 mb-4">
-                    <button
-                        class="btn btn-neutral hidden items-center justify-center gap-2 border rounded-lg px-3 py-2 text-sm sm:text-base transition-all duration-200 hover:scale-105 active:scale-95"
-                        id="mobile-update-all-btn" onclick="updateAllCartItems()">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M16.023 9.348h4.992v-.01M19.67 9.35l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63M9.348 9.348l1.023.63m2.38-2.61l1.023.63m2.38-2.61l1.023.63m2.38-2.61l1.023.63m2.38-2.61l1.023.63M9.348 9.348l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63" />
-                        </svg>
-                        <span>Cập nhật tất cả</span>
-                    </button>
+                    <div class="flex sm:hidden sm:flex-row justify-end items-stretch sm:items-center gap-2 sm:gap-3 mb-4">
+                        <button
+                            class="btn btn-neutral hidden items-center justify-center gap-2 border rounded-lg px-3 py-2 text-sm sm:text-base transition-all duration-200 hover:scale-105 active:scale-95"
+                            id="mobile-update-all-btn" onclick="updateAllCartItems()">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M16.023 9.348h4.992v-.01M19.67 9.35l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63M9.348 9.348l1.023.63m2.38-2.61l1.023.63m2.38-2.61l1.023.63m2.38-2.61l1.023.63m2.38-2.61l1.023.63M9.348 9.348l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63m-2.38 2.61l-1.023-.63" />
+                            </svg>
+                            <span>Cập nhật tất cả</span>
+                        </button>
 
-                    <button
-                        class="flex items-center justify-center gap-2 text-red-600 border-red-600 hover:bg-red-50 bg-transparent border rounded-lg px-3 py-2 text-sm sm:text-base transition-all duration-200 hover:scale-105 active:scale-95"
-                        onclick="clearCart()">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-4 h-4 sm:size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 48.667 0 0 0-7.5 0" />
-                        </svg>
-                        <span>Xóa tất cả</span>
-                    </button>
-                </div>
-            @endif
+                        <button
+                            class="flex items-center justify-center gap-2 text-red-600 border-red-600 hover:bg-red-50 bg-transparent border rounded-lg px-3 py-2 text-sm sm:text-base transition-all duration-200 hover:scale-105 active:scale-95"
+                            onclick="clearCart()">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4 sm:size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 48.667 0 0 0-7.5 0" />
+                            </svg>
+                            <span>Xóa tất cả</span>
+                        </button>
+                    </div>
+                @endif
                 <div class="lg:col-span-1 sm:justify-self-end lg:justify-self-center">
                     <div
                         class="card card-border w-full sm:w-96 bg-base-100 card-xl shadow-sm sticky top-4 lg:top-4 bottom-0 lg:bottom-auto z-10 lg:z-auto">
@@ -180,7 +191,7 @@
                                     class="btn w-full bg-green-700 hover:bg-green-800 text-white text-sm sm:text-base transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
                                     Tiến hành thanh toán
                                 </button>
-                                <a href=""
+                                <a href="{{ route('home') }}"
                                     class="btn btn-outline w-full text-sm sm:text-base transition-all duration-200 hover:scale-105 active:scale-95">
                                     Tiếp tục mua sắm
                                 </a>

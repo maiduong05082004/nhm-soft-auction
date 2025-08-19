@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Orders;
+namespace App\Services\OrderDetails;
 
 use App\Services\BaseService;
 use App\Repositories\Products\ProductRepository;

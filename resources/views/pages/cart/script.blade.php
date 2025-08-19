@@ -127,6 +127,8 @@
         let count = 0;
 
         cartItems.forEach(item => {
+            const checkbox = item.querySelector('.select-item');
+            if (checkbox && !checkbox.checked) return;
             const itemTotal = item.querySelector('[id^="item-total-"]');
             if (itemTotal) {
                 const itemTotalText = itemTotal.textContent;
@@ -188,7 +190,7 @@
             })
             .catch((error) => {
                 showToast('Có lỗi xảy ra khi cập nhật!', 'error');
-                console.error('Update error:', error);
+                console.error('Error:', error);
                 throw error;
             })
             .finally(() => {
@@ -358,23 +360,34 @@
         });
     }
 
+    function getSelectedProductIds() {
+        const selected = [];
+        document.querySelectorAll('.select-item:checked').forEach(cb => {
+            const pid = cb.getAttribute('data-product-id') || cb.value;
+            if (pid) selected.push(pid);
+        });
+        return selected;
+    }
+
     function saveChangesBeforeCheckout() {
-        const quantityInputs = document.querySelectorAll('.quantity-input');
         const hasChanges = checkForChanges();
+        const selected = getSelectedProductIds();
+        const base = '{{ route('cart.checkout') }}';
+        const url = selected.length ? `${base}?selected=${encodeURIComponent(selected.join(','))}` : base;
 
         if (!hasChanges) {
-            window.location.href = '{{ route('cart.checkout') }}';
+            window.location.href = url;
             return;
         }
 
         if (confirm('Bạn có muốn lưu thay đổi số lượng trước khi thanh toán không?')) {
             updateAllCartItems().then(() => {
-                window.location.href = '{{ route('cart.checkout') }}';
+                window.location.href = url;
             }).catch(() => {
                 showToast('Có lỗi xảy ra khi lưu thay đổi!', 'error');
             });
         } else {
-            window.location.href = '{{ route('cart.checkout') }}';
+            window.location.href = url;
         }
     }
 
@@ -422,6 +435,12 @@
 
                 updateLocalPrice(productId, newQuantity);
                 checkForChanges();
+            });
+        });
+        const checkboxes = document.querySelectorAll('.select-item');
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                updateCartSummary();
             });
         });
     });

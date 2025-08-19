@@ -3,19 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Services\Cart\CartServiceInterface;
-use App\Services\Orders\OrderServiceInterface;
+use App\Services\Checkout\CheckoutServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\CreditCard;
 
 class CartController extends Controller
 {
     protected $cartService;
-    protected $orderService;
+    protected $checkoutService;
 
-    public function __construct(CartServiceInterface $cartService, OrderServiceInterface $orderService)
+    public function __construct(CartServiceInterface $cartService, CheckoutServiceInterface $checkoutService)
     {
         $this->cartService = $cartService;
-        $this->orderService = $orderService;
+        $this->checkoutService = $checkoutService;
     }
 
     public function addToCart(Request $request, $productId)
@@ -55,6 +56,13 @@ class CartController extends Controller
         if ($result['success']) {
             $cartItems = $result['data']['cartItems'];
             $total = $result['data']['total'];
+            if (request()->filled('selected')) {
+                $selected = collect(explode(',', request('selected')))->filter()->map(fn($v) => (int) $v)->all();
+                if (!empty($selected)) {
+                    $cartItems = $cartItems->whereIn('product_id', $selected);
+                    $total = $cartItems->sum(fn($i) => ($i->price ?? 0) * ($i->quantity ?? 0));
+                }
+            }
             
             if ($cartItems->isEmpty()) {
                 return redirect()->route('cart.index')->with('error', 'Giỏ hàng trống!');
@@ -74,22 +82,25 @@ class CartController extends Controller
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:500',
             'payment_method' => 'required|in:0,1',
+            'selected' => 'nullable|string'
         ]);
         $userId = Auth::id();
         $checkoutData = [
+            'name' => $request->name,
+            'phone' => $request->phone,
             'address' => $request->address,
             'email' => $request->email,
             'payment_method' => $request->payment_method,
-            'note' => $request->note ?? ''
+            'note' => $request->note ?? '',
+            'selected' => $request->selected
         ];
-
-        $result = $this->orderService->processCheckout($userId, $checkoutData);
-
+        $result = $this->checkoutService->processCheckout($userId, $checkoutData);
         if ($result['success']) {
             if ($checkoutData['payment_method'] == '1') {
-                return redirect()->route('payment.qr', $result['data']['order_id']);
+                return redirect()->route('payment.qr', ['order' => $result['data']['order_detail_id']]);
             }
-            return redirect()->route('order.success', $result['data']['order_id']);
+
+            return $this->orderSuccess($result['data']['order_detail_id']);
         } else {
             return redirect()->back()->with('error', $result['message']);
         }
@@ -97,12 +108,22 @@ class CartController extends Controller
 
     public function qrPayment($orderId)
     {
-        $result = $this->orderService->getOrderDetails($orderId);
+        $result = $this->checkoutService->getOrderDetails($orderId);
         
         if ($result['success']) {
             $orderDetail = $result['data']['orderDetail'];
             $payment = $result['data']['payment'];
-            return view('filament.admin.resources.orders.qr-code', compact('orderDetail', 'payment'));
+            $creditCard = CreditCard::first();
+            if (!$creditCard) {
+                return redirect()->route('cart.index')->with('error', 'Thiếu cấu hình thẻ ngân hàng để tạo QR.');
+            }
+
+            $vietqrUrl = 'https://img.vietqr.io/image/' . $creditCard->bank . '-' . $creditCard->card_number . '-compact2.jpg';
+            $vietqrUrl .= '?amount=' . ($payment->amount ?? 0);
+            $vietqrUrl .= '&addInfo=' . urlencode('Thanh toan don hang ' . ($orderDetail->code_orders ?? ''));
+            $vietqrUrl .= '&accountName=' . urlencode($creditCard->name);
+
+            return view('pages.checkout.payment', compact('orderDetail', 'payment', 'vietqrUrl'));
         } else {
             return redirect()->back()->with('error', $result['message']);
         }
@@ -110,10 +131,14 @@ class CartController extends Controller
 
     public function confirmPayment($orderId)
     {
-        $result = $this->orderService->confirmPayment($orderId);
-        
+        $result = $this->checkoutService->confirmPayment($orderId);
         if ($result['success']) {
-            return redirect()->route('order.success', $orderId);
+            $detail = $this->checkoutService->getOrderDetails($orderId);
+            if ($detail['success']) {
+                $orderDetail = $detail['data']['orderDetail'];
+                return view('pages.checkout.success', compact('orderDetail'));
+            }
+            return redirect()->back()->with('error', $detail['message'] ?? 'Không lấy được thông tin đơn hàng.');
         } else {
             return redirect()->back()->with('error', $result['message']);
         }
@@ -121,7 +146,7 @@ class CartController extends Controller
 
     public function orderSuccess($orderId)
     {
-        $result = $this->orderService->getOrderDetails($orderId);
+        $result = $this->checkoutService->getOrderDetails($orderId);
         
         if ($result['success']) {
             $orderDetail = $result['data']['orderDetail'];

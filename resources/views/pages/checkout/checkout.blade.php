@@ -9,12 +9,13 @@
         Quay lại giỏ hàng
     </a>
 
-    <h1 class="text-3xl font-bold mb-6">Thanh toán</h1>
+    <h1 class="text-3xl font-bold mb-3">Thanh toán</h1>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
             <form id="checkout-form" action="{{ route('cart.process') }}" method="POST" class="space-y-6">
                 @csrf
+                <input type="hidden" name="selected" value="{{ $cartItems->pluck('product_id')->implode(',') }}">
 
                 <div class="card bg-base-100 shadow">
                     <div class="card-body">

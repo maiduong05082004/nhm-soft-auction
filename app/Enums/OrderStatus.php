@@ -21,9 +21,9 @@ enum OrderStatus: int implements HasColor, HasIcon, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::New => 'Đơn mới',
+            self::New => 'Đang chở xử lý',
             self::Processing => 'Đang xử lý',
-            self::Shipped => 'Đã giao',
+            self::Shipped => 'Đang vận chuyển',
             self::Delivered => 'Đã giao',
             self::Cancelled => 'Đã hủy',
         };

@@ -1,4 +1,4 @@
-@extends('components.layouts.app')
+@extends('layouts.app')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -13,8 +13,8 @@
                 </div>
 
                 <div class="inline-block p-6 bg-white border-2 border-gray-200 rounded-lg mb-6">
-                    <img src="https://img.vietqr.io/image/{{ $creditCard->bank }}-{{ $creditCard->card_number }}-compact2.jpg?amount={{ $payment->amount }}&addInfo={{ urlencode('Thanh toan don hang ' . $orderDetail->code_orders) }}&accountName={{ urlencode($creditCard->name) }}" 
-                         alt="VietQR Code" 
+                    <img src="{{ $vietqrUrl }}"
+                         alt="VietQR Code"
                          class="w-80 h-80 object-contain">
                 </div>
 

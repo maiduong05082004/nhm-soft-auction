@@ -40,7 +40,6 @@ class QrPayment extends Page
         $vietqrUrl .= "?amount=" . $this->payment->amount;
         $vietqrUrl .= "&addInfo=" . urlencode("Thanh toan don hang " . $this->record->code_orders);
         $vietqrUrl .= "&accountName=" . urlencode($this->creditCard->name);
-        
         return $vietqrUrl;
     }
 
