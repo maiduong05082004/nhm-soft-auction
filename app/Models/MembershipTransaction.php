@@ -29,9 +29,8 @@ class MembershipTransaction extends Model
     protected $fillable = [
         'id',
         'user_id',
-        'membership_plan_id',
-        'amount',
-        'payment_id',
+        'membership_user_id',
+        'money',
         'transaction_code',
         'status',
     ];
@@ -42,6 +41,16 @@ class MembershipTransaction extends Model
         static::creating(function ($model) {
             $model->id = HelperFunc::getTimestampAsId();
         });
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function membershipUser()
+    {
+        return $this->belongsTo(MembershipUser::class, 'membership_user_id');
     }
 
 }

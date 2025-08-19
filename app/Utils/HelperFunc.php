@@ -64,5 +64,13 @@ class HelperFunc
         return null;
     }
 
-
+    public static function generateQRCodeBanking($binBank, $bankNumber, $bankName, $amount, $addInfo = null): string
+    {
+        // Chuyển đổi thông tin thành URL
+        $url = "https://img.vietqr.io/image/{$binBank}-{$bankNumber}-print.jpg?amount={$amount}&accountName={$bankName}";
+        if ($addInfo) {
+            $url .= "&addInfo=" . urlencode($addInfo);
+        }
+        return $url;
+    }
 }

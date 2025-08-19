@@ -14,6 +14,8 @@ use App\Services\Config\ConfigService;
 use App\Services\Config\ConfigServiceInterface;
 use App\Services\Category\CategoryService;
 use App\Services\Category\CategoryServiceInterface;
+use App\Services\Membership\MembershipService;
+use App\Services\Membership\MembershipServiceInterface;
 use App\Services\Orders\OrderDetailService;
 use App\Services\Orders\OrderDetailServiceInterface;
 use App\Services\Transaction\TransactionService;
@@ -37,9 +39,9 @@ class ServiceAppProvider extends ServiceProvider
         $this->app->bind(ProductServiceInterface::class, ProductService::class);
         $this->app->bind(CategoryServiceInterface::class, CategoryService::class);
         $this->app->bind(ArticleServiceInterface::class, ArticleService::class);
-
         $this->app->bind(ConfigServiceInterface::class, ConfigService::class);
         $this->app->bind(TransactionServiceInterface::class, TransactionService::class);
+        $this->app->bind(MembershipServiceInterface::class, MembershipService::class);
 
     }
 

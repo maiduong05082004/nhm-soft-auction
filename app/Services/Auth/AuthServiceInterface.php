@@ -13,4 +13,6 @@ interface AuthServiceInterface extends BaseServiceInterface
     public function updateAuthUser(array $data): bool;
 
     public function getSumTransaction();
+
+    public function getMembershipInfo();
 }
