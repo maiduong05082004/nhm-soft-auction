@@ -6,5 +6,5 @@ use App\Services\BaseServiceInterface;
 
 interface TransactionServiceInterface extends BaseServiceInterface
 {
-
+    public function getQueryTransactionMembershipAdmin();
 }

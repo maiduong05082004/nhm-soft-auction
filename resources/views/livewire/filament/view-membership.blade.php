@@ -126,6 +126,11 @@
                                 </div>
                             </div>
                         </div>
+                            @if($this->shouldShowButtonActive($membership))
+                                <x-filament::button wire:click="activeMembership('{{$membership->id}}}')" class="w-full">
+                                    Kích hoạt lại gói thành viên
+                                </x-filament::button>
+                            @endif
                     </div>
                     <div class="space-y-3 flex-1">
                         @foreach($membership->membershipTransaction as $transaction)

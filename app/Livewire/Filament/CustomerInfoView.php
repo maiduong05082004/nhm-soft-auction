@@ -74,55 +74,6 @@ class CustomerInfoView extends Component implements HasForms, HasInfolists
                                 ->grow(false),
                         ])->from('lg'),
                     ]),
-                Components\Section::make('Lịch sử dòng tiền')
-                    ->schema([
-                        Components\ViewEntry::make('transaction_stats')
-                            ->view('filament.admin.resources.users.user-transaction-stats')
-                            ->columnSpanFull(),
-                    ]),
-
-                Components\Section::make('Lịch sử giao dịch')
-                    ->schema([
-                        Components\RepeatableEntry::make('transactions')
-                            ->hiddenLabel()
-                            ->schema([
-                                Components\Grid::make(5)
-                                    ->schema([
-                                        Components\TextEntry::make('type_transaction')
-                                            ->label('Loại giao dịch')
-                                            ->badge()
-                                            ->formatStateUsing(fn(string $state): string => match ($state) {
-                                                'recharge_point' => 'Nạp tiền',
-                                                'bid' => 'Đấu giá',
-                                                'buy_product' => 'Mua sản phẩm',
-                                                default => 'Khác',
-                                            })
-                                            ->color(fn(string $state): string => match ($state) {
-                                                'recharge_point' => 'success',
-                                                'bid' => 'warning',
-                                                'buy_product' => 'danger',
-                                                default => 'gray',
-                                            }),
-                                        Components\TextEntry::make('point_change')
-                                            ->label('Số dư sau')
-                                            ->formatStateUsing(
-                                                fn($state) => ($state > 0 ? '+' : '') . number_format($state, 0, ',', '.') . ' ₫'
-                                            )
-                                            ->color(fn($state): string => $state > 0 ? 'success' : 'danger'),
-                                        Components\TextEntry::make('point')
-                                            ->label('Số dư hiện tại')
-                                            ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫'),
-                                        Components\TextEntry::make('created_at')
-                                            ->label('Ngày giao dịch')
-                                            ->dateTime(),
-                                        Components\TextEntry::make('id')
-                                            ->label('Mã giao dịch')
-                                            ->prefix('#'),
-                                    ]),
-                            ])
-                            ->columnSpanFull(),
-                    ])
-                    ->collapsible(),
             ]);
     }
 
