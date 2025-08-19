@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\AuctionBids\AuctionBidRepository;
+use App\Repositories\AuctionBids\AuctionBidRepositoryInterface;
 use App\Repositories\BaseRepository;
 use App\Repositories\BaseRepositoryInterface;
 use App\Repositories\Config\ConfigRepository;
@@ -28,8 +30,15 @@ use App\Repositories\ProductImages\ProductImageRepository;
 use App\Repositories\ProductImages\ProductImageRepositoryInterface;
 use App\Repositories\Auctions\AuctionRepository;
 use App\Repositories\Auctions\AuctionRepositoryInterface;
+use App\Repositories\CreditCards\CreditCardRepository;
+use App\Repositories\CreditCards\CreditCardRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
-
+use App\Repositories\OrderDetails\OrderDetailRepository;
+use App\Repositories\OrderDetails\OrderDetailRepositoryInterface;
+use App\Repositories\Payments\PaymentRepository;
+use App\Repositories\Payments\PaymentRepositoryInterface;
+use App\Repositories\Wishlists\WishlistRepository;
+use App\Repositories\Wishlists\WishlistRepositoryInterface;
 class RepositoryProvider extends ServiceProvider
 {
     /**
@@ -51,7 +60,12 @@ class RepositoryProvider extends ServiceProvider
         $this->app->bind(MembershipPlanRepositoryInterface::class, MembershipPlanRepository::class);
         $this->app->bind(MembershipUserRepositoryInterface::class, MembershipUserRepository::class);
         $this->app->bind(MembershipTransactionRepositoryInterface::class, MembershipTransactionRepository::class);
-
+        $this->app->bind(AuctionRepositoryInterface::class, AuctionRepository::class);
+        $this->app->bind(AuctionBidRepositoryInterface::class, AuctionBidRepository::class);
+        $this->app->bind(CreditCardRepositoryInterface::class, CreditCardRepository::class);
+        $this->app->bind(OrderDetailRepositoryInterface::class, OrderDetailRepository::class);
+        $this->app->bind(PaymentRepositoryInterface::class, PaymentRepository::class);
+        $this->app->bind(WishlistRepositoryInterface::class, WishlistRepository::class);
     }
 
     /**

@@ -70,10 +70,13 @@
                             </label>
 
                             <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer">
-                                <input type="radio" name="payment_method" value="1" class="radio">
+                                <input type="radio" name="payment_method" value="1" class="radio" @if(isset($hasCreditCard) && !$hasCreditCard) disabled @endif>
                                 <div>
                                     <div class="font-medium">Chuyển khoản ngân hàng</div>
                                     <div class="text-sm text-[#6c6a69]">Chuyển khoản trước khi giao hàng</div>
+                                    @if(isset($hasCreditCard) && !$hasCreditCard)
+                                        <div class="text-xs text-red-500 mt-1">Chưa cấu hình chuyển khoản ngân hàng, vui lòng chọn COD.</div>
+                                    @endif
                                 </div>
                             </label>
                         </div>

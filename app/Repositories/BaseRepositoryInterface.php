@@ -24,9 +24,7 @@ interface BaseRepositoryInterface
 
     public function updateMany(array $conditions, array $attributes): int;
 
-
     public function deleteOne($id): bool;
-
 
     public function deleteMany(array $conditions): int;
 
