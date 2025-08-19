@@ -149,7 +149,7 @@
                     </div>
 
                     <div class="mt-12">
-                        {{ $articles->links('vendor.pagination.tailwind') }}
+                        {{ $articles->links('pagination::daisyui') }}
                     </div>
                 @else
                     <div class="text-center py-12">

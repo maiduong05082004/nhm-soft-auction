@@ -73,9 +73,9 @@ class ProductService extends BaseService implements ProductServiceInterface
     public function filterProductList($query = [], $page = 1, $perPage = 12)
     {
         $cacheKey = $this->buildCacheKey('products_lists', $query, $page, $perPage);
-        return Cache::remember($cacheKey, 600, function () use ($query, $page, $perPage) {
+        // return Cache::remember($cacheKey, 600, function () use ($query, $page, $perPage) {
             return $this->getRepository('product')->getProductByFilter($query, $page, $perPage);
-        });
+        // });
     }
     public function incrementViewCount ($productId) {
         return $this->getRepository('product')->incrementViewCount($productId);
@@ -85,4 +85,5 @@ class ProductService extends BaseService implements ProductServiceInterface
         $serialized = serialize($params);
         return $prefix . '_' . $serialized;
     }
+    
 }

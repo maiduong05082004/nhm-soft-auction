@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Repositories\Wishlists;
+namespace App\Services\Wishlist;
 
-use App\Repositories\BaseRepositoryInterface;
+use App\Services\BaseServiceInterface;
 
-interface WishlistRepositoryInterface extends BaseRepositoryInterface
+interface WishlistServiceInterface extends BaseServiceInterface
 {
     public function getByUserId($userId);
     public function insert($userId, $productId);

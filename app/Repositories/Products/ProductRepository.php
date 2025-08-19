@@ -18,7 +18,7 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
     {
         $builder = $this->model
             ->with(['category', 'auction', 'firstImage'])
-            ->where('status', 'active');
+            ->where('status', 1);
 
         if (!empty($query['name'])) {
             $builder->where('name', 'like', '%' . $query['name'] . '%');
@@ -47,6 +47,14 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         if (!empty($query['state'])) {
             $builder->where('state', $query['state']);
         }
+
+        if (!empty($query['is_hot'])) {
+            $builder->where('is_hot', 1);
+        }
+
+        if (!empty($query['is_new'])) {
+            $builder->where('created_at', '<=', now()->subWeek());
+        }
         if (!empty($query['orderBy'])) {
             switch ($query['orderBy']) {
                 case 'price_asc':
@@ -68,18 +76,24 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
                     $builder->orderBy('created_at', 'asc');
                     break;
                 case 'created_at_desc':
-                default:
                     $builder->orderBy('created_at', 'desc');
                     break;
+                case 'view_asc':
+                    $builder->orderby('view', 'asc');
+                case 'view_desc':
+                    $builder->orderby('view', 'desc');
+                    break;
+                default:
+                    $builder->orderBy('created_at', 'desc');
             }
         } else {
             $builder->orderBy('created_at', 'desc');
         }
-
         return $builder->paginate($perPage, ['*'], 'page', $page);
     }
 
-    public function incrementViewCount($productId) {
+    public function incrementViewCount($productId)
+    {
         return $this->model->find($productId)->increment('view');
     }
 }

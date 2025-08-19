@@ -21,7 +21,55 @@
 <!-- Canonical -->
 <link rel="canonical" href="{{ url()->current() }}">
 
-<!-- JSON-LD Schema.org -->
 @include('partial.schema')
 
-@vite(['resources/css/app.css'])
+@vite(['resources/css/app.css', 'resources/js/app.js'])
+<script>
+    function showToast(message, type = 'success') {
+        const isDesktop = window.innerWidth >= 640;
+        const toastSelector = isDesktop ? '#toast' : '#mobile-toast';
+        const contentSelector = isDesktop ? '#toast-content' : '#mobile-toast-content';
+        const messageSelector = isDesktop ? '#toast-message' : '#mobile-toast-message';
+        const iconSelector = isDesktop ? '#toast-icon' : '#mobile-toast-icon';
+
+        const toastEl = document.querySelector(toastSelector);
+        const contentEl = document.querySelector(contentSelector);
+        const messageEl = document.querySelector(messageSelector);
+
+        if (!toastEl || !contentEl || !messageEl) return;
+
+        messageEl.textContent = message;
+        console.log('djt me may js aaaaaaaaaaaaaaa');
+
+        const colors = {
+            success: 'border-green-500',
+            error: 'border-red-500',
+            info: 'border-blue-500'
+        };
+
+        contentEl.classList.remove('border-green-500', 'border-red-500', 'border-blue-500');
+        contentEl.classList.add(colors[type] || colors.success);
+
+        toastEl.classList.remove('hidden');
+
+        setTimeout(() => {
+            contentEl.classList.remove(isDesktop ? 'translate-x-full' : 'translate-y-full');
+        }, 10);
+
+        setTimeout(() => {
+            contentEl.classList.add(isDesktop ? 'translate-x-full' : 'translate-y-full');
+            setTimeout(() => {
+                toastEl.classList.add('hidden');
+            }, 300);
+        }, 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        @if (session('success'))
+            showToast({!! json_encode(session('success'), JSON_UNESCAPED_UNICODE) !!}, 'success');
+        @endif
+        @if (session('error'))
+            showToast({!! json_encode(session('error'), JSON_UNESCAPED_UNICODE) !!}, 'error');
+        @endif
+    });
+</script>

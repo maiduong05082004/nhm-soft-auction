@@ -6,11 +6,13 @@ use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Wishlist extends Model
 {
     use HasFactory;
     use SoftDeletes;
 
+    protected $table = "wishlist";
     protected $fillable = [
         'id',
         'user_id',

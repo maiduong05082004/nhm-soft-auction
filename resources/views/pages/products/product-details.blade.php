@@ -246,14 +246,14 @@
                         @endif
                     </div>
 
-                    <div class="flex gap-4 border-t border-slate-300 pt-4">
+                    {{-- <div class="flex gap-4 border-t border-slate-300 pt-4">
                         <div class="flex ">
                             <div class="">
-                                @if ($user->avatar == null)
+                                @if(isset($user['avatar']))
                                     <img src="{{ asset('/images/default-user-icon.png') }}" alt="{{ $user->name }}"
                                         class="rounded-full w-12 h-12 object-cover">
                                 @else
-                                    <img src="{{ $user->avatar }}" alt="{{ $user->name }}"
+                                    <img src="{{ $user['avatar'] }}" alt="{{ $user['avatar'] }}"
                                         class="rounded-full w-12 h-12 object-cover">
                                 @endif
                             </div>
@@ -275,7 +275,7 @@
 
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="pt-4 border-t border-slate-300">
                         <h3 class="font-semibold mb-2">Thông tin sản phẩm</h3>
                         <div class="grid grid-cols-2 gap-4 border-t border-slate-300 pt-4">
