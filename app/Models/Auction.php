@@ -17,9 +17,11 @@ class Auction extends Model
         'product_id',
         'start_price',
         'step_price',
+        'start_time',
         'end_time',
         'status',
     ];
+
     protected static function boot()
     {
         parent::boot();
@@ -27,6 +29,7 @@ class Auction extends Model
             $model->id = HelperFunc::getTimestampAsId();
         });
     }
+
     public function product()
     {
         return $this->belongsTo(Product::class);

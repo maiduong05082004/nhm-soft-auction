@@ -17,17 +17,15 @@
         <img src="{{ asset('images/') }}" class="w-full h-auto object-cover" alt="AuctionsClone promotional banner"
             loading="lazy">
     </section>
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 my-6">
-
-
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 my-6 md:px-0 px-4">
         <article class="lg:col-span-8 bg-base-100 p-6 rounded-lg shadow">
             <h1 class="text-4xl font-bold mb-4">{{ $article->title }}</h1>
 
             <div class="flex items-center text-sm text-gray-500 mb-6">
-                <span>Tác giả {{ $article->author->name ?? 'Tác giả ẩn danh' }}</span>
-                @if (isset($article->created_at))
+                <span>Tác giả:  {{ $article->author->name ?? 'Tác giả ẩn danh' }}</span>
+                @if (isset($article->publish_time))
                     <span class="mx-2">•</span>
-                    <span>{{ $article->created_at->format('d/m/Y H:i') }}</span>
+                    <span>{{ $article->publish_time}}</span>
                 @endif
             </div>
 

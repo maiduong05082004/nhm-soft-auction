@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Services\Articles\ArticleService;
 use App\Services\Articles\ArticleServiceInterface;
+use App\Services\Auctions\AuctionService;
+use App\Services\Auctions\AuctionServiceInterface;
 use App\Services\Auth\AuthService;
 use App\Services\Auth\AuthServiceInterface;
 use App\Services\BaseService;
@@ -24,6 +26,8 @@ use App\Services\Products\ProductService;
 use App\Services\Products\ProductServiceInterface;
 use App\Services\Checkout\CheckoutService;
 use App\Services\Checkout\CheckoutServiceInterface;
+use App\Services\Wishlist\WishlistService;
+use App\Services\Wishlist\WishlistServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class ServiceAppProvider extends ServiceProvider
@@ -43,8 +47,9 @@ class ServiceAppProvider extends ServiceProvider
         $this->app->bind(ConfigServiceInterface::class, ConfigService::class);
         $this->app->bind(TransactionServiceInterface::class, TransactionService::class);
         $this->app->bind(CheckoutServiceInterface::class, CheckoutService::class);
+        $this->app->bind(WishlistServiceInterface::class, WishlistService::class);
         $this->app->bind(MembershipServiceInterface::class, MembershipService::class);
-
+        $this->app->bind(AuctionServiceInterface::class, AuctionService::class);
     }
 
     /**
