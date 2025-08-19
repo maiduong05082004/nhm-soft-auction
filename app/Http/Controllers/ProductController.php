@@ -36,7 +36,7 @@ class ProductController extends Controller
         $orderBy = $req->input('sort_by');
         $categoryId = $req->input('category_id');
         $state = $req->input('state');
-
+        $page = $req->input('page', 1);
 
         $query = [];
 
@@ -64,7 +64,7 @@ class ProductController extends Controller
             $query['state'] = $state;
         }
         
-        $products = $this->productService->filterProductList($query, 1, 12);
+        $products = $this->productService->filterProductList($query, $page, 12);
         $products->appends($req->query());
         $categories = $this->categoryService->getAll('category');
         return view('pages.products.list', compact('products', 'categories'));

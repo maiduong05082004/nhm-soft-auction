@@ -4,6 +4,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [DashboardController::class,'index'])->name('home');
+Route::get('/', [DashboardController::class, 'index'])->name('home');
 
 Route::get('/verify/{id}/{hash}', [\App\Http\Controllers\AuthController::class, 'verify'])->name('verify');
 
@@ -31,10 +32,21 @@ Route::prefix('tin-tuc')->group(function () {
     Route::get('{slug}', [\App\Http\Controllers\NewsController::class, 'article'])->name('news.detail');
 });
 
-Route::prefix('products')->group(function () {
+Route::prefix('san-pham')->group(function () {
     Route::get('/', [ProductController::class, 'list'])->name('products.list');
     Route::get('/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 });
+
+Route::middleware(['auth:sanctum', 'verified'])->prefix('yeu-thich')->group(function () {
+    Route::get('', [WishlistController::class, 'list'])->name('wishlist.list');
+    Route::post('/them', [WishlistController::class, 'add'])->name('wishlist.add');
+    Route::delete('/{productId}', [WishlistController::class, 'remove'])->name('wishlist.remove');
+    Route::delete('/clear', [WishlistController::class, 'clear'])->name('wishlist.clear');
+
+    Route::get('/api/items', [WishlistController::class, 'getItems'])->name('wishlist.get-items');
+});
+
+
 
 Route::middleware(['auth:sanctum', 'verified'])->prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'index'])->name('cart.index');

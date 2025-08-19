@@ -483,7 +483,7 @@
                                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div class="order-1 sm:order-2">
                                         <div class="flex justify-center">
-                                            {{ $products->links('pagination::tailwind') }}
+                                            {{ $products->links('pagination::daisyui') }}
                                         </div>
                                     </div>
                                 </div>

@@ -57,26 +57,35 @@ class ArticleRepository extends BaseRepository implements ArticleRepositoryInter
             }
         }
 
+        if (!empty($query['author'])) {
+            $builder->where('user_id', $query['author']);
+        }
         if (!empty($query['orderBy'])) {
-            if ($query['orderBy'] == 'view') {
-                $builder->orderBy('view', 'desc');
-            } else if ($query['orderBy'] == 'sort') {
-                $builder->orderByRaw("
+
+            switch ($query['orderBy']) {
+                case 'view':
+                    $builder->orderBy('view', 'desc');
+                    break;
+
+                case 'sort':
+                    $builder->orderByRaw("
                         CASE 
                             WHEN publish_time >= ? THEN 0 
                             ELSE 1 
                         END
                     ", [now()->subWeek()])
-                    ->orderBy('sort', 'asc');
-            }
-        }
+                        ->orderBy('sort', 'asc');
+                    break;
 
-        if (!empty($query['author'])) {
-            $builder->where('user_id', $query['author']);
+                default:
+                    $builder->orderBy('publish_time', 'desc');
+                    break;
+            }
         }
 
         return $builder->paginate($perPage, ['*'], 'page', $page);
     }
+
 
     public function incrementViewCount($articleId): bool
     {
