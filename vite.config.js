@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/partials/slide.js',
                 'resources/js/partials/filter.js',
+                'resources/js/admin/buy-membership.js',
             ],
             refresh: [
                 ...refreshPaths,

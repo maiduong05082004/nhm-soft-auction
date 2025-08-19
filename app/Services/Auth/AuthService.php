@@ -5,6 +5,7 @@ namespace App\Services\Auth;
 use App\Enums\ImageStoragePath;
 use App\Enums\Transactions\TransactionPaymentType;
 use App\Models\User;
+use App\Repositories\MembershipUser\MembershipUserRepositoryInterface;
 use App\Repositories\TransactionPayment\TransactionPaymentRepositoryInterface;
 use App\Repositories\TransactionPoint\TransactionPointRepositoryInterface;
 use App\Repositories\Users\UserRepositoryInterface;
@@ -17,13 +18,15 @@ class AuthService extends BaseService implements AuthServiceInterface
     public function __construct(
         UserRepositoryInterface               $userRepo,
         TransactionPaymentRepositoryInterface $transactionPaymentRepo,
-        TransactionPointRepositoryInterface   $transactionPointRepo
+        TransactionPointRepositoryInterface   $transactionPointRepo,
+        MembershipUserRepositoryInterface     $membershipUserRepo
     )
     {
         parent::__construct([
             'user' => $userRepo,
             'transactionPayment' => $transactionPaymentRepo,
             'transactionPoint' => $transactionPointRepo,
+            'membershipUser' => $membershipUserRepo,
         ]);
     }
 
@@ -151,5 +154,18 @@ class AuthService extends BaseService implements AuthServiceInterface
             'sum_bid_product' => $sumBidProduct,
             'sum_point' => $sumPoint,
         ];
+    }
+
+    public function getMembershipInfo()
+    {
+        $user = $this->getInfoAuth();
+
+        $data = $this->getRepository('membershipUser')->query()
+            ->where('user_id', $user->id)
+            ->with(['membershipPlan','membershipTransaction'])
+            ->orderBy('status', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return $data;
     }
 }

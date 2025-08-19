@@ -16,6 +16,8 @@ use App\Services\Category\CategoryService;
 use App\Services\Category\CategoryServiceInterface;
 use App\Services\Orders\OrderService;
 use App\Services\Orders\OrderServiceInterface;
+use App\Services\Membership\MembershipService;
+use App\Services\Membership\MembershipServiceInterface;
 use App\Services\Transaction\TransactionService;
 use App\Services\Transaction\TransactionServiceInterface;
 use App\Services\Products\ProductService;
@@ -41,6 +43,8 @@ class ServiceAppProvider extends ServiceProvider
         $this->app->bind(ConfigServiceInterface::class, ConfigService::class);
         $this->app->bind(TransactionServiceInterface::class, TransactionService::class);
         $this->app->bind(CheckoutServiceInterface::class, CheckoutService::class);
+        $this->app->bind(MembershipServiceInterface::class, MembershipService::class);
+
     }
 
     /**

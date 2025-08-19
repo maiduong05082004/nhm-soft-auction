@@ -10,8 +10,6 @@ enum ConfigMembership: string
     case MAX_PRODUCTS_PER_MONTH = 'max_products_per_month';
     case PRIORITY_SUPPORT = 'priority_support';
     case FEATURED_LISTING = 'featured_listing';
-    case EXTENDED_LISTING_DURATION = 'extended_listing_duration';
-    case COMMISSION_REDUCTION = 'commission_reduction';
 
     public function label(): string
     {
@@ -22,24 +20,20 @@ enum ConfigMembership: string
             self::MAX_PRODUCTS_PER_MONTH => 'Số sản phẩm tối đa/tháng',
             self::PRIORITY_SUPPORT => 'Hỗ trợ ưu tiên',
             self::FEATURED_LISTING => 'Sản phẩm nổi bật',
-            self::EXTENDED_LISTING_DURATION => 'Thời gian đăng tin mở rộng',
-            self::COMMISSION_REDUCTION => 'Giảm hoa hồng',
         };
     }
 
     public function type(): string
     {
         return match($this) {
-            self::FREE_PRODUCT_LISTING,
-            self::FREE_AUCTION_PARTICIPATION,
-            self::PRIORITY_SUPPORT,
+            self::FREE_PRODUCT_LISTING => 'boolean',
+            self::FREE_AUCTION_PARTICIPATION => 'boolean',
+            self::PRIORITY_SUPPORT => 'boolean',
             self::FEATURED_LISTING => 'boolean',
-            
-            self::DISCOUNT_PERCENTAGE,
-            self::COMMISSION_REDUCTION => 'percentage',
-            
-            self::MAX_PRODUCTS_PER_MONTH,
-            self::EXTENDED_LISTING_DURATION => 'number',
+
+            self::DISCOUNT_PERCENTAGE => 'percentage',
+
+            self::MAX_PRODUCTS_PER_MONTH => 'number',
         };
     }
 }

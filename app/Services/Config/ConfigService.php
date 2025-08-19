@@ -2,6 +2,7 @@
 
 namespace App\Services\Config;
 
+use App\Enums\Config\ConfigName;
 use App\Repositories\Config\ConfigRepository;
 use App\Services\BaseService;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,6 +20,11 @@ class ConfigService extends BaseService implements ConfigServiceInterface
     public function getAllConfig(): ?Collection
     {
         return $this->getAll('config');
+    }
+
+    public function getConfigByKeys(array $keys)
+    {
+        return $this->getRepository('config')->query()->whereIn('config_key', $keys)->pluck('config_value', 'config_key');
     }
 
     public function updateConfigs(array $form):bool

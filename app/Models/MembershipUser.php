@@ -5,19 +5,11 @@ namespace App\Models;
 use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Jetstream\HasProfilePhoto;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 
 class MembershipUser extends Model
 {
-    use HasApiTokens;
     use HasFactory;
-    use HasProfilePhoto;
-    use Notifiable;
-    use TwoFactorAuthenticatable;
     use SoftDeletes;
 
     /**
@@ -41,4 +33,19 @@ class MembershipUser extends Model
         });
     }
 
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function membershipPlan()
+    {
+        return $this->belongsTo(MembershipPlan::class);
+    }
+
+    public function membershipTransaction ()
+    {
+        return $this->hasMany(MembershipTransaction::class);
+    }
 }

@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms;
+use Filament\Forms\Components\ColorPicker;
 
 class MembershipPlansResource extends Resource
 {
@@ -35,10 +36,11 @@ class MembershipPlansResource extends Resource
                     ->label('Tên gói thành viên')
                     ->required()
                     ->maxLength(255)
+                    ->columnSpanFull()
                     ->live(onBlur: true),
 
                 Forms\Components\TextInput::make('price')
-                    ->label('Giá')
+                    ->label('Số điểm yêu cầu')
                     ->required()
                     ->numeric()
                     ->minValue(0),
@@ -58,11 +60,24 @@ class MembershipPlansResource extends Resource
                     ])
                     ->default(true)
                     ->required(),
+                Forms\Components\TextInput::make('sort')
+                    ->label('Sắp xếp')
+                    ->helperText("Số càng nhỏ, gói sẽ hiển thị càng cao trong danh sách")
+                    ->integer()
+                    ->minValue(0),
+                Forms\Components\TextInput::make('badge')
+                    ->label('Huy hiệu gói thành viên')
+                    ->maxLength(255),
+
+                ColorPicker::make('badge_color')
+                    ->label('Chọn màu huy hiệu')
+                    ->default('#ff5733'),
 
                 Forms\Components\Textarea::make('description')
-                    ->label('Mô tả')
-                    ->rows(4),
-
+                    ->label('Miêu tả')
+                    ->required()
+                    ->columnSpanFull()
+                    ->maxLength(255),
                 Forms\Components\Section::make('Cấu hình quyền lợi')
                     ->schema([
                         Forms\Components\Toggle::make('config.free_product_listing')
@@ -94,29 +109,12 @@ class MembershipPlansResource extends Resource
                             ->default(0)
                             ->helperText('Giảm giá khi mua sản phẩm'),
 
-                        Forms\Components\TextInput::make('config.commission_reduction')
-                            ->label('Giảm hoa hồng (%)')
-                            ->numeric()
-                            ->minValue(0)
-                            ->maxValue(100)
-                            ->suffix('%')
-                            ->default(0)
-                            ->helperText('Giảm phần trăm hoa hồng khi bán'),
-
                         Forms\Components\TextInput::make('config.max_products_per_month')
                             ->label('Số sản phẩm tối đa/tháng')
                             ->numeric()
                             ->minValue(0)
                             ->default(0)
                             ->helperText('0 = không giới hạn'),
-
-                        Forms\Components\TextInput::make('config.extended_listing_duration')
-                            ->label('Thời gian đăng tin mở rộng (ngày)')
-                            ->numeric()
-                            ->minValue(0)
-                            ->default(0)
-                            ->suffix('ngày')
-                            ->helperText('Số ngày thêm vào thời gian đăng tin'),
                     ])
                     ->columns(2),
             ]);

@@ -6,6 +6,12 @@ use App\Repositories\BaseRepository;
 use App\Repositories\BaseRepositoryInterface;
 use App\Repositories\Config\ConfigRepository;
 use App\Repositories\Config\ConfigRepositoryInterface;
+use App\Repositories\MembershipPlan\MembershipPlanRepository;
+use App\Repositories\MembershipPlan\MembershipPlanRepositoryInterface;
+use App\Repositories\MembershipTransaction\MembershipTransactionRepository;
+use App\Repositories\MembershipTransaction\MembershipTransactionRepositoryInterface;
+use App\Repositories\MembershipUser\MembershipUserRepository;
+use App\Repositories\MembershipUser\MembershipUserRepositoryInterface;
 use App\Repositories\TransactionPayment\TransactionPaymentRepository;
 use App\Repositories\TransactionPayment\TransactionPaymentRepositoryInterface;
 use App\Repositories\TransactionPoint\TransactionPointRepository;
@@ -42,6 +48,10 @@ class RepositoryProvider extends ServiceProvider
         $this->app->bind(ConfigRepositoryInterface::class, ConfigRepository::class);
         $this->app->bind(TransactionPaymentRepositoryInterface::class, TransactionPaymentRepository::class);
         $this->app->bind(TransactionPointRepositoryInterface::class, TransactionPointRepository::class);
+        $this->app->bind(MembershipPlanRepositoryInterface::class, MembershipPlanRepository::class);
+        $this->app->bind(MembershipUserRepositoryInterface::class, MembershipUserRepository::class);
+        $this->app->bind(MembershipTransactionRepositoryInterface::class, MembershipTransactionRepository::class);
+
     }
 
     /**

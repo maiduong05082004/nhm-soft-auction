@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Enums\ConfigMembership;
 use App\Utils\HelperFunc;
@@ -36,6 +35,9 @@ class MembershipPlan extends Model
         'duration',
         'config',
         'status',
+        'badge',
+        'sort',
+        'badge_color',
     ];
 
     protected $casts = [
@@ -50,6 +52,8 @@ class MembershipPlan extends Model
             $model->id = HelperFunc::getTimestampAsId();
         });
     }
+
+
 
     public function getConfig(ConfigMembership $key, $default = null)
     {
