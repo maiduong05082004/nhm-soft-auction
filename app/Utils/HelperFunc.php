@@ -73,4 +73,15 @@ class HelperFunc
         }
         return $url;
     }
+
+    public static function maskMiddle(string $value, int $leftKeep = 4, int $rightKeep = 3): string
+    {
+        $length = mb_strlen($value);
+        if ($length <= max($leftKeep, $rightKeep)) {
+            return str_repeat('*', $length);
+        }
+        $left = mb_substr($value, 0, min($leftKeep, $length));
+        $right = mb_substr($value, max(0, $length - $rightKeep));
+        return $left . '***' . $right;
+    }
 }

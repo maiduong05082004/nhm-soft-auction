@@ -1,72 +1,30 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const bidForm = document.getElementById('bid-form');
 
-        if (bidForm) {
-            bidForm.addEventListener('submit', function(e) {
-                e.preventDefault();
+        @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2) && isset($auctionData['auction']))
+            const incrementButtons = document.querySelectorAll('.increment-bid');
+            const bidInput = document.getElementById('bid-price');
 
-                const bidPrice = document.getElementById('bid-price').value;
-                const productId = {{ $product->id }};
+            if (incrementButtons && bidInput) {
+                incrementButtons.forEach((btn, index) => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
 
-                const submitBtn = bidForm.querySelector('button[type="submit"]');
-                const originalText = submitBtn.textContent;
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Đang xử lý...';
+                        const increment = parseInt(btn.getAttribute('data-increment'), 10) || 0;
+                        const hasBids = {{ $totalBids > 0 ? 'true' : 'false' }};
 
-                fetch(`/auctions/${productId}/bid`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').
-                                getAttribute('content')
-                        },
-                        body: JSON.stringify({
-                            bid_price: bidPrice
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            window.location.reload();
-                        } else {
-                            alert(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra khi đặt giá thầu!');
-                    })
-                    .finally(() => {
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = originalText;
+                        const basePrice = hasBids ?
+                            {{ isset($auctionData['current_price']) ? $auctionData['current_price'] : $auctionData['auction']->start_price ?? 0 }} :
+                            {{ $auctionData['auction']->start_price ?? 0 }};
+
+                        const newPrice = basePrice + increment;
+                        bidInput.value = newPrice;
+                        bidInput.dispatchEvent(new Event('input', {
+                            bubbles: true
+                        }));
                     });
-            });
-        }
-
-        @if($product->type_sale === ($typeSale['AUCTION'] ?? 2) && isset($auctionData['auction']))
-        const incrementButtons = document.querySelectorAll('.increment-bid');
-        const bidInput = document.getElementById('bid-price');
-
-        if (incrementButtons && bidInput) {
-            incrementButtons.forEach((btn, index) => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    const increment = parseInt(btn.getAttribute('data-increment'), 10) || 0;
-                    const hasBids = {{ $totalBids > 0 ? 'true' : 'false' }};
-
-                    const basePrice = hasBids
-                        ? {{ isset($auctionData['current_price']) ? $auctionData['current_price'] : ($auctionData['auction']->start_price ?? 0) }}
-                        : {{ $auctionData['auction']->start_price ?? 0 }};
-
-                    const newPrice = basePrice + increment;
-                    bidInput.value = newPrice;
-                    bidInput.dispatchEvent(new Event('input', { bubbles: true }));
                 });
-            });
-        }
+            }
         @endif
 
         function countdown(targetMs) {
@@ -110,14 +68,169 @@
             updateCountdown();
         }
 
-        @if($product->type_sale === ($typeSale['AUCTION'] ?? 2) && isset($auctionData['auction']))
-            const auctionEndIso = "{{ \Carbon\Carbon::parse($auctionData['auction']->end_time)->toIso8601String() }}";
-            console.log('[Auction] end_time ISO:', auctionEndIso);
+        @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2) && isset($auctionData['auction']))
+            const auctionEndIso =
+                "{{ \Carbon\Carbon::parse($auctionData['auction']->end_time)->toIso8601String() }}";
             const targetMs = new Date(auctionEndIso).getTime();
-            console.log('[Auction] countdown targetMs:', targetMs, '->', new Date(targetMs).toString());
             countdown(targetMs);
-        @else
-            console.log('[Auction] Sản phẩm không phải đấu giá hoặc không có dữ liệu phiên đấu giá. Bỏ qua countdown/bid increment.');
         @endif
     });
+
+    function showTab(tabId) {
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => {
+            content.style.display = 'none';
+        });
+
+        const tabs = document.querySelectorAll('[onclick^="showTab"]');
+        tabs.forEach(tab => {
+            tab.classList.remove('border-blue-500');
+            tab.classList.add('border-transparent');
+        });
+
+        const selectedContent = document.getElementById(tabId);
+        if (selectedContent) {
+            selectedContent.style.display = 'block';
+        }
+
+        const activeTab = document.querySelector(`[onclick="showTab('${tabId}')"]`);
+        if (activeTab) {
+            activeTab.classList.remove('border-transparent');
+            activeTab.classList.add('border-blue-500');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        showTab('description');
+    });
+
+    function decreaseQuantity() {
+        const quantityInput = document.getElementById('quantity');
+        const currentValue = parseInt(quantityInput.value);
+        const minValue = parseInt(quantityInput.min);
+
+        if (currentValue > minValue) {
+            quantityInput.value = currentValue - 1;
+        }
+    }
+
+    function increaseQuantity() {
+        const quantityInput = document.getElementById('quantity');
+        const currentValue = parseInt(quantityInput.value);
+        const maxValue = parseInt(quantityInput.max);
+
+        if (currentValue < maxValue) {
+            quantityInput.value = currentValue + 1;
+        }
+    }
+
+    function shareProduct() {
+        const currentUrl = window.location.href;
+        const productName = "{{ $product->name }}";
+
+        if (navigator.share) {
+            navigator.share({
+                title: productName,
+                text: `Xem sản phẩm: ${productName}`,
+                url: currentUrl
+            }).catch((error) => {
+                copyToClipboard(currentUrl);
+            });
+        } else {
+            copyToClipboard(currentUrl);
+        }
+    }
+
+    function copyToClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showShareNotification('Đã sao chép link vào clipboard!');
+            }).catch(() => {
+                fallbackCopyToClipboard(text);
+            });
+        } else {
+            fallbackCopyToClipboard(text);
+        }
+    }
+
+    function fallbackCopyToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+            showShareNotification('Đã sao chép link vào clipboard!');
+        } catch (err) {
+            showShareNotification('Không thể sao chép link!');
+        }
+
+        document.body.removeChild(textArea);
+    }
+
+    function showBidConfirmation() {
+        const modal = document.getElementById('bid_confirmation_modal');
+        if (modal) {
+            modal.showModal();
+        }
+    }
+
+    function closeBidConfirmation() {
+        const modal = document.getElementById('bid_confirmation_modal');
+        if (modal) {
+            modal.close();
+        }
+    }
+
+    function confirmBid() {
+        const bidForm = document.getElementById('bid-form');
+        if (bidForm) {
+            closeBidConfirmation();
+            
+            bidForm.submit();
+        }
+    }
+
+    function showShareNotification(message) {
+        const notification = document.createElement('div');
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 9999;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease-out;
+        `;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
 </script>

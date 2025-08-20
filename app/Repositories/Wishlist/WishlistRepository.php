@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Wishlists;
+namespace App\Repositories\Wishlist;
 
 use App\Models\Wishlist;
 use App\Repositories\BaseRepository;

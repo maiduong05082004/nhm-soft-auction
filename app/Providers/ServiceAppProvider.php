@@ -28,6 +28,8 @@ use App\Services\Checkout\CheckoutService;
 use App\Services\Checkout\CheckoutServiceInterface;
 use App\Services\Wishlist\WishlistService;
 use App\Services\Wishlist\WishlistServiceInterface;
+use App\Services\Evaluates\EvaluateService;
+use App\Services\Evaluates\EvaluateServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class ServiceAppProvider extends ServiceProvider
@@ -50,6 +52,7 @@ class ServiceAppProvider extends ServiceProvider
         $this->app->bind(WishlistServiceInterface::class, WishlistService::class);
         $this->app->bind(MembershipServiceInterface::class, MembershipService::class);
         $this->app->bind(AuctionServiceInterface::class, AuctionService::class);
+        $this->app->bind(EvaluateServiceInterface::class, EvaluateService::class);
     }
 
     /**

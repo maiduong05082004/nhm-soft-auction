@@ -44,7 +44,18 @@ class AuctionRepository extends BaseRepository implements AuctionRepositoryInter
     {
         return $this->model->find($auctionId)
             ->bids()
+            ->with('user')
             ->orderBy('bid_price', 'desc')
+            ->get();
+    }
+
+    public function getRecentBids($auctionId, int $limit = 10)
+    {
+        return $this->model->find($auctionId)
+            ->bids()
+            ->with('user')
+            ->orderBy('bid_time', 'desc')
+            ->limit($limit)
             ->get();
     }
 

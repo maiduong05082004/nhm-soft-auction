@@ -7,5 +7,5 @@ use App\Repositories\BaseRepositoryInterface;
 interface ConfigRepositoryInterface extends BaseRepositoryInterface
 {
     public function updateConfigWithKey($key, $value): int;
-
+    public function getConfigByKey(string $configKey);
 }
