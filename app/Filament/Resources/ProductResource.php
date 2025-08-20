@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Constants\ProductConstants;
 use App\Enums\Product\ProductPaymentMethod;
 use App\Enums\Product\ProductState;
 use App\Enums\Product\ProductStatus;
@@ -19,9 +18,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use FilamentTiptapEditor\TiptapEditor;
-use Illuminate\Database\Eloquent\Builder;
 use App\Utils\HelperFunc;
 use Filament\Tables\Actions\Action as TableAction;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class ProductResource extends Resource
@@ -77,11 +76,13 @@ class ProductResource extends Resource
             Forms\Components\TextInput::make('min_bid_amount')
                 ->label('Giá Dưới')
                 ->numeric()
+                ->default(0)
                 ->requiredIf('type_sale', ProductTypeSale::AUCTION)
                 ->visible(fn($get) => $get('type_sale') === ProductTypeSale::AUCTION),
             Forms\Components\TextInput::make('max_bid_amount')
                 ->label('Giá Trên')
                 ->numeric()
+                ->default(0)
                 ->requiredIf('type_sale', ProductTypeSale::AUCTION)
                 ->visible(fn($get) => $get('type_sale') === ProductTypeSale::AUCTION)
                 ->rules([
@@ -171,9 +172,18 @@ class ProductResource extends Resource
     {
         return $table->modifyQueryUsing(fn(Builder $query) => $query->with('firstImage', 'category'),)
             ->columns([
-                Tables\Columns\Textcolumn::make('name')
+                Tables\Columns\TextColumn::make('name')
                     ->sortable()
+                    ->limit(50)
                     ->label('Tên')
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
+                        // Only render the tooltip if the column content exceeds the length limit.
+                        return $state;
+                    })
                     ->searchable(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Giá')
@@ -199,8 +209,9 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Trạng thái')
                     ->color(fn(string $state): string => match ($state) {
-                        'active' => 'success',
-                        'inactive' => 'warning',
+                        ProductStatus::ACTIVE->value => 'success',
+                        ProductStatus::INACTIVE->value => 'warning',
+                        default => 'default',
                     })->formatStateUsing(fn(string $state): string => $state === 'active' ? 'hoạt động' : 'không hoạt động'),
                 Tables\Columns\TextColumn::make('type_sale')
                     ->label('Dạng Sản Phẩm')
@@ -218,6 +229,7 @@ class ProductResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\ImageColumn::make('images.image_url')
                     ->label('Hình ảnh')
+                    ->getStateUsing(fn ($record) => HelperFunc::generateURLFilePath($record->images->pluck('image_url')->first()))
                     ->disk('public')
                     ->height(100)
                     ->width(100)
@@ -236,10 +248,10 @@ class ProductResource extends Resource
                     ->formatStateUsing(fn($state) =>  $state ? 'có' : 'không'),
                 Tables\Columns\TextColumn::make('state')
                     ->label('Tình trạng sản phẩm')
-                    ->formatStateUsing(fn($state) => ProductConstants::label('states', $state)),
+                    ->formatStateUsing(fn($state) => ProductState::getLabel(ProductState::from($state))),
                 Tables\Columns\TextColumn::make('pay_method')
                     ->label('Phương thức thanh toán')
-                    ->formatStateUsing(fn($state) => ProductConstants::label('pay_methods', $state)),
+                    ->formatStateUsing(fn($state) => ProductPaymentMethod::getLabel(ProductPaymentMethod::from($state))),
                 Tables\Columns\TextColumn::make('brand')
                     ->label("Thương hiệu"),
             ])
@@ -387,7 +399,7 @@ class ProductResource extends Resource
             'view' => Pages\ViewProducts::route('/{record}'),
         ];
     }
-    
+
     public static function getRecordRouteKeyName(): ?string
     {
         return 'slug';

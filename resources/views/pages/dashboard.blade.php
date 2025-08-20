@@ -161,9 +161,9 @@
                                                 $product['firstImage'] &&
                                                 isset($product['firstImage']['image_url'])
                                             ) {
-                                                $imageUrl = asset('storage/' . $product['firstImage']['image_url']);
+                                                $imageUrl = \App\Utils\HelperFunc::generateURLFilePath($product['firstImage']['image_url']);
                                             } elseif (isset($product['image']) && $product['image']) {
-                                                $imageUrl = asset('storage/' . $product['image']);
+                                                $imageUrl = \App\Utils\HelperFunc::generateURLFilePath($product['image']);
                                             }
                                         @endphp
 
@@ -183,7 +183,7 @@
                                         <h3
                                             class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight min-h-[2.5rem] sm:min-h-[3rem] line-clamp-2">
                                             <a href="{{ isset($product['slug']) ? route('products.show', [$product['slug']]) : '' }}"
-                                                class="hover:underline">
+                                                class="hover:underline ">
                                                 {{ $product['name'] ?? 'Tên sản phẩm' }}
                                             </a>
                                         </h3>

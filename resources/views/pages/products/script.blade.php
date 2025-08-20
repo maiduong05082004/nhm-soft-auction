@@ -2,29 +2,29 @@
     document.addEventListener('DOMContentLoaded', function() {
 
         @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2) && isset($auctionData['auction']))
-            const incrementButtons = document.querySelectorAll('.increment-bid');
-            const bidInput = document.getElementById('bid-price');
+        const incrementButtons = document.querySelectorAll('.increment-bid');
+        const bidInput = document.getElementById('bid-price');
 
-            if (incrementButtons && bidInput) {
-                incrementButtons.forEach((btn, index) => {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
+        if (incrementButtons && bidInput) {
+            incrementButtons.forEach((btn, index) => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
 
-                        const increment = parseInt(btn.getAttribute('data-increment'), 10) || 0;
-                        const hasBids = {{ $totalBids > 0 ? 'true' : 'false' }};
+                    const increment = parseInt(btn.getAttribute('data-increment'), 10) || 0;
+                    const hasBids = {{ $totalBids > 0 ? 'true' : 'false' }};
 
-                        const basePrice = hasBids ?
-                            {{ isset($auctionData['current_price']) ? $auctionData['current_price'] : $auctionData['auction']->start_price ?? 0 }} :
-                            {{ $auctionData['auction']->start_price ?? 0 }};
+                    const basePrice = hasBids ?
+                        {{ isset($auctionData['current_price']) ? $auctionData['current_price'] : $auctionData['auction']->start_price ?? 0 }} :
+                        {{ $auctionData['auction']->start_price ?? 0 }};
 
-                        const newPrice = basePrice + increment;
-                        bidInput.value = newPrice;
-                        bidInput.dispatchEvent(new Event('input', {
-                            bubbles: true
-                        }));
-                    });
+                    const newPrice = basePrice + increment;
+                    bidInput.value = newPrice;
+                    bidInput.dispatchEvent(new Event('input', {
+                        bubbles: true
+                    }));
                 });
-            }
+            });
+        }
         @endif
 
         function countdown(targetMs) {
@@ -69,10 +69,10 @@
         }
 
         @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2) && isset($auctionData['auction']))
-            const auctionEndIso =
-                "{{ \Carbon\Carbon::parse($auctionData['auction']->end_time)->toIso8601String() }}";
-            const targetMs = new Date(auctionEndIso).getTime();
-            countdown(targetMs);
+        const auctionEndIso =
+            "{{ \Carbon\Carbon::parse($auctionData['auction']->end_time)->toIso8601String() }}";
+        const targetMs = new Date(auctionEndIso).getTime();
+        countdown(targetMs);
         @endif
     });
 
@@ -173,7 +173,10 @@
         document.body.removeChild(textArea);
     }
 
-    function showBidConfirmation() {
+    let bidConfirmed = false;
+
+    function showBidConfirmation(e) {
+        if (e) e.preventDefault();
         const modal = document.getElementById('bid_confirmation_modal');
         if (modal) {
             modal.showModal();
@@ -191,10 +194,21 @@
         const bidForm = document.getElementById('bid-form');
         if (bidForm) {
             closeBidConfirmation();
-            
+            bidConfirmed = true;
             bidForm.submit();
         }
     }
+
+    (function attachBidFormGuard(){
+        const bidForm = document.getElementById('bid-form');
+        if (!bidForm) return;
+        bidForm.addEventListener('submit', function(ev){
+            if (!bidConfirmed) {
+                ev.preventDefault();
+                showBidConfirmation();
+            }
+        });
+    })();
 
     function showShareNotification(message) {
         const notification = document.createElement('div');
