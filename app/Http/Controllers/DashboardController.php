@@ -26,7 +26,7 @@ class DashboardController extends Controller
         $products1 = $this->productService->filterProductList($query_section1, 1, 10);
         $products2 = $this->productService->filterProductList($query_section2, 1, 10);
         $products3 = $this->productService->filterProductList($query_section3, 1, 10);
-        $categories = $this->categoryService->getAll('category');
+        $categories = $this->productService->getTreeListCategory();
         $articles = $this->articleService->getArticlesList([], 1, 12);
 
         return view('pages.dashboard', compact('products1', 'products2', 'products3','categories', 'articles'));

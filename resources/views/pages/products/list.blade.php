@@ -53,7 +53,6 @@
                     </h2>
 
                     <form id="filter-form" method="GET" action="{{ request()->url() }}" class="space-y-4 sm:space-y-6">
-
                         <div class="filter-group">
                             <h3 class="font-semibold text-gray-700 mb-3 flex items-center text-sm sm:text-base">
                                 <x-heroicon-o-rectangle-stack class="h-4 w-4 mr-2 flex-shrink-0" />
@@ -78,24 +77,19 @@
                                     </div>
                                 @endif
                             </div>
-                            <input type="hidden" name="category_id" value="{{ request('category_id') }}"
+                            <input type="hidden" name="category_ids"
+                                value="{{ request()->input('category_ids', request('category_id')) ?? '' }}"
                                 id="selected-category-id">
 
-                            <div id="selected-category-display" class="mt-2 {{ request('category_id') ? '' : 'hidden' }}">
+                            <div id="selected-category-display"
+                                class="mt-2 {{ request()->input('category_ids') || request('category_id') ? '' : 'hidden' }}">
                                 <div class="bg-blue-50 border border-blue-200 rounded-md p-2">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-blue-700 font-medium" id="selected-category-name">
-                                            @if (request('category_id') && isset($allCategories))
-                                                @php
-                                                    $selectedCategory = $allCategories->find(request('category_id'));
-                                                @endphp
-                                                {{ $selectedCategory ? $selectedCategory->full_path : 'Danh mục đã chọn' }}
-                                            @endif
-                                        </span>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs text-blue-700 font-medium">Danh mục đã chọn</span>
                                         <button type="button" id="clear-category"
-                                            class="text-blue-500 hover:text-blue-700">
-                                            <x-heroicon-o-x-mark class="h-4 w-4" />
-                                        </button>
+                                            class="text-blue-500 hover:text-blue-700 text-xs">Xóa tất cả</button>
+                                    </div>
+                                    <div id="selected-category-list" class="flex flex-wrap gap-2">
                                     </div>
                                 </div>
                             </div>
@@ -121,9 +115,9 @@
                             </h3>
                             <div class="space-y-2">
                                 <label class="flex items-center hover:bg-gray-50 p-2 rounded cursor-pointer">
-                                    <input type="radio" name="product_type" value="all"
+                                    <input type="radio" name="product_type" value=""
                                         class="border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
-                                        {{ request('product_type', 'all') === 'all' ? 'checked' : '' }}>
+                                        {{ request('product_type', '') === '' ? 'checked' : '' }}>
                                     <span class="ml-2 text-xs sm:text-sm text-gray-600">Tất cả sản phẩm</span>
                                 </label>
                                 <label class="flex items-center hover:bg-gray-50 p-2 rounded cursor-pointer">
@@ -143,14 +137,14 @@
                         <div class="filter-group">
                             <h3 class="font-semibold text-gray-700 mb-3 flex items-center text-sm sm:text-base">
                                 <x-heroicon-o-tag class="h-4 w-4 mr-2 flex-shrink-0" />
-                                <span class="hidden sm:inline">Trạng thái sản phẩm</span>
-                                <span class="sm:hidden">Trạng thái</span>
+                                <span class="hidden sm:inline">Tình trạng sản phẩm</span>
+                                <span class="sm:hidden">Tình trạng</span>
                             </h3>
                             <div class="space-y-2">
                                 <label class="flex items-center hover:bg-gray-50 p-2 rounded cursor-pointer">
-                                    <input type="radio" name="state" value="all"
+                                    <input type="radio" name="state" value=""
                                         class="border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
-                                        {{ request('state', 'all') === 'all' ? 'checked' : '' }}>
+                                        {{ request('state', '') === '' ? 'checked' : '' }}>
                                     <span class="ml-2 text-xs sm:text-sm text-gray-600">Tất cả sản phẩm</span>
                                 </label>
                                 <label class="flex items-center hover:bg-gray-50 p-2 rounded cursor-pointer">
@@ -331,12 +325,44 @@
                     </div>
                 </div>
 
-                @if (request()->hasAny(['subcategories', 'product_type', 'price_min', 'price_max']) && request('product_type') !== 'all')
+                @if (request()->hasAny([
+                        'category_ids',
+                        'category_id',
+                        'product_type',
+                        'price_min',
+                        'price_max',
+                        'state',
+                        'product_name',
+                        'sort_by',
+                    ]))
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
                         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                             <div class="flex-1 min-w-0">
                                 <h3 class="font-medium text-blue-800 mb-2 text-sm sm:text-base">Bộ lọc đang áp dụng:</h3>
                                 <div class="flex flex-wrap gap-2">
+
+                                    @if (request('category_ids') || request('category_id'))
+                                        @php
+                                            $catIds = explode(',', request('category_ids', request('category_id')));
+                                            $selectedCats = \App\Models\Category::whereIn('id', $catIds)
+                                                ->pluck('name')
+                                                ->toArray();
+                                        @endphp
+                                        @foreach ($selectedCats as $catName)
+                                            <span
+                                                class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                {{ $catName }}
+                                            </span>
+                                        @endforeach
+                                    @endif
+
+                                    @if (request('product_name'))
+                                        <span
+                                            class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800">
+                                            Tên: "{{ request('product_name') }}"
+                                        </span>
+                                    @endif
+
                                     @if (request('product_type') === 'auction')
                                         <span
                                             class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -349,6 +375,25 @@
                                         </span>
                                     @endif
 
+                                    @if (request()->filled('state'))
+                                        @php
+                                            $states = [
+                                                '0' => 'Chưa sử dụng',
+                                                '1' => 'Hầu như không sử dụng',
+                                                '2' => 'Không có vết xước hoặc bụi bẩn đáng chú ý',
+                                                '3' => 'Có một số vết xước và bụi bẩn',
+                                                '4' => 'Có vết xước và vết bẩn',
+                                                '5' => 'Tình trạng chung là kém',
+                                            ];
+                                        @endphp
+                                        @if (isset($states[request('state')]))
+                                            <span
+                                                class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                {{ $states[request('state')] }}
+                                            </span>
+                                        @endif
+                                    @endif
+
                                     @if (request('price_min') || request('price_max'))
                                         <span
                                             class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -358,12 +403,26 @@
                                         </span>
                                     @endif
 
-                                    @if (request('subcategories'))
-                                        <span
-                                            class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                            {{ count(request('subcategories')) }} danh mục con
-                                        </span>
+                                    @if (request('sort_by'))
+                                        @php
+                                            $sortOptions = [
+                                                'created_at_desc' => 'Mới nhất',
+                                                'created_at_asc' => 'Cũ nhất',
+                                                'price_asc' => 'Giá thấp đến cao',
+                                                'price_desc' => 'Giá cao đến thấp',
+                                                'views_desc' => 'Lượt xem nhiều nhất',
+                                                'name_asc' => 'Tên A-Z',
+                                                'name_desc' => 'Tên Z-A',
+                                            ];
+                                        @endphp
+                                        @if (isset($sortOptions[request('sort_by')]))
+                                            <span
+                                                class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                Sắp xếp: {{ $sortOptions[request('sort_by')] }}
+                                            </span>
+                                        @endif
                                     @endif
+
                                 </div>
                             </div>
                             <a href="{{ request()->url() }}"
@@ -373,6 +432,7 @@
                         </div>
                     </div>
                 @endif
+
 
                 <div class="bg-white rounded-lg shadow-sm p-3 sm:p-6">
                     @if (isset($products))
@@ -427,9 +487,9 @@
                                             alt="{{ $product['name'] ?? 'Sản phẩm' }}" loading="lazy"
                                             onerror="this.src='{{ asset('images/product_default.jpg') }}'">
 
-                                        <button type="button"
-                                            class="heart-icon absolute bottom-1 sm:bottom-2 right-1 sm:right-2 p-1 sm:p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200"
-                                            aria-label="Thêm vào danh sách yêu thích">
+                                        <button type="button" id="btn-add-wishlist"
+                                            class="wishlist-btn absolute bottom-1 sm:bottom-2 right-1 sm:right-2 p-1 sm:p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200"
+                                            aria-label="Thêm vào danh sách yêu thích" data-id="{{ $product['id'] }}">
                                             <x-heroicon-o-heart
                                                 class="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 hover:text-red-500" />
                                         </button>
@@ -437,7 +497,7 @@
 
                                     <div class="p-2 sm:p-3">
                                         <h3
-                                            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
+                                            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight min-h-[2.5rem] sm:min-h-[3rem] line-clamp-2">
                                             <a href="{{ isset($product['slug']) ? route('products.show', [$product['slug']]) : '' }}"
                                                 class="hover:underline">
                                                 {{ $product['name'] ?? 'Tên sản phẩm' }}

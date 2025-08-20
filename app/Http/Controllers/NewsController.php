@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CategoryArticle;
+use App\Repositories\CategoryArticle\CategoryArticleRepository;
 use App\Services\Articles\ArticleServiceInterface;
 use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
     protected $articleService;
-
     public function __construct(ArticleServiceInterface $articleService)
     {
         $this->articleService = $articleService;
@@ -40,7 +41,7 @@ class NewsController extends Controller
 
         $articles->appends($request->query());
 
-        $categories = $this->articleService->getAllCategories();
+        $categories = $this->articleService->getTreeListCategory();
 
         return view('pages.news.list', compact('articles', 'categories', 'q', 'category'));
     }

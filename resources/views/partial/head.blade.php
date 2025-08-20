@@ -1,4 +1,4 @@
-<title>@yield('title')</title>
+<title>@sections('title')</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="@yield('meta_description', 'Mô tả mặc định cho trang đấu giá của bạn')">
@@ -23,7 +23,7 @@
 
 @include('partial.schema')
 
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+@vite(['resources/css/app.css', 'resources/js/app.js','resources/js/partials/wishlist.js'])
 <script>
     function showToast(message, type = 'success') {
         const isDesktop = window.innerWidth >= 640;
@@ -39,7 +39,6 @@
         if (!toastEl || !contentEl || !messageEl) return;
 
         messageEl.textContent = message;
-        console.log('djt me may js aaaaaaaaaaaaaaa');
 
         const colors = {
             success: 'border-green-500',

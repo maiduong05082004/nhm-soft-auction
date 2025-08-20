@@ -11,6 +11,7 @@ export default defineConfig({
                 'resources/js/partials/slide.js',
                 'resources/js/partials/filter.js',
                 'resources/js/admin/buy-membership.js',
+                'resources/js/partials/wishlist.js'
             ],
             refresh: [
                 ...refreshPaths,

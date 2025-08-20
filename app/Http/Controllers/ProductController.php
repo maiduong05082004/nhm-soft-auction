@@ -17,7 +17,6 @@ class ProductController extends Controller
     {
         $this->productService = $productService;
         $this->categoryService = $categoryService;
-        
     }
 
     public function show(Product $product)
@@ -29,44 +28,22 @@ class ProductController extends Controller
 
     public function list(Request $req)
     {
-        $name = $req->input('product_name');
-        $type = $req->input('product_type');
-        $min_price = $req->input("price_min");
-        $max_price = $req->input("price_max");
-        $orderBy = $req->input('sort_by');
-        $categoryId = $req->input('category_id');
-        $state = $req->input('state');
         $page = $req->input('page', 1);
+        $filters = [
+            'name'       => $req->input('product_name'),
+            'type'       => $req->input('product_type'),
+            'min_price'  => $req->input('price_min'),
+            'max_price'  => $req->input('price_max'),
+            'orderBy'    => $req->input('sort_by'),
+            'categoryId' => $req->input('category_id'),
+            'state'      => $req->input('state'),
+        ];
 
-        $query = [];
+        $filters = array_filter($filters, fn($value) => $value !== null && $value !== '');
 
-        if (!empty($name)) {
-            $query['name'] = $name;
-        }
-        if (!empty($type)) {
-            $query['type'] = $type;
-        }
-
-        if (!empty($min_price)) {
-            $query['min_price'] = $min_price;
-        }
-        if (!empty($max_price)) {
-            $query['max_price'] = $max_price;
-        }
-        if (!empty($orderBy)) {
-            $query['orderBy'] = $orderBy;
-        }
-        if (!empty($categoryId)) {
-            $query['categoryId'] = $categoryId;
-        }
-
-        if (!empty($state)) {
-            $query['state'] = $state;
-        }
-        
-        $products = $this->productService->filterProductList($query, $page, 12);
+        $products = $this->productService->filterProductList($filters, $page, 16);
         $products->appends($req->query());
-        $categories = $this->categoryService->getAll('category');
+        $categories = $this->productService->getTreeListCategory();
         return view('pages.products.list', compact('products', 'categories'));
     }
 }
