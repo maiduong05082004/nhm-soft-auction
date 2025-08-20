@@ -32,9 +32,48 @@
 }"
     @keydown.escape="mobileMenuOpen = false; searchOpen = false; document.body.classList.remove('overflow-hidden')">
     <div id="config-route" data-wishlist-get="{{ route('wishlist.get-items') }}"
-        data-wishlist-add="{{ route('wishlist.add') }}" data-wishlist-remove="{{ route('wishlist.remove', ':id') }}"
-        data-wishlist-clear="{{ route('wishlist.clear') }}" data-cart-add="{{ route('cart.add', [':id']) }}">
+        data-wishlist-add="{{ route('wishlist.add') }}" data-wishlist-remove="{{ route('wishlist.remove') }}"
+        data-wishlist-clear="{{ route('wishlist.clear') }}" data-cart-add="{{ route('cart.add', [':id']) }}"
+        data-product-detail="{{ route('products.show', [':id']) }}">
     </div>
+
+
+    <div id="toast" class="fixed top-4 right-4 z-50 hidden sm:block">
+        <div class="bg-white border-l-4 text-gray-700 p-3 sm:p-4 rounded shadow-lg max-w-xs sm:max-w-sm transition-all duration-300 transform translate-x-full"
+            id="toast-content">
+            <div class="flex items-center">
+                <div class="flex-shrink-0" id="toast-icon">
+                    <svg class="h-4 w-4 sm:h-5 sm:w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-2 sm:ml-3">
+                    <p id="toast-message" class="text-xs sm:text-sm font-medium"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mobile-toast" class="fixed bottom-4 left-4 right-4 z-50 hidden sm:hidden">
+        <div class="bg-white border-l-4 text-gray-700 p-3 rounded shadow-lg transition-all duration-300 transform translate-y-full"
+            id="mobile-toast-content">
+            <div class="flex items-center">
+                <div class="flex-shrink-0" id="mobile-toast-icon">
+                    <svg class="h-4 w-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-2">
+                    <p id="mobile-toast-message" class="text-xs font-medium"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <header class="bg-white/95 backdrop-blur-sm sticky top-0 z-40 animate-(--animate-header-fade-in) shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav class="flex items-center justify-between h-16 lg:h-20" aria-label="Main navigation">
@@ -96,6 +135,13 @@
                             <x-heroicon-o-shopping-cart class="w-6 h-6 mb-1"></x-heroicon-o-shopping-cart>
                             <span class="text-xs font-medium">Giỏ hàng</span>
                         </a>
+
+                        <a href="{{ route('news.list') }}"
+                            class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600 
+                               transition-all duration-300 hover:-translate-y-0.5 relative">
+                            <x-heroicon-o-newspaper class="w-6 h-6 mb-1"></x-heroicon-o-newspaper>
+                            <span class="text-xs font-medium">Tin tức</span>
+                        </a>
                     </div>
                 </div>
 
@@ -143,9 +189,9 @@
 
         <div class="flex flex-col h-full overflow-y-auto">
             <div class="p-4 bg-gray-50">
-                <form action="#" method="GET" class="space-y-3">
+                <form action="{{ route('products.list') }}" method="GET" class="space-y-3">
                     <div class="relative">
-                        <input type="search" name="q" placeholder="Tìm kiếm sản phẩm..."
+                        <input type="search" name="name" placeholder="Tìm kiếm sản phẩm..."
                             x-model="searchQuery" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
                             aria-label="Tìm kiếm sản phẩm">
                         <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none"
@@ -162,8 +208,25 @@
                 </form>
             </div>
             <nav class="flex-1 p-4" aria-label="Mobile navigation">
+                <div class="grid grid-cols-3 md:grid-cols-5 lg:hidden gap-3 mb-4">
+                    @foreach ($categories_header as $category)
+                        <div class="text-center">
+                            <a href="{{ route('products.list', ['category_id' => $category->id]) }}"
+                                class="block hover:opacity-80 transition-opacity">
+                                <img src="{{ asset('images/' . $category['image']) }}"
+                                    class="w-16 h-16 mx-auto mb-2 rounded-lg object-cover"
+                                    alt="{{ $category['name'] }}" loading="lazy">
+                                <h3 class="text-xs font-medium text-gray-700 leading-tight">
+                                    {{ $category['name'] }}
+                                </h3>
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
             </nav>
         </div>
+
+
     </aside>
 
 
@@ -194,9 +257,9 @@
             </div>
 
             <div class="p-6">
-                <form action="#" method="GET" class="space-y-4">
+                <form action="{{ route('products.list') }}" method="GET" class="space-y-4">
                     <div class="relative">
-                        <input type="search" name="q" x-ref="searchInput" x-model="searchQuery"
+                        <input type="search" name="name" x-ref="searchInput" x-model="searchQuery"
                             placeholder="Nhập từ khóa tìm kiếm..."
                             class="w-full pl-12 pr-4 py-3 text-lg border border-gray-300"
                             aria-label="Từ khóa tìm kiếm" autocomplete="off">
@@ -206,7 +269,7 @@
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </div>
-
+{{-- 
                     <div class="space-y-2">
                         <p class="text-sm font-medium text-gray-700">Gợi ý tìm kiếm:</p>
                         <div class="flex flex-wrap gap-2">
@@ -223,7 +286,7 @@
                                 Túi xách
                             </span>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <div class="flex space-x-3 pt-4">
                         <button type="submit"

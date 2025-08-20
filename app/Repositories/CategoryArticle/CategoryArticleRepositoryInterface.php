@@ -8,4 +8,5 @@ interface CategoryArticleRepositoryInterface extends BaseRepositoryInterface
 {
     public function getAllActive();
     public function getBySlug($slug);
+    public function getTreeList();
 }

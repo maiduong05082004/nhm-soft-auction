@@ -7,6 +7,8 @@ use App\Repositories\Products\ProductRepository;
 use App\Repositories\ProductImages\ProductImageRepository;
 use App\Repositories\Users\UserRepository;
 use App\Repositories\Auctions\AuctionRepository;
+use App\Repositories\Categories\CategoryRepository;
+use App\Repositories\Wishlists\WishlistRepository;
 use App\Services\Products\ProductServiceInterface;
 use Illuminate\Support\Facades\Cache;
 
@@ -16,13 +18,17 @@ class ProductService extends BaseService implements ProductServiceInterface
         ProductRepository $productRepo,
         ProductImageRepository $productImageRepo,
         UserRepository $userRepo,
-        AuctionRepository $auctionRepo
+        AuctionRepository $auctionRepo,
+        WishlistRepository $wishlistRepo,
+        CategoryRepository $categoryRepo
     ) {
         parent::__construct([
             'product' => $productRepo,
             'productImage' => $productImageRepo,
             'user' => $userRepo,
             'auction' => $auctionRepo,
+            'wishlist' => $wishlistRepo,
+            'category' => $categoryRepo
         ]);
     }
 
@@ -42,11 +48,19 @@ class ProductService extends BaseService implements ProductServiceInterface
 
     public function filterProductList($query = [], $page = 1, $perPage = 12)
     {
+        // dd($query);
         $cacheKey = $this->buildCacheKey('products_lists', $query, $page, $perPage);
         // return Cache::remember($cacheKey, 600, function () use ($query, $page, $perPage) {
             return $this->getRepository('product')->getProductByFilter($query, $page, $perPage);
         // });
+
     }
+
+    public function getTreeListCategory ( ) {
+        $cacheKey = $this->buildCacheKey('product_category');
+        return $this->repositories['category']->getTreeList();
+    }
+
     public function incrementViewCount ($productId) {
         return $this->getRepository('product')->incrementViewCount($productId);
     }

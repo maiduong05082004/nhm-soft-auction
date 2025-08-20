@@ -28,19 +28,7 @@ class WishlistController extends Controller
             $items = $this->wishlistService->getByUserId($userId);
             return response()->json([
                 'success' => true,
-                'data' => $items->map(function ($item) {
-                    return [
-                        'id' => (string) $item->id,
-                        'product_id' => (string) $item->product_id,
-                        'product' => [
-                            'id' => (string) $item->product_id ?? null,
-                            'name' => (string) $item->product->name ?? 'Sản phẩm không tồn tại',
-                            'image_url' => (string) $item->product && $item->product->images && $item->product->images->count() > 0
-                                ? asset('storage/' . $item->product->images->first()->image_url)
-                                : asset('images/default-avatar.png')
-                        ]
-                    ];
-                })
+                'data' => $items
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -55,27 +43,26 @@ class WishlistController extends Controller
         try {
             $productId = $request->input('product_id');
             $userId = Auth::id();
-            $this->wishlistService->insert($userId, $productId);
+            $this->wishlistService->createOne($userId, $productId);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Sản phẩm đã được thêm vào wishlist'
             ]);
         } catch (\Exception $e) {
-
-            dd($e);
             return response()->json([
                 'success' => false,
-                'message' => $e['message']
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function remove(Request $request, $productId): JsonResponse
+    public function remove(Request $request): JsonResponse
     {
         try {
+            $productId = $request->input('product_id');
             $userId = Auth::id();
-            $this->wishlistService->remove($userId, $productId);
+            $this->wishlistService->deleteByUserIdAndProductId($userId, $productId);
 
             return response()->json([
                 'success' => true,
@@ -100,9 +87,10 @@ class WishlistController extends Controller
                 'message' => 'Wishlist đã được làm trống'
             ]);
         } catch (\Exception $e) {
+            dd($e);
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi khi làm trống wishlist'
+                'message' => $e->message
             ], 500);
         }
     }

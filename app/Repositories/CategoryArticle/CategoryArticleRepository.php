@@ -21,4 +21,9 @@ class CategoryArticleRepository extends BaseRepository implements CategoryArticl
     {
         return $this->model->where('slug',$slug)->first();
     }
+
+    public function getTreeList() 
+    {
+        return $this->model->whereNull('parent_id')->orderBy('name')->get();
+    }
 }

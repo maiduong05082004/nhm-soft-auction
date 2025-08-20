@@ -40,7 +40,7 @@ Route::prefix('san-pham')->group(function () {
 Route::middleware(['auth:sanctum', 'verified'])->prefix('yeu-thich')->group(function () {
     Route::get('', [WishlistController::class, 'list'])->name('wishlist.list');
     Route::post('/them', [WishlistController::class, 'add'])->name('wishlist.add');
-    Route::delete('/{productId}', [WishlistController::class, 'remove'])->name('wishlist.remove');
+    Route::delete('', [WishlistController::class, 'remove'])->name('wishlist.remove');
     Route::delete('/clear', [WishlistController::class, 'clear'])->name('wishlist.clear');
 
     Route::get('/api/items', [WishlistController::class, 'getItems'])->name('wishlist.get-items');

@@ -10,4 +10,5 @@ interface ProductServiceInterface extends BaseServiceInterface
     public function show(Product $product);
     public function incrementViewCount($productId);
     public function filterProductList($query = [], $page = 1, $perPage = 12);
+    public function getTreeListCategory();
 }

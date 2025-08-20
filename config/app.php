@@ -173,6 +173,7 @@ return [
         App\Providers\JetstreamServiceProvider::class,
         App\Providers\RepositoryProvider::class,
         App\Providers\ServiceAppProvider::class,
+        App\Providers\ViewServiceProvider::class,
     ])->toArray(),
 
     /*

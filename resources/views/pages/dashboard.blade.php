@@ -32,7 +32,7 @@
                                 @if (isset($categories))
                                     @foreach ($categories as $category)
                                         <div class="text-center">
-                                            <a href="{{ $category['url'] }}"
+                                            <a href="{{ route("products.list",['category_id' => $category->id] )}}"
                                                 class="block hover:opacity-80 transition-opacity">
                                                 <img src="{{ asset('images/' . $category['image']) }}"
                                                     class="w-16 h-16 mx-auto mb-2 rounded-lg object-cover"
@@ -53,30 +53,10 @@
                                     @if (isset($categories))
                                         @foreach ($categories as $category)
                                             <li>
-                                                @if (isset($category['children']))
-                                                    <details class="group">
-                                                        <summary
-                                                            class="flex items-center justify-between p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors">
-                                                            <span
-                                                                class="font-medium text-gray-700">{{ $category['name'] }}</span>
-                                                        </summary>
-                                                        <ul class="mt-2 ml-4 space-y-1">
-                                                            @foreach ($category['children'] as $child)
-                                                                <li>
-                                                                    <a href="{{ $child['url'] }}"
-                                                                        class="block p-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors">
-                                                                        {{ $child['name'] }}
-                                                                    </a>
-                                                                </li>
-                                                            @endforeach
-                                                        </ul>
-                                                    </details>
-                                                @else
-                                                    <a href="{{ $category['url'] }}"
-                                                        class="block p-2 font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors">
-                                                        {{ $category['name'] }}
-                                                    </a>
-                                                @endif
+                                                <a href="{{ route("products.list",['category_id' => $category->id] )}}"
+                                                    class="block p-2 font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors">
+                                                    {{ $category['name'] }}
+                                                </a>
                                             </li>
                                         @endforeach
                                     @else
@@ -91,16 +71,51 @@
                                 Quảng cáo
                             </h2>
                             <div class="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3">
-                                @for ($i = 1; $i <= 6; $i++)
+                                @php
+                                    $ads = [
+                                        [
+                                            'image' => 'https://s.yimg.jp/images/ymstore/bnr/auc/benefit/376x376.png',
+                                            'link' => '',
+                                        ],
+                                        [
+                                            'image' =>
+                                                'https://s.yimg.jp/images/auct/salespromotion/2022_11/1104_paypayguide/376_376.png',
+                                            'link' => '',
+                                        ],
+                                        [
+                                            'image' =>
+                                                'https://s.yimg.jp/images/smartphone/softbank/v1/common/bnr/2021/0708/376_376.png',
+                                            'link' => '',
+                                        ],
+                                        [
+                                            'image' => 'https://s.yimg.jp/images/bank/campaign/202311/376_376.png',
+                                            'link' => '',
+                                        ],
+                                        [
+                                            'image' =>
+                                                'https://s.yimg.jp/images/bb/promo/v2/external/bnr/221003/yafuoku_ybb.png',
+                                            'link' => '',
+                                        ],
+                                        [
+                                            'image' =>
+                                                'https://s.yimg.jp/images/auct/salespromotion/2023_9/0911_copyright/376_376.png',
+                                            'link' => '',
+                                        ],
+                                    ];
+                                @endphp
+
+                                @foreach ($ads as $index => $ad)
                                     <div class="aspect-square">
-                                        <a href="#" class="block hover:opacity-80 transition-opacity">
-                                            <img src="{{ asset('images/376_376.png') }}"
-                                                class="w-full h-full object-cover " alt="Quảng cáo {{ $i }}"
+                                        <a href="{{ $ad['link'] }}"
+                                            class="block hover:opacity-90 transition-opacity duration-300">
+                                            <img src="{{ $ad['image'] }}" alt="Quảng cáo {{ $index + 1 }}"
+                                                class="w-full h-full object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-300"
                                                 loading="lazy">
                                         </a>
                                     </div>
-                                @endfor
+                                @endforeach
                             </div>
+
                         </div>
                     </div>
                 </aside>
@@ -166,13 +181,12 @@
 
                                     <div class="p-2 sm:p-3">
                                         <h3
-                                            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
+                                            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight min-h-[2.5rem] sm:min-h-[3rem] line-clamp-2">
                                             <a href="{{ isset($product['slug']) ? route('products.show', [$product['slug']]) : '' }}"
                                                 class="hover:underline">
                                                 {{ $product['name'] ?? 'Tên sản phẩm' }}
                                             </a>
                                         </h3>
-
                                         <div class="flex items-center justify-between mb-1 sm:mb-2">
                                             <span class="text-xs text-gray-500">Giá:</span>
                                             <span class="text-xs sm:text-sm font-bold text-orange-600">
@@ -283,7 +297,7 @@
 
                                                 <div class="p-2 sm:p-3">
                                                     <h3
-                                                        class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
+                                                        class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight min-h-[2.5rem] sm:min-h-[3rem] line-clamp-2">
                                                         <a href="{{ isset($product['slug']) ? route('products.show', [$product['slug']]) : '' }}"
                                                             class="hover:underline">
                                                             {{ $product['name'] ?? 'Tên sản phẩm' }}
@@ -356,51 +370,53 @@
                         </header>
                         <div class="slide-banner swiper">
                             <div class="swiper-wrapper mb-6">
-                                <div class="swiper-slide">
-                                    <article>
-                                        <a href="">
-                                            <img src="{{ asset('images/') }}/376_376.png" alt="">
-                                        </a>
-                                    </article>
-                                </div>
+                                @php
+                                    $banners = [
+                                        [
+                                            'image' =>
+                                                'https://s.yimg.jp/images/auct/salespromotion/2025_4/0407_newbuyer/376_376-newbuyer_1000.png',
+                                            'link' => '/',
+                                        ],
+                                        [
+                                            'image' =>
+                                                'https://s.yimg.jp/images/auct/salespromotion/2025_7/0724_lineoa/376_376-2.png',
+                                            'link' => '/',
+                                        ],
+                                        [
+                                            'image' =>
+                                                'https://s.yimg.jp/images/paypayfleamarket/salespromo/2025/02/0225_LINEOA_kuji/img/bnr1_4_376_376.png',
+                                            'link' => '/',
+                                        ],
+                                        [
+                                            'image' =>
+                                                'https://s.yimg.jp/images/auct/salespromotion/2024_3/0328_1start/376_376.png',
+                                            'link' => '/',
+                                        ],
+                                        [
+                                            'image' =>
+                                                'https://s.yimg.jp/images/auct/salespromotion/2025_3/0324_reasonable/376_376.png',
+                                            'link' => '/',
+                                        ],
+                                        [
+                                            'image' =>
+                                                'https://s.yimg.jp/images/auct/salespromotion/2025_8/0814_topics_charity/376_376.png',
+                                            'link' => '/',
+                                        ],
+                                    ];
+                                @endphp
 
-                                <div class="swiper-slide">
-                                    <article>
-                                        <a href="">
-                                            <img src="{{ asset('images/') }}/376_376.png" alt="">
-                                        </a>
-                                    </article>
-                                </div>
-
-                                <div class="swiper-slide">
-                                    <article>
-                                        <a href="">
-                                            <img src="{{ asset('images/') }}/376_376.png" alt="">
-                                        </a>
-                                    </article>
-                                </div>
-                                <div class="swiper-slide">
-                                    <article>
-                                        <a href="">
-                                            <img src="{{ asset('images/') }}/376_376.png" alt="">
-                                        </a>
-                                    </article>
-                                </div>
-                                <div class="swiper-slide">
-                                    <article>
-                                        <a href="">
-                                            <img src="{{ asset('images/') }}/376_376.png" alt="">
-                                        </a>
-                                    </article>
-                                </div>
-                                <div class="swiper-slide">
-                                    <article>
-                                        <a href="">
-                                            <img src="{{ asset('images/') }}/376_376.png" alt="">
-                                        </a>
-                                    </article>
-                                </div>
+                                @foreach ($banners as $banner)
+                                    <div class="swiper-slide">
+                                        <article>
+                                            <a href="{{ $banner['link'] }}">
+                                                <img src="{{ $banner['image'] }}" alt="Banner"
+                                                    class="w-full h-auto object-cover shadow-md transition-transform duration-300 hover:scale-105">
+                                            </a>
+                                        </article>
+                                    </div>
+                                @endforeach
                             </div>
+
                             {{-- <div class="swiper-scrollbar-banner h-[4px]"></div> --}}
 
                             <button
@@ -474,7 +490,7 @@
 
                                     <div class="p-2 sm:p-3">
                                         <h3
-                                            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
+                                            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight min-h-[2.5rem] sm:min-h-[3rem] line-clamp-2">
                                             <a href="{{ isset($product['slug']) ? route('products.show', [$product['slug']]) : '' }}"
                                                 class="hover:underline">
                                                 {{ $product['name'] ?? 'Tên sản phẩm' }}
@@ -563,12 +579,13 @@
                         </div>
 
                         <div class="p-6">
-                            <h4 class="font-bold text-lg text-gray-900 mb-3 line-clamp-2">
+                            <h4 class="font-bold text-lg text-gray-900 mb-3 line-clamp-2 leading-snug min-h-[3rem]">
                                 {{ $article->title }}
                             </h4>
-                            <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-snug min-h-[2.5rem]">
                                 {!! $article->content !!}
                             </p>
+
                             <div class="flex items-center justify-between mt-4">
                                 @if ($article['author']['avatar'])
                                     <div class="text-sm text-gray-500 flex gap-1">
@@ -601,22 +618,6 @@
                         </div>
                     </article>
                 @endforeach
-            </div>
-        @else
-            <div class="text-center py-12">
-                <div class="mb-4">
-                    <i class="fas fa-search text-gray-400 text-6xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-900 mb-2">
-                    Không tìm thấy bài viết nào
-                </h3>
-                <p class="text-gray-600 mb-6">
-                    Thử thay đổi từ khóa tìm kiếm hoặc danh mục để xem thêm kết quả.
-                </p>
-                <a href="{{ route('news.list') }}"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
-                    <i class="fas fa-list mr-2"></i>Xem tất cả bài viết
-                </a>
             </div>
         @endif
 

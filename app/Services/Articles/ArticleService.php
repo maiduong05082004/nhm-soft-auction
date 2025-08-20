@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 
 class ArticleService extends BaseService implements ArticleServiceInterface
 {
+    protected CategoryArticleRepository $categoryRepo;
     public function __construct(
         ArticleRepository $articleRepository,
         CategoryArticleRepository $categoryRepository
@@ -18,6 +19,8 @@ class ArticleService extends BaseService implements ArticleServiceInterface
             'article' => $articleRepository,
             'category' => $categoryRepository
         ]);
+
+        $this->categoryRepo = $categoryRepository;
     }
 
     public function getBySlug(string $slug)
@@ -44,6 +47,10 @@ class ArticleService extends BaseService implements ArticleServiceInterface
     public function getAllCategories()
     {
         return $this->getRepository('category')->getAllActive();
+    }
+
+    public function getTreeListCategory() {
+        return $this->categoryRepo->getTreeList();
     }
 
     private function buildCacheKey(string $prefix, ...$params): string
