@@ -16,4 +16,9 @@ class ConfigRepository extends BaseRepository implements ConfigRepositoryInterfa
     {
         return $this->model->newQuery()->where('config_key', $key)->update(['config_value' => $value]);
     }
+
+    public function getConfigByKey(string $configKey)
+    {
+        return $this->model->where('config_key', $configKey)->first();
+    }
 }

@@ -3,13 +3,14 @@
 namespace App\Services\Config;
 
 use App\Enums\Config\ConfigName;
-use App\Repositories\Config\ConfigRepository;
 use App\Services\BaseService;
+use App\Repositories\Config\ConfigRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ConfigService extends BaseService implements ConfigServiceInterface
 {
+    protected ConfigRepository $configRepository;
     public function __construct(ConfigRepository $configRepo)
     {
         parent::__construct([
@@ -32,7 +33,7 @@ class ConfigService extends BaseService implements ConfigServiceInterface
         try {
             DB::beginTransaction();
             foreach ($form as $key => $value) {
-                $this->getRepository('config')->updateConfigWithKey($key, $value);
+                $this->configRepository->updateConfigWithKey($key, $value);
             }
             DB::commit();
             return true;
@@ -40,5 +41,11 @@ class ConfigService extends BaseService implements ConfigServiceInterface
             DB::rollBack();
             return false;
         }
+    }
+
+    public function getConfigValue(string $configKey, $default = null)
+    {
+        $config = $this->repositories['config']->getAll(['config_key' => $configKey])->first();
+        return $config ? $config->config_value : $default;
     }
 }

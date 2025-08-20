@@ -37,8 +37,10 @@ use App\Repositories\OrderDetails\OrderDetailRepository;
 use App\Repositories\OrderDetails\OrderDetailRepositoryInterface;
 use App\Repositories\Payments\PaymentRepository;
 use App\Repositories\Payments\PaymentRepositoryInterface;
-use App\Repositories\Wishlists\WishlistRepository;
-use App\Repositories\Wishlists\WishlistRepositoryInterface;
+use App\Repositories\Wishlist\WishlistRepository;
+use App\Repositories\Wishlist\WishlistRepositoryInterface;
+use App\Repositories\Evaluates\EvaluateRepository;
+use App\Repositories\Evaluates\EvaluateRepositoryInterface;
 class RepositoryProvider extends ServiceProvider
 {
     /**
@@ -66,6 +68,7 @@ class RepositoryProvider extends ServiceProvider
         $this->app->bind(OrderDetailRepositoryInterface::class, OrderDetailRepository::class);
         $this->app->bind(PaymentRepositoryInterface::class, PaymentRepository::class);
         $this->app->bind(WishlistRepositoryInterface::class, WishlistRepository::class);
+        $this->app->bind(EvaluateRepositoryInterface::class, EvaluateRepository::class);
     }
 
     /**

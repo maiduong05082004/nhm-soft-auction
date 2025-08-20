@@ -3,7 +3,7 @@
 namespace App\Services\Wishlist;
 
 use App\Exceptions\ServiceException;
-use App\Repositories\Wishlists\WishlistRepository;
+use App\Repositories\Wishlist\WishlistRepository;
 use App\Services\BaseService;
 
 class WishlistService extends BaseService implements WishlistServiceInterface
@@ -12,12 +12,20 @@ class WishlistService extends BaseService implements WishlistServiceInterface
 
     public function __construct(WishlistRepository $wishlistRepository)
     {
-        parent::__construct(['wishlist' => $wishlistRepository]);
+        parent::__construct([
+            'wishlist' => $wishlistRepository
+        ]);
+        $this->wishlistRepository = $wishlistRepository;
     }
 
     public function getByUserId($userId)
     {
-        return $this->getRepository('wishlist')->getByUserId($userId);
+        return $this->wishlistRepository->getByUserId($userId);
+    }
+
+    public function insert($userId, $productId)
+    {
+        return $this->wishlistRepository->insert($userId, $productId);
     }
 
     public function deleteByUserIdAndProductId($userId, $productId)

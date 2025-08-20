@@ -9,10 +9,15 @@ use Illuminate\Support\Facades\Auth;
 class AuctionController extends Controller
 {
     protected $auctionService;
-
+    protected $userId;
     public function __construct(AuctionServiceInterface $auctionService)
     {
         $this->auctionService = $auctionService;
+        $this->middleware(function ($request, $next) {
+			$this->userId = Auth::id();
+			return $next($request);
+		});
+        
     }
 
     public function show($productId)
@@ -26,17 +31,29 @@ class AuctionController extends Controller
         return view('pages.auctions.show', $result['data']);
     }
 
+    public function bid(Request $request, $productId)
+    {
+        $request->validate([
+            'bid_price' => 'required|numeric|min:0',
+        ]);
+        $bidPrice = $request->bid_price;
+        $result = $this->auctionService->placeBid($productId, $this->userId, $bidPrice);
+        if ($result['success']) {
+            return redirect()->back()->with('success', $result['message']);
+        } else {
+            return redirect()->back()->with('error', $result['message']);
+        }
+    }
+
     public function placeBid(Request $request, $auctionId)
     {
         $request->validate([
             'bid_price' => 'required|numeric|min:0',
         ]);
 
-        $userId = Auth::id();
         $bidPrice = $request->bid_price;
 
-        $result = $this->auctionService->placeBid($auctionId, $userId, $bidPrice);
-
+        $result = $this->auctionService->placeBid($auctionId, $this->userId, $bidPrice);
         if ($result['success']) {
             return response()->json([
                 'success' => true,

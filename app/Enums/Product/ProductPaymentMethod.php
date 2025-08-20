@@ -17,4 +17,9 @@ enum ProductPaymentMethod: int
             self::BOTH->value => 'Cả 2 phương thức'
         ];
     }
+
+    public static function getLabel(ProductPaymentMethod $method): string
+    {
+        return self::getOptions()[$method->value];
+    }
 }
