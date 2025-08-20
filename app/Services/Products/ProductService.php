@@ -47,12 +47,11 @@ class ProductService extends BaseService implements ProductServiceInterface
     }
 
     public function filterProductList($query = [], $page = 1, $perPage = 12)
-    {
-        // dd($query);
+    {   
         $cacheKey = $this->buildCacheKey('products_lists', $query, $page, $perPage);
-        // return Cache::remember($cacheKey, 600, function () use ($query, $page, $perPage) {
+        return Cache::remember($cacheKey, 600, function () use ($query, $page, $perPage) {
             return $this->getRepository('product')->getProductByFilter($query, $page, $perPage);
-        // });
+        });
 
     }
 

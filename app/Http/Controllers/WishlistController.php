@@ -87,7 +87,6 @@ class WishlistController extends Controller
                 'message' => 'Wishlist đã được làm trống'
             ]);
         } catch (\Exception $e) {
-            dd($e);
             return response()->json([
                 'success' => false,
                 'message' => $e->message
