@@ -4,7 +4,7 @@
     <div class="max-w-7xl mx-auto px-4">
         <div class="mb-12">
             <div class="text-center">
-                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 my-4">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-14">
                     Tin Tức & Sự Kiện
                 </h1>
                 <p class="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -23,18 +23,13 @@
                                 class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                     </div>
-
                     <div class="md:w-48">
                         <select name="danh-muc"
                             class="w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Tất cả danh mục</option>
-                            @if (isset($categories))
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->slug }}" @selected(request('category') == $category->slug)>
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            @endif
+                            @foreach ($categories as $node)
+                                @include('partial.category-node', ['node' => $node, 'depth' => 0])
+                            @endforeach
                         </select>
                     </div>
 
@@ -108,10 +103,10 @@
                                 </div>
 
                                 <div class="p-6">
-                                    <h4 class="font-bold text-lg text-gray-900 mb-3 line-clamp-2">
+                                    <h4 class="font-bold text-lg text-gray-900 mb-3 line-clamp-2 leading-snug min-h-[3rem]">
                                         {{ $article->title }}
                                     </h4>
-                                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                                    <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-snug min-h-[2.5rem]">
                                         {!! $article->content !!}
                                     </p>
                                     <div class="flex items-center justify-between mt-4">

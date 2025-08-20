@@ -19,6 +19,13 @@ class Wishlist extends Model
         'product_id',
     ];
 
+    protected $casts = [
+        'id' => 'string',
+        'user_id' => 'string',
+        'product_id' => 'string'
+
+    ];
+
     protected static function boot()
     {
         parent::boot();

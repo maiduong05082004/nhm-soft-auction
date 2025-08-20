@@ -11,4 +11,9 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
     {
         return Category::class;
     }
+
+    public function getTreeList()
+    {
+        return $this->model->whereNull('parent_id')->orderBy('name')->get();
+    }
 }

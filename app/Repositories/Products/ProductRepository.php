@@ -3,6 +3,7 @@
 namespace App\Repositories\Products;
 
 use App\Enums\Product\ProductTypeSale;
+use App\Models\Category;
 use App\Repositories\BaseRepository;
 use App\Models\Product;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -26,8 +27,8 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
 
         if (!empty($query['type'])) {
             $typeMap = [
-                'sale' => ProductTypeSale::SALE,
-                'auction' => ProductTypeSale::AUCTION
+                'sale' => ProductTypeSale::SALE->value,
+                'auction' => ProductTypeSale::AUCTION->value
             ];
             $typeValue = isset($typeMap[$query['type']]) ? $typeMap[$query['type']] : $query['type'];
             $builder->where('type_sale', $typeValue);
@@ -40,9 +41,33 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
             $builder->where('price', '<=', $query['max_price']);
         }
 
-        if (!empty($query['categoryId'])) {
-            $builder->where('category_id', $query['categoryId']);
+        if (!empty($query['categoryId']) || !empty($query['category_ids'])) {
+            $raw = $query['category_ids'] ?? $query['categoryId'];
+            if (is_array($raw)) {
+                $selected = $raw;
+            } else {
+                $selected = array_filter(array_map('trim', explode(',', (string)$raw)));
+            }
+
+            $allIds = [];
+            foreach ($selected as $catId) {
+                $allIds[] = $catId;
+
+                $descendants = Category::getTreeList($catId);
+                if (!empty($descendants)) {
+                    $descendantIds = array_map(function ($c) {
+                        return $c->id;
+                    }, $descendants);
+                    $allIds = array_merge($allIds, $descendantIds);
+                }
+            }
+            $allIds = array_values(array_unique($allIds));
+
+            if (!empty($allIds)) {
+                $builder->whereIn('category_id', $allIds);
+            }
         }
+
 
         if (!empty($query['state'])) {
             $builder->where('state', $query['state']);

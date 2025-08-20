@@ -6,7 +6,7 @@ use App\Services\BaseServiceInterface;
 
 interface ArticleServiceInterface extends BaseServiceInterface
 {
- public function getBySlug(string $slug);
+    public function getBySlug(string $slug);
     public function getRelatedArticles($categoryId, $currentArticleId, $limit = 5);
     public function getArticlesList($query = [], $page = 1, $perPage = 12);
     public function getAllCategories();
@@ -21,4 +21,5 @@ interface ArticleServiceInterface extends BaseServiceInterface
     public function getLatestArticles($limit = 10);
     public function getFeaturedArticles($limit = 5);
     public function getArticlesByTag($tagSlug, $page = 1, $perPage = 12);
+    public function getTreeListCategory();
 }

@@ -41,7 +41,7 @@ Route::prefix('san-pham')->group(function () {
 Route::middleware(['auth:sanctum', 'verified'])->prefix('yeu-thich')->group(function () {
     Route::get('', [WishlistController::class, 'list'])->name('wishlist.list');
     Route::post('/them', [WishlistController::class, 'add'])->name('wishlist.add');
-    Route::delete('/{productId}', [WishlistController::class, 'remove'])->name('wishlist.remove');
+    Route::delete('', [WishlistController::class, 'remove'])->name('wishlist.remove');
     Route::delete('/clear', [WishlistController::class, 'clear'])->name('wishlist.clear');
 
     Route::get('/api/items', [WishlistController::class, 'getItems'])->name('wishlist.get-items');
@@ -59,7 +59,6 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('cart')->group(function 
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/checkout/process', [CartController::class, 'processCheckout'])->name('cart.process');
 
-
     Route::get('/payment/qr/{order}', [CartController::class, 'qrPayment'])->name('payment.qr');
     Route::post('/payment/confirm/{order}', [CartController::class, 'confirmPayment'])->name('payment.confirm');
     Route::get('/order/success/{order}', [CartController::class, 'orderSuccess'])->name('order.success');
@@ -68,4 +67,5 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('cart')->group(function 
 Route::middleware(['auth:sanctum', 'verified'])->prefix('auctions')->group(function () {
     Route::get('/', [AuctionController::class, 'getActiveAuctions'])->name('auctions.index');
     Route::get('/{productId}', [AuctionController::class, 'show'])->name('auctions.show');
+    Route::post('/{productId}/bid', [AuctionController::class, 'bid'])->name('auctions.bid');
 });

@@ -49,18 +49,79 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const categorySearch = document.getElementById('category-search');
     const categoryItems = document.querySelectorAll('.category-item');
-    const selectedCategoryId = document.getElementById('selected-category-id');
+    const selectedCategoryInput = document.getElementById('selected-category-id'); // hidden input (CSV)
     const selectedCategoryDisplay = document.getElementById('selected-category-display');
-    const selectedCategoryName = document.getElementById('selected-category-name');
+    const selectedCategoryList = document.getElementById('selected-category-list');
     const clearCategoryBtn = document.getElementById('clear-category');
 
-    // Search functionality
+    const selectedIds = new Set();
+
+    function initFromInput() {
+        const val = selectedCategoryInput.value ? String(selectedCategoryInput.value).trim() : '';
+        if (!val) return;
+        const parts = val.includes(',') ? val.split(',') : [val];
+        parts.forEach(p => {
+            const id = p.toString().trim();
+            if (id) selectedIds.add(id);
+        });
+    }
+    function renderSelected() {
+        selectedCategoryList.innerHTML = '';
+        if (selectedIds.size === 0) {
+            selectedCategoryDisplay.classList.add('hidden');
+            selectedCategoryInput.value = '';
+            return;
+        }
+
+        selectedCategoryDisplay.classList.remove('hidden');
+
+        selectedCategoryInput.value = Array.from(selectedIds).join(',');
+
+        selectedIds.forEach(id => {
+            const item = document.querySelector(`.category-item input[type="checkbox"][value="${id}"]`);
+            let title = id;
+            if (item) {
+                const parentItem = item.closest('.category-item');
+                if (parentItem) {
+                    title = parentItem.dataset.fullPath || parentItem.querySelector('.category-name')?.textContent?.trim() || id;
+                }
+            }
+            const tag = document.createElement('div');
+            tag.className = 'inline-flex items-center gap-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs';
+            tag.innerHTML = `
+                <span class="truncate max-w-xs">${escapeHtml(title)}</span>
+                <button type="button" class="remove-category inline-flex items-center" data-id="${id}" aria-label="Remove" title="Xóa">
+                    <!-- small X icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.293 6.293a1 1 0 011.414 0L10 8.586l2.293-2.293a1 1 0 111.414 1.414L11.414 10l2.293 2.293a1 1 0 01-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 01-1.414-1.414L8.586 10 6.293 7.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                </button>
+            `;
+            selectedCategoryList.appendChild(tag);
+        });
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    initFromInput();
+    selectedIds.forEach(id => {
+        const checkbox = document.querySelector(`.category-item input[type="checkbox"][value="${id}"]`);
+        if (checkbox) checkbox.checked = true;
+    });
+
+    renderSelected();
     if (categorySearch) {
         categorySearch.addEventListener('input', function () {
             const searchTerm = this.value.toLowerCase();
 
             categoryItems.forEach(item => {
-                const categoryName = item.querySelector('.category-name').textContent.toLowerCase();
+                const nameEl = item.querySelector('.category-name');
+                const categoryName = nameEl ? nameEl.textContent.toLowerCase() : '';
                 const shouldShow = categoryName.includes(searchTerm) || searchTerm === '';
 
                 item.style.display = shouldShow ? 'block' : 'none';
@@ -78,46 +139,42 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
-
-    // Category selection
     categoryItems.forEach(item => {
         const checkbox = item.querySelector('input[type="checkbox"]');
         if (checkbox) {
             checkbox.addEventListener('change', function () {
+                const id = String(this.value);
                 if (this.checked) {
-                    categoryItems.forEach(otherItem => {
-                        const otherCheckbox = otherItem.querySelector('input[type="checkbox"]');
-                        if (otherCheckbox && otherCheckbox !== this) {
-                            otherCheckbox.checked = false;
-                        }
-                    });
-
-                    selectedCategoryId.value = this.value;
-                    selectedCategoryName.textContent = this.dataset.fullPath;
-                    selectedCategoryDisplay.classList.remove('hidden');
+                    selectedIds.add(id);
                 } else {
-                    selectedCategoryId.value = '';
-                    selectedCategoryDisplay.classList.add('hidden');
+                    selectedIds.delete(id);
                 }
+                renderSelected();
             });
         }
     });
+    selectedCategoryList.addEventListener('click', function (e) {
+        const btn = e.target.closest('.remove-category');
+        if (!btn) return;
+        const id = btn.dataset.id;
+        if (!id) return;
+        selectedIds.delete(id);
+        const checkbox = document.querySelector(`.category-item input[type="checkbox"][value="${id}"]`);
+        if (checkbox) checkbox.checked = false;
+        renderSelected();
+    });
 
-    // Clear category selection
     if (clearCategoryBtn) {
         clearCategoryBtn.addEventListener('click', function () {
-            selectedCategoryId.value = '';
-            selectedCategoryDisplay.classList.add('hidden');
+            selectedIds.clear();
             categoryItems.forEach(item => {
                 const checkbox = item.querySelector('input[type="checkbox"]');
-                if (checkbox) {
-                    checkbox.checked = false;
-                }
+                if (checkbox) checkbox.checked = false;
             });
+            renderSelected();
         });
     }
 
-    // Toggle category children
     const toggleBtns = document.querySelectorAll('.category-toggle');
     toggleBtns.forEach(btn => {
         btn.addEventListener('click', function () {
@@ -126,9 +183,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (children && children.classList.contains('category-children')) {
                 children.classList.toggle('hidden');
-                icon.classList.toggle('rotate-90');
+                if (icon) icon.classList.toggle('rotate-90');
             }
         });
     });
-
 });

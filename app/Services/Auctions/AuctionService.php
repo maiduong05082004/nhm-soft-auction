@@ -2,31 +2,42 @@
 
 namespace App\Services\Auctions;
 
-use App\Repositories\Auctions\AuctionRepositoryInterface;
-use App\Repositories\AuctionBids\AuctionBidRepositoryInterface;
+use App\Repositories\Auctions\AuctionRepository;
+use App\Repositories\AuctionBids\AuctionBidRepository;
+use App\Repositories\TransactionPoint\TransactionPointRepository;
+use App\Services\Config\ConfigService;
 use App\Services\BaseService;
 use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Repositories\Users\UserRepository;
 
 class AuctionService extends BaseService implements AuctionServiceInterface
 {
     protected $auctionRepo;
     protected $bidRepo;
-
+    protected $transactionPointRepo;
+    protected $configService;
+    protected $userRepo;
     public function __construct(
-        AuctionRepositoryInterface $auctionRepo,
-        AuctionBidRepositoryInterface $bidRepo
+        AuctionRepository $auctionRepo,
+        AuctionBidRepository $bidRepo,
+        TransactionPointRepository $transactionPointRepo,
+        ConfigService $configService,
+        UserRepository $userRepo
     ) {
         $this->auctionRepo = $auctionRepo;
         $this->bidRepo = $bidRepo;
+        $this->transactionPointRepo = $transactionPointRepo;
+        $this->configService = $configService;
+        $this->userRepo = $userRepo;
     }
 
     public function getAuctionDetails($productId)
     {
         try {
             $auction = $this->auctionRepo->getAuctionByProductId($productId);
-            
+
             if (!$auction) {
                 throw new ServiceException('Không tìm thấy phiên đấu giá cho sản phẩm này!');
             }
@@ -67,21 +78,46 @@ class AuctionService extends BaseService implements AuctionServiceInterface
     {
         try {
             DB::beginTransaction();
-
+            $bidCoin = $this->configService->getConfigValue('COIN_BIND_PRODUCT_AUCTION', 0);
             $validation = $this->validateBid($auctionId, $bidPrice, $userId);
             if (!$validation['success']) {
                 throw new ServiceException($validation['message']);
             }
 
+            $auction = $validation['auction'];
+
+            $userHasBidded = $this->bidRepo->query()
+                ->where('auction_id', $auction->id)
+                ->where('user_id', $userId)
+                ->exists();
+
+            if (!$userHasBidded) {
+                $user = $this->userRepo->find($userId);
+                if ($user->current_balance < $bidCoin) {
+                    throw new ServiceException('Số dư của bạn không đủ để tham gia đấu giá.');
+                }
+                $user->current_balance -= $bidCoin;
+                $user->save();
+            }
+            if (!$userHasBidded) {
+                $coinToDeduct = (int) ($this->configService->getConfigValue('COIN_BIND_PRODUCT_AUCTION', 0));
+                if ($coinToDeduct > 0) {
+                    $this->transactionPointRepo->insertOne([
+                        'point' => -$coinToDeduct,
+                        'description' => 'Phí tham gia đấu giá phiên #' . $auction->id,
+                        'user_id' => $userId,
+                    ]);
+                }
+            }
+
             $bidData = [
-                'auction_id' => $auctionId,
+                'auction_id' => $auction->id,
                 'user_id' => $userId,
                 'bid_price' => $bidPrice,
                 'bid_time' => now(),
             ];
 
             $bid = $this->bidRepo->insertOne($bidData);
-
             DB::commit();
 
             return [
@@ -89,7 +125,6 @@ class AuctionService extends BaseService implements AuctionServiceInterface
                 'message' => 'Đặt giá thầu thành công!',
                 'data' => $bid
             ];
-
         } catch (ServiceException $e) {
             DB::rollBack();
             return [
@@ -113,7 +148,7 @@ class AuctionService extends BaseService implements AuctionServiceInterface
                 ->with('user')
                 ->orderBy('bid_price', 'desc')
                 ->get();
-            
+
             return [
                 'success' => true,
                 'data' => $bids
@@ -126,61 +161,26 @@ class AuctionService extends BaseService implements AuctionServiceInterface
         }
     }
 
-    public function validateBid($auctionId, $bidPrice, $userId)
+    public function validateBid($productId, $bidPrice, $userId)
     {
         try {
-            $auction = $this->auctionRepo->find($auctionId);
-            
+            $auction = $this->auctionRepo->getAuctionByProductId($productId);
             if (!$auction) {
-                return ['success' => false, 'message' => 'Không tìm thấy phiên đấu giá!'];
+                return [
+                    'success' => false,
+                    'message' => 'Sản phẩm chưa có phiên đấu giá!',
+                ];
             }
 
-            Log::info('Auction time check:', [
-                'auction_id' => $auctionId,
-                'current_time' => now()->toDateTimeString(),
-                'start_time' => $auction->start_time->toDateTimeString(),
-                'end_time' => $auction->end_time->toDateTimeString(),
-                'status' => $auction->status
-            ]);
-
-            $now = now();
-            
-            if ($now < $auction->start_time) {
-                return ['success' => false, 'message' => 'Phiên đấu giá chưa bắt đầu! (Bắt đầu: ' . $auction->start_time->format('d/m/Y H:i') . ')'];
-            }
-            
-            if ($now > $auction->end_time) {
-                return ['success' => false, 'message' => 'Phiên đấu giá đã kết thúc! (Kết thúc: ' . $auction->end_time->format('d/m/Y H:i') . ')'];
-            }
-
-            if ($auction->status !== 'active') {
-                return ['success' => false, 'message' => 'Phiên đấu giá không hoạt động! (Trạng thái: ' . $auction->status . ')'];
-            }
-
-            $highestBid = $this->bidRepo->query()
-                ->where('auction_id', $auctionId)
-                ->orderBy('bid_price', 'desc')
-                ->first();
-            $currentPrice = $highestBid ? $highestBid->bid_price : $auction->start_price;
-            $minNextBid = $currentPrice + $auction->step_price;
-
-            if ($bidPrice < $minNextBid) {
-                return ['success' => false, 'message' => "Giá thầu phải tối thiểu " . number_format($minNextBid, 0, ',', '.') . " ₫!"];
-            }
-
-            if ($highestBid && $highestBid->user_id == $userId) {
-                return ['success' => false, 'message' => 'Bạn đang là người đặt giá cao nhất!'];
-            }
-
-            return ['success' => true];
-
+            return [
+                'success' => true,
+                'auction' => $auction,
+            ];
         } catch (\Exception $e) {
-            Log::error('Auction validation error:', [
-                'auction_id' => $auctionId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return ['success' => false, 'message' => 'Có lỗi xảy ra khi kiểm tra giá thầu!'];
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi kiểm tra phiên đấu giá!'
+            ];
         }
     }
 
@@ -188,7 +188,7 @@ class AuctionService extends BaseService implements AuctionServiceInterface
     {
         try {
             $auctions = $this->auctionRepo->getActiveAuctions();
-            
+
             return [
                 'success' => true,
                 'data' => $auctions

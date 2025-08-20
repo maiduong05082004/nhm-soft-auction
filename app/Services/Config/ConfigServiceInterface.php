@@ -11,4 +11,7 @@ interface ConfigServiceInterface extends BaseServiceInterface
 
     public function updateConfigs(array $form): bool;
 
+    public function getConfigByKeys(array $keys);
+
+    public function getConfigValue(string $configKey, $default = null);
 }

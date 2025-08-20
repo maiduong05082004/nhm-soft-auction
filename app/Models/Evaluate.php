@@ -10,7 +10,7 @@ class Evaluate extends Model
 {
     use HasFactory;
     use SoftDeletes;
-
+    protected $table = 'evaluate';
     protected $fillable = [
         'id',
         'user_id',
