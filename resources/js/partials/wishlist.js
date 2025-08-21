@@ -30,6 +30,7 @@
         wishlist_clear: $config.data('wishlist-clear'),
         cart_add: $config.data('cart-add'),
         product_detail: $config.data('product-detail'),
+        home: $config.data('home')
     };
 
     const DEFAULT_IMAGE = '/images/default-avatar.png';
@@ -105,7 +106,7 @@
             console.log(pid);
 
             const productSlug = product.slug || pid;
-            const imageUrl = safeImgAttr(product.image_url || product.imageUrl || '');
+            const imageUrl = API.home + '/file/' + safeImgAttr(product.first_image.image_url || product.first_image.image_url || '');
             const name = product.name || 'Sản phẩm';
             const typeSale = Number(product.type_sale || 0);
 
@@ -123,20 +124,21 @@
                             </button>
                         </form>`
                 : '';
-            const itemHtml = `<div class="p-4 sm:p-6" id="wishlist-item-${pid}">
+            const itemHtml = `<div class="p-2 sm:p-3" id="wishlist-item-${pid}">
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="flex-shrink-0 mx-auto sm:mx-0">
                         <div
                             class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-200 group-hover:ring-blue-300 transition-all duration-300">
                             <img src="${imageUrl}" alt="" 
-                                class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300">
+                                class="object-cover w-full h-18 group-hover:scale-105 transition-transform duration-300">
                         </div>
                     </div>
-                    <div class="flex-1 min-w-0 text-center sm:text-left">
+                    <div class="flex-1 flex-col min-w-0 text-center sm:text-left">
                         <h3
-                            class="font-semibold text-lg text-gray-900 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
+                            class="font-semibold text-lg text-gray-900 mb-1 group-hover:text-blue-600 transition-colors duration-200 overflow-hidden text-ellipsis whitespace-nowrap">
                             ${escapeHtml(name)}
                         </h3>
+                        <span> Giá:  <span class="text-lg text-red-500">${product.price} </span>đ</span>
                     </div>
                     <div class="flex sm:flex-col items-center justify-center gap-2 sm:gap-3 pt-2 sm:pt-0">
                         <a href="${API.product_detail.replace(':id', productSlug)}"

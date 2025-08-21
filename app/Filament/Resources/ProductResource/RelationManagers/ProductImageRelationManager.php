@@ -2,13 +2,15 @@
 
 namespace App\Filament\Resources\ProductResource\RelationManagers;
 
+use App\Utils\HelperFunc;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Columns\Layout\Grid;
 
 class ProductImageRelationManager extends RelationManager
 {
-    
+
     protected static string $relationship = 'images'; // tên relation trong model Product
 
     protected static ?string $title = 'Hình ảnh sản phẩm';
@@ -30,17 +32,28 @@ class ProductImageRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image_url')
-                    ->disk('public')
-                    ->height(80)
-                    ->width(80),
+                Grid::make(3)
+                    ->schema([
+                        Tables\Columns\ImageColumn::make('image_url')
+                            ->label('Hình ảnh')
+                            ->getStateUsing(function ($record) {
+                                return HelperFunc::generateURLFilePath($record['image_url']);
+                            })
+                            ->height(80)
+                            ->width(80),
+
+                    ])
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label('Thêm hình ảnh sản phẩm')->modalHeading('Thêm hình ảnh sản phẩm'), 
+                Tables\Actions\CreateAction::make()->label('Thêm hình ảnh sản phẩm')->modalHeading('Thêm hình ảnh sản phẩm'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(), 
-                Tables\Actions\DeleteAction::make(), 
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()->mutateFormDataUsing(function (array $data): array {
+                    $data['image_url'] = HelperFunc::generateURLFilePath($data['image_url']);
+                    return $data;
+                })
             ]);
     }
 }

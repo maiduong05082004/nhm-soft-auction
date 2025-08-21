@@ -149,6 +149,20 @@ class CartController extends Controller
 		}
 	}
 
+	public function auctionPayNow(Request $request)
+	{
+		$request->validate([
+			'auction_id' => 'required|integer'
+		]);
+		$auctionId = (int) $request->auction_id;
+		$init = $this->checkoutService->processAuctionWinnerPayment($this->userId, $auctionId);
+		if ($init['success']) {
+			$orderId = $init['data']['order_detail_id'];
+			return redirect()->route('payment.qr', ['order' => $orderId]);
+		}
+		return redirect()->back()->with('error', $init['message'] ?? 'Không khởi tạo được thanh toán.');
+	}
+
 	public function orderSuccess($orderId)
 	{
 		$result = $this->checkoutService->getOrderDetails($orderId);

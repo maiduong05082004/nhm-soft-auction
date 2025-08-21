@@ -53,6 +53,7 @@ class CategoryArticleResource extends Resource
                     ->unique(ignoreRecord: true),
                 Forms\Components\FileUpload::make('image')
                     ->label('Hình ảnh')
+                    ->image()
                     ->directory('categories'),
                 SelectTree::make('parent_id')
                     ->label('Danh mục cha')
@@ -90,12 +91,14 @@ class CategoryArticleResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Hình ảnh')
+                    ->getStateUsing(fn ($record) => HelperFunc::generateURLFilePath($record->image))
                     ->disk('public'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên danh mục')
                     ->formatStateUsing(fn($state, $record) => str_repeat('&nbsp;&nbsp;&nbsp;', $record->level) . $state)
                     ->html()
                     ->sortable()
+                    ->limit(50)
                     ->searchable()
                     ->weight('bold'),
 

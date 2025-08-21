@@ -13,9 +13,14 @@
 @section('content')
 
 @section('content')
-    <section class="site-banner overflow-hidden max-w-7xl mx-auto my-3" aria-label="Promotional Banner">
-        <img src="{{ asset('storage') . '/' . $article->images }}" class="w-full h-auto object-cover"
+    <section class="site-banner max-w-7xl mx-auto my-3" aria-label="Promotional Banner">
+        @if(isset($article->image))
+        <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($article->image) }}" class="w-full h-auto object-cover"
             alt="AuctionsClone promotional banner" loading="lazy">
+        @else
+        <img src="{{ asset('storage/images/default.png') }} class="w-full h-auto object-cover"
+            alt="AuctionsClone promotional banner" loading="lazy">
+        @endif
     </section>
     <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 my-6 md:px-0 px-4">
         <article class="lg:col-span-8 bg-base-100 p-6 rounded-lg shadow">
@@ -39,7 +44,7 @@
             </header>
 
 
-            <article class="prose prose-lg max-w-none lg:max-w-3xl mx-auto px-4 sm:px-6 min-h-[360px]">
+            <article class="prose prose-lg lg:max-w-3xl mx-auto px-4 sm:px-6 min-h-[360px]">
                 {!! $article->content !!}
             </article>
 

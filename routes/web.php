@@ -62,10 +62,12 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('cart')->group(function 
     Route::get('/payment/qr/{order}', [CartController::class, 'qrPayment'])->name('payment.qr');
     Route::post('/payment/confirm/{order}', [CartController::class, 'confirmPayment'])->name('payment.confirm');
     Route::get('/order/success/{order}', [CartController::class, 'orderSuccess'])->name('order.success');
+    Route::post('/auction/pay-now', [CartController::class, 'auctionPayNow'])->name('auction.pay-now');
 });
 
 Route::middleware(['auth:sanctum', 'verified'])->prefix('auctions')->group(function () {
     Route::get('/', [AuctionController::class, 'getActiveAuctions'])->name('auctions.index');
     Route::get('/{productId}', [AuctionController::class, 'show'])->name('auctions.show');
     Route::post('/{productId}/bid', [AuctionController::class, 'bid'])->name('auctions.bid');
+    Route::get('/{auctionId}/user-history', [AuctionController::class, 'getUserBidHistory'])->name('auctions.user-history');
 });

@@ -39,7 +39,17 @@ class AuctionController extends Controller
         $bidPrice = $request->bid_price;
         $result = $this->auctionService->placeBid($productId, $this->userId, $bidPrice);
         if ($result['success']) {
-            return redirect()->back()->with('success', $result['message']);
+            $userBidData = [
+                'auction_id' => $result['data']->auction_id,
+                'user_id' => $this->userId,
+                'bid_price' => $bidPrice,
+                'bid_time' => now(),
+                'created_at' => now()
+            ];
+            
+            return redirect()->back()
+                ->with('success', $result['message'])
+                ->with('user_bid_data', $userBidData);
         } else {
             return redirect()->back()->with('error', $result['message']);
         }
@@ -71,6 +81,23 @@ class AuctionController extends Controller
     public function getHistory($auctionId)
     {
         $result = $this->auctionService->getAuctionHistory($auctionId);
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'data' => $result['data']
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => $result['message']
+            ], 400);
+        }
+    }
+
+    public function getUserBidHistory($auctionId)
+    {
+        $result = $this->auctionService->getUserBidHistory($auctionId, $this->userId);
 
         if ($result['success']) {
             return response()->json([

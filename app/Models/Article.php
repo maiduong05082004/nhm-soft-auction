@@ -22,7 +22,8 @@ class Article extends Model
         'user_id',
         'sort',
         'status',
-        'category_article_id'
+        'category_article_id',
+        'publish_time'
     ];
 
     protected static function boot()

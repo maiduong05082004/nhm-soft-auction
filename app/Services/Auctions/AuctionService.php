@@ -11,6 +11,7 @@ use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Repositories\Users\UserRepository;
+use Carbon\Carbon;
 
 class AuctionService extends BaseService implements AuctionServiceInterface
 {
@@ -122,7 +123,7 @@ class AuctionService extends BaseService implements AuctionServiceInterface
 
             return [
                 'success' => true,
-                'message' => 'Đặt giá thầu thành công!',
+                'message' => 'Đấu giá thành công!',
                 'data' => $bid
             ];
         } catch (ServiceException $e) {
@@ -147,6 +148,7 @@ class AuctionService extends BaseService implements AuctionServiceInterface
                 ->where('auction_id', $auctionId)
                 ->with('user')
                 ->orderBy('bid_price', 'desc')
+                ->limit(5)
                 ->get();
 
             return [
@@ -161,6 +163,48 @@ class AuctionService extends BaseService implements AuctionServiceInterface
         }
     }
 
+    public function getUserBidHistory($auctionId, $userId)
+    {
+        try {
+            $userBids = $this->bidRepo->query()
+                ->where('auction_id', $auctionId)
+                ->where('user_id', $userId)
+                ->orderBy('bid_price', 'desc')
+                ->limit(3)
+                ->get();
+
+            $timeDelay = (int) $this->configService->getConfigValue('TIME_DELAY_AUCTION_BIND', 10);
+            
+            $latestUserBid = $this->bidRepo->query()
+                ->where('auction_id', $auctionId)
+                ->where('user_id', $userId)
+                ->orderBy('bid_time', 'desc')
+                ->first();
+
+            $nextBidTime = null;
+            $canBidNow = true;
+            
+            if ($latestUserBid) {
+                $nextBidTime = \Carbon\Carbon::parse($latestUserBid->bid_time)->addMinutes($timeDelay);
+                $canBidNow = now()->gte($nextBidTime);
+            }
+
+            return [
+                'success' => true,
+                'data' => $userBids,
+                'time_delay' => $timeDelay,
+                'latest_bid_time' => $latestUserBid ? $latestUserBid->bid_time : null,
+                'next_bid_time' => $nextBidTime,
+                'can_bid_now' => $canBidNow
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi lấy lịch sử đấu giá của user!'
+            ];
+        }
+    }
+
     public function validateBid($productId, $bidPrice, $userId)
     {
         try {
@@ -170,6 +214,35 @@ class AuctionService extends BaseService implements AuctionServiceInterface
                     'success' => false,
                     'message' => 'Sản phẩm chưa có phiên đấu giá!',
                 ];
+            }
+
+            if (($auction->end_time && now()->gte(\Carbon\Carbon::parse($auction->end_time)))
+                || (isset($auction->status) && $auction->status !== 'active')) {
+                return [
+                    'success' => false,
+                    'message' => 'Phiên đấu giá đã kết thúc, không thể đấu giá thêm!',
+                ];
+            }
+
+            $latestUserBid = $this->bidRepo->query()
+                ->where('auction_id', $auction->id)
+                ->where('user_id', $userId)
+                ->orderBy('bid_time', 'desc')
+                ->first();
+
+            if ($latestUserBid) {
+                $timeDelay = (int) $this->configService->getConfigValue('TIME_DELAY_AUCTION_BIND', 10);
+                $nextBidTime = Carbon::parse($latestUserBid->bid_time)->addMinutes($timeDelay);
+                
+                if (now()->lt($nextBidTime)) {
+                    $remainingTime = now()->diffInSeconds($nextBidTime);
+                    $remainingMinutes = ceil($remainingTime / 60);
+                    
+                    return [
+                        'success' => false,
+                        'message' => "Bạn cần chờ thêm {$remainingMinutes} phút nữa mới có thể đấu giá tiếp!",
+                    ];
+                }
             }
 
             return [

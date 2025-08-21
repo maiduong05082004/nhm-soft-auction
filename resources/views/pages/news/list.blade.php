@@ -85,7 +85,7 @@
                                 class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
                                 <div class="relative">
                                     @if ($article->image)
-                                        <img src="{{ asset('storage/articles/' . $article->image) }}"
+                                        <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($article->image) }}"
                                             alt="{{ $article->title }}" class="w-full h-48 object-cover">
                                     @else
                                         <div
@@ -106,8 +106,8 @@
                                     <h4 class="font-bold text-lg text-gray-900 mb-3 line-clamp-2 leading-snug min-h-[3rem]">
                                         {{ $article->title }}
                                     </h4>
-                                    <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-snug min-h-[2.5rem]">
-                                        {!! $article->content !!}
+                                    <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-snug">
+                                        {{ \Illuminate\Support\Str::limit(strip_tags($article->content), 200) }}
                                     </p>
                                     <div class="flex items-center justify-between mt-4">
                                         @if ($article['author']['avatar'])
