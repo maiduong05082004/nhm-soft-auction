@@ -203,41 +203,7 @@
         @endif
     </div>
 
-    <div id="toast" class="fixed top-4 right-4 z-50 hidden sm:block">
-        <div class="bg-white border-l-4 text-gray-700 p-3 sm:p-4 rounded shadow-lg max-w-xs sm:max-w-sm transition-all duration-300 transform translate-x-full"
-            id="toast-content">
-            <div class="flex items-center">
-                <div class="flex-shrink-0" id="toast-icon">
-                    <svg class="h-4 w-4 sm:h-5 sm:w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-2 sm:ml-3">
-                    <p id="toast-message" class="text-xs sm:text-sm font-medium"></p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div id="mobile-toast" class="fixed bottom-4 left-4 right-4 z-50 hidden sm:hidden">
-        <div class="bg-white border-l-4 text-gray-700 p-3 rounded shadow-lg transition-all duration-300 transform translate-y-full"
-            id="mobile-toast-content">
-            <div class="flex items-center">
-                <div class="flex-shrink-0" id="mobile-toast-icon">
-                    <svg class="h-4 w-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-2">
-                    <p id="mobile-toast-message" class="text-xs font-medium"></p>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <dialog id="save-changes-modal" class="modal">
         <div class="modal-box">

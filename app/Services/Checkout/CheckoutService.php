@@ -87,7 +87,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             $shippingFee = 0;
             $subtotal = $total+$shippingFee;
             $orderDetailData = [
-                'code_orders' => 'ORD-' . HelperFunc::getTimestampAsId(),
+                'code_orders' => 'ORD' . HelperFunc::getTimestampAsId(),
                 'user_id' => $userId,
                 'email_receiver' => $checkoutData['email'],
                 'ship_address' => $checkoutData['address'],
@@ -263,7 +263,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
 
             $amount = $winnerBid->bid_price;
             $orderDetailData = [
-                'code_orders' => 'ORD-' . HelperFunc::getTimestampAsId(),
+                'code_orders' => 'ORD' . HelperFunc::getTimestampAsId(),
                 'user_id' => $userId,
                 'email_receiver' => $user->email ?? '',
                 'ship_address' => $user->address ?? '',
