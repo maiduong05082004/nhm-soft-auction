@@ -37,7 +37,7 @@
         @if ($cartItems->count() == 0)
             <div class="text-center py-8 sm:py-12">
                 <h2 class="text-xl sm:text-2xl font-semibold text-gray-600 mb-4">Giỏ hàng trống</h2>
-                <a href="{{ route('home') }}" class="btn btn-primary">Tiếp tục mua sắm</a>
+                <a href="{{ route('home') }}" class="btn btn-neutral">Tiếp tục mua sắm</a>
             </div>
         @else
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 pt-4">
@@ -62,7 +62,7 @@
                                         <div
                                             class="relative h-16 w-16 sm:h-20 sm:w-20 rounded-lg overflow-hidden ring-2 ring-gray-100 hover:ring-blue-300 transition-all duration-200">
                                             @if ($cartItem->product && $cartItem->product->images && $cartItem->product->images->count() > 0)
-                                                <img src="{{ asset('storage/' . $cartItem->product->images->first()->image_url) }}"
+                                                <img src="{{ isset($cartItem->product->images->first()->image_url) ? \App\Utils\HelperFunc::generateURLFilePath($cartItem->product->images->first()->image_url) : 'https://via.placeholder.com/800x600?text=No+Image' }}"
                                                     alt="{{ $cartItem->product->name ?? 'Sản phẩm' }}"
                                                     class="object-cover w-full h-full hover:scale-110 transition-transform duration-200">
                                             @else
