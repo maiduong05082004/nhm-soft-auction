@@ -14,7 +14,14 @@ class WishlistRepository extends BaseRepository implements WishlistRepositoryInt
 
     public function getByUserId($userId)
     {
-        return $this->model->where('user_id', $userId)->with('product')->get();
+        return $this->model
+            ->where('user_id', $userId)
+            ->with([
+                'product' => function ($query) {
+                    $query->with('firstImage');
+                }
+            ])
+            ->get();
     }
 
     public function insert($userId, $productId)
@@ -28,7 +35,7 @@ class WishlistRepository extends BaseRepository implements WishlistRepositoryInt
     public function remove($userId, $productId)
     {
         return $this->model->where('user_id', $userId)
-            ->where('product_id', intval ($productId))
+            ->where('product_id', intval($productId))
             ->delete();
     }
 

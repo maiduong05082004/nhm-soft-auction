@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\Permission\RoleConstant;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
+use App\Utils\HelperFunc;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -55,6 +56,7 @@ class CategoryResource extends Resource
                     ),
                 Forms\Components\FileUpload::make('image')
                     ->label('Hình ảnh')
+                    ->image()
                     ->directory('categories'),
                 SelectTree::make('parent_id')
                     ->label('Danh mục cha')
@@ -85,12 +87,14 @@ class CategoryResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Hình ảnh')
+                    ->getStateUsing(fn ($record) => HelperFunc::generateURLFilePath($record->image))
                     ->disk('public'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên danh mục')
                     ->formatStateUsing(fn ($state, $record) => str_repeat('&nbsp;&nbsp;&nbsp;', $record->level) . $state)
                     ->html()
                     ->sortable()
+                    ->limit(50)
                     ->searchable()
                     ->weight('bold'),
 
