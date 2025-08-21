@@ -30,7 +30,7 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
                 'sale' => ProductTypeSale::SALE->value,
                 'auction' => ProductTypeSale::AUCTION->value
             ];
-            $typeValue = isset($typeMap[$query['type']]) ? $typeMap[$query['type']] : $query['type'];
+            $typeValue = $typeMap[$query['type']] ;
             $builder->where('type_sale', $typeValue);
         }
 

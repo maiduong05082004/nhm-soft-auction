@@ -109,13 +109,14 @@
             const imageUrl = API.home + '/file/' + safeImgAttr(product.first_image.image_url || product.first_image.image_url || '');
             const name = product.name || 'Sản phẩm';
             const typeSale = Number(product.type_sale || 0);
+            console.log(typeSale);
 
             const addToCartHtml = typeSale === 1
                 ? `<form action="${API.cart_add.replace(':id', pid)}" method="POST" class="add-cart-form">
-                            <input type="hidden" name="_token" value="">
+                            <input type="hidden" name="_token" value="${$('meta[name="csrf-token"]').attr('content')}">
                             <input type="hidden" name="product_id" value="456">
-                            <button type="submit" disabled
-                                class="flex items-center justify-center w-10 h-10 text-gray-400 bg-gray-100 rounded-xl cursor-not-allowed"
+                            <button type="submit" ${typeSale == 1 ? '' : 'disable'}
+                                class="flex items-center justify-center w-10 h-10 text-gray-400 bg-gray-100 rounded-xl ${typeSale == 1 ? 'cursor-pointer' : 'cursor-not-allowed'}"
                                 title="Hết hàng">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
