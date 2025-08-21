@@ -183,37 +183,120 @@
                     @endif
 
                     @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2))
-                        <div class="text-sm text-[#6c6a69] space-y-1">
-                            <p><span class="font-bold">Thời gian còn lại:</span></p>
-                        </div>
-                        <div class="grid auto-cols-max grid-flow-col gap-5 text-center justify-center">
-                            <div class="bg-neutral rounded-box text-neutral-content flex flex-col p-2">
-                                    <span class="countdown font-mono text-5xl">
-                                        <span id="days" style="--value:99;" aria-live="polite"
-                                              aria-label="99">99</span>
-                                    </span>
-                                days
+                        @php
+                            $isAuctionEnded = isset($auctionData['auction']) && \Carbon\Carbon::parse($auctionData['auction']->end_time)->lte(now());
+                        @endphp
+                        @if (!$isAuctionEnded)
+                            <div class="text-sm text-[#6c6a69] space-y-1">
+                                <p><span class="font-bold">Thời gian còn lại:</span></p>
                             </div>
-                            <div class="bg-neutral rounded-box text-neutral-content flex flex-col p-2">
-                                    <span class="countdown font-mono text-5xl">
-                                        <span id="hours" style="--value:24;" aria-live="polite"
-                                              aria-label="24">24</span>
-                                    </span>
-                                hours
+                            <div class="grid auto-cols-max grid-flow-col gap-5 text-center justify-center">
+                                <div class="bg-neutral rounded-box text-neutral-content flex flex-col p-2">
+                                        <span class="countdown font-mono text-5xl">
+                                            <span id="days" style="--value:99;" aria-live="polite"
+                                                  aria-label="99">99</span>
+                                        </span>
+                                    days
+                                </div>
+                                <div class="bg-neutral rounded-box text-neutral-content flex flex-col p-2">
+                                        <span class="countdown font-mono text-5xl">
+                                            <span id="hours" style="--value:24;" aria-live="polite"
+                                                  aria-label="24">24</span>
+                                        </span>
+                                    hours
+                                </div>
+                                <div class="bg-neutral rounded-box text-neutral-content flex flex-col p-2">
+                                        <span class="countdown font-mono text-5xl">
+                                            <span id="minutes" style="--value:59;" aria-live="polite"
+                                                  aria-label="59">59</span>
+                                        </span>
+                                    min
+                                </div>
+                                <div class="bg-neutral rounded-box text-neutral-content flex flex-col p-2">
+                                        <span class="countdown font-mono text-5xl">
+                                            <span id="seconds" style="--value:59;" aria-live="polite"
+                                                  aria-label="59"></span>
+                                        </span>
+                                    sec
+                                </div>
                             </div>
-                            <div class="bg-neutral rounded-box text-neutral-content flex flex-col p-2">
-                                    <span class="countdown font-mono text-5xl">
-                                        <span id="minutes" style="--value:59;" aria-live="polite"
-                                              aria-label="59">59</span>
-                                    </span>
-                                min
+                        @endif
+                        @php
+                            $isAuctionEnded = isset($auctionData['auction']) && \Carbon\Carbon::parse($auctionData['auction']->end_time)->lte(now());
+                            $endedAtStr = isset($auctionData['auction']) ? \Carbon\Carbon::parse($auctionData['auction']->end_time)->format('H:i:s d/m/Y') : null;
+                            $winnerBid = isset($auctionData['auction']) ? $auctionData['auction']->bids()->with('user')->orderBy('bid_price', 'desc')->first() : null;
+                        @endphp
+                        <div id="auction-ended-alert" class="mt-3 @if(!$isAuctionEnded) hidden @endif">
+                            <div role="alert" class="alert alert-warning bg-yellow-50 border border-yellow-200 text-yellow-800">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                    <path d="M16.5 3.75a.75.75 0 01.75.75v1.055a6.75 6.75 0 013 5.695v.75a6.75 6.75 0 01-3 5.695V19.5a.75.75 0 01-.75.75h-9a.75.75 0 01-.75-.75v-1.305a6.75 6.75 0 01-3-5.695v-.75a6.75 6.75 0 013-5.695V4.5a.75.75 0 01.75-.75h9z" />
+                                </svg>
+                                <span><span class="font-semibold">Đấu giá đã kết thúc</span> - Kết thúc lúc {{ $endedAtStr }}</span>
                             </div>
-                            <div class="bg-neutral rounded-box text-neutral-content flex flex-col p-2">
-                                    <span class="countdown font-mono text-5xl">
-                                        <span id="seconds" style="--value:59;" aria-live="polite"
-                                              aria-label="59"></span>
-                                    </span>
-                                sec
+                            @php
+                                $isCurrentUserWinner = auth()->check() && $winnerBid && $winnerBid->user_id === auth()->id();
+                            @endphp
+                            @if ($winnerBid)
+                                <div class="mt-3 rounded-lg border border-yellow-200 bg-yellow-50">
+                                    <div class="p-4">
+                                        <div class="flex items-center gap-2 mb-2 text-yellow-800 font-semibold">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                                <path d="M11.7 1.7a.75.75 0 01.6 0l6 2.5a.75.75 0 01.45.97l-2.27 6.15a6.75 6.75 0 01-4.02 3.98l-.46.16-.01 2.04a.75.75 0 01-.75.75H12a.75.75 0 01-.75-.75v-2.03l-.46-.17a6.75 6.75 0 01-4.01-3.97L4.5 5.17a.75.75 0 01.45-.97l6-2.5z" />
+                                            </svg>
+                                            <span>Người thắng đấu giá</span>
+                                        </div>
+
+                                        @if ($isCurrentUserWinner)
+                                            <div class="alert alert-success shadow-sm mb-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75 11.25 15 15 9.75"/></svg>
+                                                <span>Chúc mừng! Bạn đã thắng!</span>
+                                            </div>
+                                            <div class="text-sm text-gray-800 mb-3">Giá thắng: <span class="font-semibold">{{ number_format($winnerBid->bid_price, 0, ',', '.') }} ₫</span></div>
+                                        @else
+                                            <div class="text-sm text-gray-800 mb-1">Người thắng: <span class="font-semibold">{{ \App\Utils\HelperFunc::maskMiddle($winnerBid->user->name ?? 'Người dùng', 4, 3) }}</span></div>
+                                            <div class="text-sm text-gray-800 mb-3">Giá thắng: <span class="font-semibold">{{ number_format($winnerBid->bid_price, 0, ',', '.') }} ₫</span></div>
+                                        @endif
+                                        @if ($isCurrentUserWinner)
+                                            <div class="rounded-lg p-3 bg-yellow-100 border border-yellow-200">
+                                                <div class="text-sm text-gray-800 mb-2">Trạng thái thanh toán:
+                                                    <span class="badge badge-warning ml-2">Chờ thanh toán</span>
+                                                </div>
+                                                <form method="POST" action="{{ route('auction.pay-now') }}" class="flex flex-col sm:flex-row gap-2">
+                                                    @csrf
+                                                    <input type="hidden" name="auction_id" value="{{ $auctionData['auction']->id ?? '' }}" />
+                                                    <button type="submit" class="btn btn-neutral flex-1">Thanh toán ngay</button>
+                                                    @if (!empty($user->email))
+                                                        <a href="mailto:{{ $user->email }}" class="btn btn-outline">Liên hệ người bán</a>
+                                                    @elseif (!empty($user->phone))
+                                                        <a href="tel:{{ $user->phone }}" class="btn btn-outline">Liên hệ người bán</a>
+                                                    @else
+                                                        <a href="#" class="btn btn-outline">Liên hệ người bán</a>
+                                                    @endif
+                                                </form>
+                                            </div>
+                                        @endif
+
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div class="mt-3">
+                                <h3 class="font-semibold text-gray-800 mb-2">Thông tin kết thúc</h3>
+                                @php
+                                    $startedAt = isset($auctionData['auction']) ? \Carbon\Carbon::parse($auctionData['auction']->start_time ?? $auctionData['auction']->created_at) : null;
+                                    $endedAt = isset($auctionData['auction']) ? \Carbon\Carbon::parse($auctionData['auction']->end_time) : null;
+                                    $durationStr = ($startedAt && $endedAt)
+                                        ? ($startedAt->diff($endedAt)->days > 0
+                                            ? $startedAt->diff($endedAt)->days . ' ngày ' . $startedAt->diff($endedAt)->h . ' giờ ' . $startedAt->diff($endedAt)->i . ' phút'
+                                            : ($startedAt->diff($endedAt)->h . ' giờ ' . $startedAt->diff($endedAt)->i . ' phút'))
+                                        : null;
+                                @endphp
+                                <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                    <div class="font-semibold">{{ $endedAtStr }}</div>
+                                    @if ($durationStr)
+                                        <div class="text-sm text-gray-600">Tổng thời gian: {{ $durationStr }}</div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -221,8 +304,10 @@
 
                     <div>
                         @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2))
-                            @if ($auctionData && $auctionData['auction']->status === 'active')
+                            @php $isAuctionEnded = isset($auctionData['auction']) && \Carbon\Carbon::parse($auctionData['auction']->end_time)->lte(now()); @endphp
+                            @if ($auctionData && $auctionData['auction']->status === 'active' && !$isAuctionEnded)
                                 <div class="space-y-4">
+                                    <div id="auction-bid-wrapper">
                                     <form id="bid-form" action="{{ route('auctions.bid', $product->id) }}" method="POST" class="space-y-3">
                                         @csrf
                                         <div class="items-center !mt-0">
@@ -240,6 +325,7 @@
                                             Đấu giá ngay
                                         </button>
                                     </form>
+                                    </div>
 
                                     @if ($product->max_bid_amount)
                                         <div>
@@ -289,17 +375,25 @@
                                 </div>
                             @else
                                 <div class="text-center py-4">
-                                    <div class="text-gray-500 mb-2">
-                                        @if ($auctionData)
-                                            Phiên đấu giá chưa bắt đầu hoặc đã kết thúc
-                                            <br><small>Status: {{ $auctionData['auction']->status }}</small>
-                                        @else
-                                            Chưa có phiên đấu giá cho sản phẩm này
-                                        @endif
-                                    </div>
-                                    <button class="btn btn-disabled w-full" disabled>
-                                        Đấu giá ngay
-                                    </button>
+                                    @php
+                                        $endedAtStr = isset($auctionData['auction']) ? \Carbon\Carbon::parse($auctionData['auction']->end_time)->format('H:i:s d/m/Y') : null;
+                                        $winnerBid = isset($auctionData['auction']) ? $auctionData['auction']->bids()->with('user')->orderBy('bid_price', 'desc')->first() : null;
+                                    @endphp
+                                    @if (!(isset($auctionData['auction']) && \Carbon\Carbon::parse($auctionData['auction']->end_time)->lte(now())))
+                                        <div class="text-gray-500 mb-2">
+                                            @if ($auctionData)
+                                                Phiên đấu giá chưa bắt đầu hoặc đã kết thúc
+                                                <br><small>Status: {{ $auctionData['auction']->status }}</small>
+                                            @else
+                                                Chưa có phiên đấu giá cho sản phẩm này
+                                            @endif
+                                        </div>
+                                    @endif
+                                    @if (!$isAuctionEnded)
+                                        <button class="btn btn-disabled w-full" disabled>
+                                            Đấu giá ngay
+                                        </button>
+                                    @endif
                                 </div>
                             @endif
                         @else
@@ -345,18 +439,123 @@
                     </div>
                 </div>
 
+                @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2) && auth()->check())
+                    @php
+                        $userBids = isset($auctionData['auction']) ? $auctionData['auction']->bids()->where('user_id', auth()->id())->orderBy('bid_price', 'desc')->limit(3)->get() : collect();
+                        $userHasBidded = $userBids->count() > 0;
+                        
+                        $userBidInfo = null;
+                        if ($userHasBidded && isset($auctionData['auction'])) {
+                            try {
+                                $userBidInfo = app(\App\Services\Auctions\AuctionServiceInterface::class)->getUserBidHistory($auctionData['auction']->id, auth()->id());
+                                
+                            } catch (\Exception $e) {
+                                $userBidInfo = null;
+                            }
+                        }
+                    @endphp
+                    
+                    @if ($userHasBidded)
+                        <div class="card w-full bg-base-100 card-md shadow-sm mt-4">
+                            <div class="card-body">
+                                <div class="flex items-center gap-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+                                      </svg>
+                                    <h2 class="card-title">Lịch sử đấu giá của bạn</h2>
+                                </div>
+                                
+                                @if ($userBidInfo && $userBidInfo['success'] && isset($userBidInfo['can_bid_now']) && !$userBidInfo['can_bid_now'])
+                                    <div class="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                        <div class="text-sm text-orange-700 mb-2">
+                                            <div class="flex items-center">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <span class="font-medium">Đếm ngược đến khi bạn được tiếp tục đấu giá</span>
+                                            </div>
+                                        </div>
+                                        <div class="countdown font-mono text-lg text-orange-800" id="user-bid-countdown">
+                                            <span style="--value:0;" aria-live="polite" aria-label="0">00</span>
+                                            :
+                                            <span style="--value:0;" aria-live="polite" aria-label="0">00</span>
+                                            :
+                                            <span style="--value:0;" aria-live="polite" aria-label="0">00</span>
+                                        </div>
+                                        <div class="text-xs text-orange-600 mt-1">
+                                            <span class="font-medium">Giờ : Phút : Giây</span>
+                                        </div>
+                                        <div class="text-xs text-orange-600 mt-1">
+                                            Thời gian delay: {{ $userBidInfo['time_delay'] }} phút
+                                        </div>
+                                    </div>
+                                @elseif (
+                                    $userBidInfo &&
+                                    $userBidInfo['success'] &&
+                                    isset($userBidInfo['can_bid_now']) &&
+                                    $userBidInfo['can_bid_now'] &&
+                                    isset($auctionData['auction']) &&
+                                    \Carbon\Carbon::parse($auctionData['auction']->end_time)->gt(now())
+                                )
+                                    <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <div class="text-sm text-green-700">
+                                            <div class="flex items-center gap-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                  </svg>                                                  
+                                                <span class="font-medium">Bạn có thể đấu giá ngay bây giờ!</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                                
+                                <div class="space-y-3">
+                                    @foreach ($userBids as $bid)
+                                        <div class="flex items-center justify-between py-2 border-b last:border-b-0 border-slate-300 text-base">
+                                            <div>
+                                                <div class="font-medium text-green-700">
+                                                    {{ number_format($bid->bid_price, 0, ',', '.') }} ₫
+                                                </div>
+                                                <div class="text-sm text-gray-600">
+                                                    {{ ($bid->bid_time ? \Carbon\Carbon::parse($bid->bid_time) : $bid->created_at ?? now())->diffForHumans() }}
+                                                </div>
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                @if ($bid === $userBids->first())
+                                                    <span class="badge badge-soft badge-success text-green-600">Đang dẫn đầu</span>
+                                                @else
+                                                    <span class="badge badge-soft badge-error">Bị vượt giá</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endif
+
                 @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2))
+                    @php
+                        $isAuctionEnded = isset($auctionData['auction']) && \Carbon\Carbon::parse($auctionData['auction']->end_time)->lte(now());
+                        $lastBid = isset($auctionData['auction']) ? $auctionData['auction']->bids()->orderBy('bid_time', 'desc')->first() : null;
+                    @endphp
                     <div class="card w-full bg-base-100 card-md shadow-sm mt-4">
                         <div class="card-body">
-                            <h2 class="card-title">Lịch sử đấu giá</h2>
+                            <h2 class="card-title">{{ $isAuctionEnded ? 'Lịch sử đấu giá cuối' : 'Lịch sử đấu giá' }}</h2>
                             @if (!empty($auctionData['recent_bids']) && count($auctionData['recent_bids']) > 0)
                                 <div class="space-y-3">
-                                    @foreach ($auctionData['recent_bids'] as $bid)
+                                    @foreach ($auctionData['recent_bids']->take(5) as $bid)
                                         <div
-                                            class="flex items-center justify-between py-2 border-b last:border-b-0 border-slate-300 text-base">
+                                            class="flex items-center justify-between py-2 border-b last:border-b-0 border-slate-300 text-base @if($isAuctionEnded && $lastBid && $bid->id === $lastBid->id) bg-[#fefce8] rounded-lg py-3 px-5 @endif">
                                             <div>
                                                 <div class="font-medium">
                                                     {{ \App\Utils\HelperFunc::maskMiddle($bid->user->name ?? 'Người dùng', 4, 3) }}
+                                                    @if($isAuctionEnded && $lastBid && $bid->id === $lastBid->id)
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 inline ml-2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+                                                        </svg>
+                                                    @endif
                                                 </div>
                                                 <div class="text-sm text-gray-600">
                                                     {{ ($bid->bid_time ? \Carbon\Carbon::parse($bid->bid_time) : $bid->created_at ?? now())->diffForHumans() }}
@@ -610,7 +809,7 @@
             </div>
         @endif
 
-        <div class="text-base font-bold text-gray-600 pt-4 mb-4">Sản phẩm này cũng phổ biến</div>
+        <div class="text-lg font-bold text-gray-600 pt-4 mb-4">Sản phẩm này cùng loại</div>
         <div class="swiper popularProductsSwiper">
             <div class="swiper-wrapper">
                 @foreach ($product_category as $item)
@@ -787,4 +986,5 @@
     @endif
 
     @include('pages.products.script')
+    @include('components.auction-success-modal')
 @endsection

@@ -33,14 +33,14 @@ class Order extends Model
         });
 
         static::saving(function (Order $model) {
-            $price = 0.0;
-            if ($model->relationLoaded('product') && $model->product) {
-                $price = (float) $model->product->price;
-            } else if (! empty($model->product_id)) {
-                $price = (float) (Product::find($model->product_id)?->price ?? 0);
+            if (is_null($model->total)) {
+                $price = 0.0;
+                if (! empty($model->product_id)) {
+                    $price = (float) (Product::find($model->product_id)?->price ?? 0);
+                }
+                $quantity = (float) ($model->quantity ?? 0);
+                $model->total = $quantity * $price;
             }
-            $quantity = (float) ($model->quantity ?? 0);
-            $model->total = $quantity * $price;
         });
     }
 

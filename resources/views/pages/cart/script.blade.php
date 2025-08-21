@@ -380,15 +380,40 @@
             return;
         }
 
-        if (confirm('Bạn có muốn lưu thay đổi số lượng trước khi thanh toán không?')) {
-            updateAllCartItems().then(() => {
-                window.location.href = url;
-            }).catch(() => {
-                showToast('Có lỗi xảy ra khi lưu thay đổi!', 'error');
-            });
-        } else {
-            window.location.href = url;
+        showSaveChangesModal(url);
+    }
+
+    function showSaveChangesModal(checkoutUrl) {
+        const modal = document.getElementById('save-changes-modal');
+        if (modal) {
+            modal.setAttribute('data-checkout-url', checkoutUrl);
+            modal.showModal();
         }
+    }
+
+    function closeSaveChangesModal() {
+        const modal = document.getElementById('save-changes-modal');
+        if (modal) {
+            modal.close();
+        }
+    }
+
+    function confirmSaveChanges() {
+        const modal = document.getElementById('save-changes-modal');
+        const checkoutUrl = modal.getAttribute('data-checkout-url');
+        
+        if (!checkoutUrl) {
+            showToast('Có lỗi xảy ra!', 'error');
+            return;
+        }
+
+        closeSaveChangesModal();
+
+        updateAllCartItems().then(() => {
+            window.location.href = checkoutUrl;
+        }).catch(() => {
+            showToast('Có lỗi xảy ra khi lưu thay đổi!', 'error');
+        });
     }
 
     function checkForChanges() {

@@ -65,7 +65,15 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         @if (session('success'))
-            showToast({!! json_encode(session('success'), JSON_UNESCAPED_UNICODE) !!}, 'success');
+            @if (str_contains(session('success'), 'Đấu giá thành công'))
+                @if (session('user_bid_data'))
+                    showAuctionSuccessToast({!! json_encode(session('user_bid_data'), JSON_UNESCAPED_UNICODE) !!});
+                @else
+                    showAuctionSuccessToast();
+                @endif
+            @else
+                showToast({!! json_encode(session('success'), JSON_UNESCAPED_UNICODE) !!}, 'success');
+            @endif
         @endif
         @if (session('error'))
             showToast({!! json_encode(session('error'), JSON_UNESCAPED_UNICODE) !!}, 'error');
