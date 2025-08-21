@@ -132,7 +132,7 @@ class OrderService extends BaseService implements OrderServiceInterface
 
             $orderDetail = OrderDetail::create([
                 'id' => HelperFunc::getTimestampAsId(),
-                'code_orders' => 'ORD-' . HelperFunc::getTimestampAsId(),
+                'code_orders' => 'ORD' . HelperFunc::getTimestampAsId(),
                 'user_id' => $userId,
                 'ship_address' => $checkoutData['address'],
                 'email_receiver' => $checkoutData['email'],
