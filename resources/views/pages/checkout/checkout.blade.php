@@ -96,7 +96,7 @@
                                 <div class="avatar">
                                     <div class="w-12 h-12 rounded-md overflow-hidden">
                                         @php $img = $item->product?->images?->first()?->image_url; @endphp
-                                        <img src="{{ $img ? asset('storage/'.$img) : asset('images/default-avatar.png') }}" alt="{{ $item->product->name ?? 'Sản phẩm' }}">
+                                        <img src="{{ $img ? \App\Utils\HelperFunc::generateURLFilePath($img) : asset('images/product_default.jpg') }}" alt="{{ $item->product->name ?? 'Sản phẩm' }}">
                                     </div>
                                 </div>
                                 <div class="flex-1">

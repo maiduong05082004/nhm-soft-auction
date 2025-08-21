@@ -18,27 +18,56 @@
         initializeCart();
     }
 
+    function getDaisyToastContainer() {
+        let container = document.getElementById('daisy-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'daisy-toast-container';
+            container.className = 'toast toast-top toast-end z-50';
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+
     function showToast(message, type = 'success') {
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toast-message');
-        const toastIcon = document.getElementById('toast-icon');
+        const container = getDaisyToastContainer();
 
-        toastMessage.textContent = message;
-        toast.classList.remove('hidden');
+        const alert = document.createElement('div');
+        let cls = 'alert';
+        switch (type) {
+            case 'success':
+                cls += ' alert-success';
+                break;
+            case 'error':
+                cls += ' alert-error';
+                break;
+            case 'warning':
+                cls += ' alert-warning';
+                break;
+            default:
+                cls += ' alert-info';
+        }
+        alert.className = cls;
 
+        let iconSvg = '';
         if (type === 'success') {
-            toastIcon.innerHTML =
-                '<svg class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>';
-            toast.classList.add('border-green-500');
+            iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>';
+        } else if (type === 'error') {
+            iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" /></svg>';
+        } else if (type === 'warning') {
+            iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" /></svg>';
         } else {
-            toastIcon.innerHTML =
-                '<svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>';
-            toast.classList.add('border-red-500');
+            iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
         }
 
+        alert.innerHTML = iconSvg + '<span>' + message + '</span>';
+        container.appendChild(alert);
+
         setTimeout(() => {
-            toast.classList.add('hidden');
-        }, 3000);
+            if (alert && alert.parentNode) {
+                alert.parentNode.removeChild(alert);
+            }
+        }, 8000);
     }
 
     function increaseQuantity(productId) {

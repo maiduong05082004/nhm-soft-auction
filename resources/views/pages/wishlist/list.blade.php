@@ -20,7 +20,7 @@
         </div>
         <div id="empty-container" class="text-center py-8 sm:py-12" style="display: none;">
             <h2 class="text-xl sm:text-2xl font-semibold text-gray-600 mb-4">Danh sách yêu thích trống</h2>
-            <a href="{{ route('home') }}" class="btn btn-primary">Tiếp tục mua sắm</a>
+            <a href="{{ route('home') }}" class="btn btn-neutral">Tiếp tục mua sắm</a>
         </div>
     </div>
 @endsection

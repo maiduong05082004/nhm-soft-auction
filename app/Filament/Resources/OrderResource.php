@@ -150,34 +150,35 @@ class OrderResource extends Resource
                     ->date()
                     ->toggleable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
 
                 Tables\Filters\Filter::make('created_at')
                     ->form([
-                        Forms\Components\DatePicker::make('created_from')
+                        Forms\Components\DatePicker::make('Tạo từ')
                             ->placeholder(fn(): string => 'Dec 18, ' . now()->subYear()->format('Y')),
-                        Forms\Components\DatePicker::make('created_until')
+                        Forms\Components\DatePicker::make('Đến')
                             ->placeholder(fn(): string => now()->format('M d, Y')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['created_from'] ?? null,
+                                $data['Tạo từ'] ?? null,
                                 fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
                             )
                             ->when(
-                                $data['created_until'] ?? null,
+                                $data['Đến'] ?? null,
                                 fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
-                        if ($data['created_from'] ?? null) {
-                            $indicators['created_from'] = 'Order from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
+                        if ($data['Tạo từ'] ?? null) {
+                            $indicators['Tạo từ'] = 'Order từ ' . Carbon::parse($data['Tạo từ'])->toFormattedDateString();
                         }
-                        if ($data['created_until'] ?? null) {
-                            $indicators['created_until'] = 'Order until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
+                        if ($data['Đến'] ?? null) {
+                            $indicators['Đến'] = 'Order đến ' . Carbon::parse($data['Đến'])->toFormattedDateString();
                         }
 
                         return $indicators;
@@ -261,7 +262,7 @@ class OrderResource extends Resource
         /** @var class-string<Model> $modelClass */
         $modelClass = static::$model;
 
-        return (string) $modelClass::where('status', 'new')->count();
+        return (string) $modelClass::where('id', '!=', null)->count();
     }
 
     /** @return Forms\Components\Component[] */
@@ -270,7 +271,7 @@ class OrderResource extends Resource
         return [
             Forms\Components\TextInput::make('code_orders')
                 ->label('Mã đơn hàng')
-                ->default('ORD-' . HelperFunc::getTimestampAsId())
+                ->default('ORD' . HelperFunc::getTimestampAsId())
                 ->disabled()
                 ->dehydrated()
                 ->required()

@@ -215,7 +215,7 @@ class ProductResource extends Resource
                     })->formatStateUsing(fn(string $state): string => $state === 'active' ? 'hoạt động' : 'không hoạt động'),
                 Tables\Columns\TextColumn::make('type_sale')
                     ->label('Dạng Sản Phẩm')
-                    ->formatStateUsing(fn(string $state): string => $state === 'sale' ? 'Bán' : 'Đấu giá')
+                    ->formatStateUsing(fn($state): string => $state == 1 ? 'Bán trực tiếp' : ($state == 2 ? 'Đấu giá' : 'Không xác định'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make("start_time")
                     ->toggleable(isToggledHiddenByDefault: true)
@@ -264,15 +264,15 @@ class ProductResource extends Resource
                 Tables\Filters\SelectFilter::make('type_sale')
                     ->label('Dạng sản phẩm')
                     ->options([
-                        'sale' => 'Bán trực tiếp',
-                        'auction' => 'Đấu giá',
+                        1 => 'Bán trực tiếp',
+                        2 => 'Đấu giá',
                     ]),
 
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Trạng thái')
                     ->options([
-                        'active' => 'Hoạt động',
-                        'inactive' => 'Dừng hoạt động',
+                        1 => 'Hoạt động',
+                        0 => 'Dừng hoạt động',
                     ]),
 
                 Tables\Filters\SelectFilter::make('is_hot')
