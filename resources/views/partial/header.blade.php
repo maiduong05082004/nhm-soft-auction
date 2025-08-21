@@ -34,12 +34,11 @@
     <div id="config-route" data-wishlist-get="{{ route('wishlist.get-items') }}"
         data-wishlist-add="{{ route('wishlist.add') }}" data-wishlist-remove="{{ route('wishlist.remove') }}"
         data-wishlist-clear="{{ route('wishlist.clear') }}" data-cart-add="{{ route('cart.add', [':id']) }}"
-        data-home="{{ route('home') }}"
-        data-product-detail="{{ route('products.show', [':id']) }}">
+        data-home="{{ route('home') }}" data-product-detail="{{ route('products.show', [':id']) }}">
     </div>
 
 
-    <div id="toast" class="fixed top-4 right-4 z-50 hidden sm:block">
+    <div id="toast" class="fixed top-4 right-0 z-50 hidden sm:block">
         <div class="bg-white border-l-4 text-gray-700 p-3 sm:p-4 rounded shadow-lg max-w-xs sm:max-w-sm transition-all duration-300 transform translate-x-full"
             id="toast-content">
             <div class="flex items-center">
@@ -91,6 +90,21 @@
 
                 <div class="hidden lg:flex items-center space-x-8">
                     <div class="flex items-center space-x-6">
+
+                        <a href="{{ route('products.list') }}"
+                            class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600 
+                               transition-all duration-300 hover:-translate-y-0.5 relative">
+                            <x-heroicon-o-shopping-bag class="w-6 h-6 mb-1"></x-heroicon-o-shopping-bag>
+                            <span class="text-xs font-medium">sản phẩm</span>
+                        </a>
+
+                        <a href="{{ route('news.list') }}"
+                            class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600 
+                               transition-all duration-300 hover:-translate-y-0.5 relative">
+                            <x-heroicon-o-newspaper class="w-6 h-6 mb-1"></x-heroicon-o-newspaper>
+                            <span class="text-xs font-medium">Tin tức</span>
+                        </a>
+
                         <div class="relative group">
                             <a href="{{ route('home') . '/admin' }}"
                                 class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
@@ -137,12 +151,7 @@
                             <span class="text-xs font-medium">Giỏ hàng</span>
                         </a>
 
-                        <a href="{{ route('news.list') }}"
-                            class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600 
-                               transition-all duration-300 hover:-translate-y-0.5 relative">
-                            <x-heroicon-o-newspaper class="w-6 h-6 mb-1"></x-heroicon-o-newspaper>
-                            <span class="text-xs font-medium">Tin tức</span>
-                        </a>
+
                     </div>
                 </div>
 
@@ -210,24 +219,32 @@
             </div>
             <nav class="flex-1 p-4" aria-label="Mobile navigation">
                 <div class="grid grid-cols-3 md:grid-cols-5 lg:hidden gap-3 mb-4">
-                    @foreach ($categories_header as $category)
-                        <div class="text-center">
-                            <a href="{{ route('products.list', ['category_id' => $category->id]) }}"
-                                class="block hover:opacity-80 transition-opacity">
-                                <img src="{{ asset('images/' . $category['image']) }}"
-                                    class="w-16 h-16 mx-auto mb-2 rounded-lg object-cover"
-                                    alt="{{ $category['name'] }}" loading="lazy">
-                                <h3 class="text-xs font-medium text-gray-700 leading-tight">
-                                    {{ $category['name'] }}
-                                </h3>
-                            </a>
-                        </div>
-                    @endforeach
+                    @if (isset($categories))
+                        @foreach ($categories as $category)
+                            <div class="text-center">
+                                <a href="{{ route('products.list', ['category_id' => $category->id]) }}"
+                                    class="block hover:opacity-80 transition-opacity">
+                                    @if (isset($category['image']))
+                                        <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($category['image']) }}"
+                                            class="w-16 h-16 mx-auto mb-2 rounded-lg object-cover"
+                                            alt="{{ $category['name'] }}" loading="lazy" />
+                                    @else
+                                        <img src="{{ asset('images/product_default.jpg') }}"
+                                            class="w-16 h-16 mx-auto mb-2 rounded-lg object-cover"
+                                            alt="{{ $category['name'] }}" loading="lazy" />
+                                    @endif
+                                    <h3 class="text-xs font-medium text-gray-700 leading-tight">
+                                        {{ $category['name'] }}
+                                    </h3>
+                                </a>
+                            </div>
+                        @endforeach
+                    @else
+                        <h2>Không có danh mục nào</h2>
+                    @endif
                 </div>
             </nav>
         </div>
-
-
     </aside>
 
 
@@ -270,7 +287,7 @@
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </div>
-{{-- 
+                    {{-- 
                     <div class="space-y-2">
                         <p class="text-sm font-medium text-gray-700">Gợi ý tìm kiếm:</p>
                         <div class="flex flex-wrap gap-2">
