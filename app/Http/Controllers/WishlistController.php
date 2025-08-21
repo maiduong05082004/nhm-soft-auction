@@ -89,7 +89,7 @@ class WishlistController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->message
+                'message' => $e->getMessage()
             ], 500);
         }
     }
