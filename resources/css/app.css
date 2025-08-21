@@ -69,3 +69,22 @@
     }
 }
 
+#auction-success-toast {
+    z-index: 9999;
+}
+
+#auction-success-toast .alert {
+    animation: toastSlideIn 0.3s ease-out;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+

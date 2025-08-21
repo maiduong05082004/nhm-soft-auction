@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\Permission\RoleConstant;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
+use App\Utils\HelperFunc;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -85,6 +86,7 @@ class CategoryResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Hình ảnh')
+                    ->getStateUsing(fn ($record) => HelperFunc::generateURLFilePath($record->image))
                     ->disk('public'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên danh mục')

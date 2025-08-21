@@ -50,6 +50,9 @@
                     setValue(minutesElem, 0);
                     setValue(secondsElem, 0);
                     clearInterval(interval);
+                    if (typeof handleAuctionEnded === 'function') {
+                        handleAuctionEnded();
+                    }
                     return;
                 }
 
@@ -68,11 +71,80 @@
             updateCountdown();
         }
 
+        function userBidCountdown(targetMs) {
+            console.log('userBidCountdown called with targetMs:', targetMs);
+            const countdownElem = document.getElementById('user-bid-countdown');
+            if (!countdownElem) {
+                console.error('Countdown element not found');
+                return;
+            }
+
+            const spans = countdownElem.querySelectorAll('span');
+            if (spans.length < 3) {
+                console.error('Not enough spans found:', spans.length);
+                return;
+            }
+            
+            console.log('Countdown element and spans found, starting countdown');
+
+            function setValue(el, val) {
+                if (!el) return;
+                const safe = Math.max(0, val);
+                el.style.setProperty('--value', safe);
+                el.setAttribute('aria-label', String(safe));
+                el.textContent = String(safe).padStart(2, '0');
+            }
+
+            function updateUserBidCountdown() {
+                const nowMs = Date.now();
+                const timeLeft = targetMs - nowMs;
+
+                if (timeLeft <= 0) {
+                    setValue(spans[0], 0);
+                    setValue(spans[1], 0);
+                    setValue(spans[2], 0);
+                    clearInterval(interval);
+                    
+                    countdownElem.style.display = 'none';
+                    showBidAvailableNotification();
+                    return;
+                }
+
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                setValue(spans[0], hours);
+                setValue(spans[1], minutes);
+                setValue(spans[2], seconds);
+            }
+
+            const interval = setInterval(updateUserBidCountdown, 1000);
+            updateUserBidCountdown();
+        }
+
         @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2) && isset($auctionData['auction']))
         const auctionEndIso =
             "{{ \Carbon\Carbon::parse($auctionData['auction']->end_time)->toIso8601String() }}";
         const targetMs = new Date(auctionEndIso).getTime();
         countdown(targetMs);
+        
+        @if (auth()->check() && isset($userBidInfo) && $userBidInfo['success'] && !$userBidInfo['can_bid_now'])
+        const userBidNextTime = "{{ $userBidInfo['next_bid_time'] ?? '' }}";
+        console.log('User bid info:', {!! json_encode($userBidInfo ?? null) !!});
+        console.log('User bid next time:', userBidNextTime);
+        if (userBidNextTime && userBidNextTime !== '') {
+            const userBidTargetMs = new Date(userBidNextTime).getTime();
+            console.log('Starting user bid countdown for:', userBidNextTime, 'Target ms:', userBidTargetMs);
+            if (!isNaN(userBidTargetMs)) {
+                userBidCountdown(userBidTargetMs);
+            } else {
+                console.error('Invalid date format:', userBidNextTime);
+            }
+        } else {
+            console.log('No next bid time available');
+        }
+        @endif
         @endif
     });
 
@@ -177,6 +249,33 @@
 
     function showBidConfirmation(e) {
         if (e) e.preventDefault();
+        
+        const endedAlert = document.getElementById('auction-ended-alert');
+        if (endedAlert && !endedAlert.classList.contains('hidden')) {
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'toast toast-top toast-end z-50';
+                document.body.appendChild(toastContainer);
+            }
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-warning shadow-lg';
+            toast.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="stroke-current shrink-0 h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Phiên đấu giá đã kết thúc, không thể đấu giá thêm!</span>
+            `;
+            toastContainer.appendChild(toast);
+            setTimeout(()=>{ if (toast.parentNode) toast.parentNode.removeChild(toast); }, 4000);
+            return;
+        }
+
+        const countdownElem = document.getElementById('user-bid-countdown');
+        if (countdownElem && countdownElem.style.display !== 'none') {
+            showBidDelayError();
+            return;
+        }
+        
         const modal = document.getElementById('bid_confirmation_modal');
         if (modal) {
             modal.showModal();
@@ -210,41 +309,95 @@
         });
     })();
 
-    function showShareNotification(message) {
-        const notification = document.createElement('div');
-        notification.textContent = message;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #10b981;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            z-index: 9999;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            animation: slideIn 0.3s ease-out;
+    function handleAuctionEnded() {
+        const wrapper = document.getElementById('auction-bid-wrapper');
+        if (wrapper) {
+            wrapper.innerHTML = '<button class="btn btn-disabled w-full" disabled>Đấu giá ngay</button>';
+        }
+        const ended = document.getElementById('auction-ended-alert');
+        if (ended) {
+            ended.classList.remove('hidden');
+        }
+    }
+
+    function showBidDelayError() {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast toast-top toast-end z-50';
+            document.body.appendChild(toastContainer);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-error shadow-lg';
+        toast.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Bạn cần đợi hết thời gian đếm ngược mới có thể đấu giá tiếp!</span>
         `;
-
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
-
-        document.body.appendChild(notification);
-
+        
+        toastContainer.appendChild(toast);
+        
         setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease-in';
-            notification.style.transform = 'translateX(100%)';
-            notification.style.opacity = '0';
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 300);
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 5000);
+    }
+
+    function showBidAvailableNotification() {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast toast-top toast-end z-50';
+            document.body.appendChild(toastContainer);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-success shadow-lg';
+        toast.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Bây giờ bạn có thể đấu giá tiếp!</span>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 5000);
+    }
+
+    function showShareNotification(message) {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast toast-top toast-end z-50';
+            document.body.appendChild(toastContainer);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-info shadow-lg';
+        toast.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>${message}</span>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
         }, 3000);
     }
 </script>
