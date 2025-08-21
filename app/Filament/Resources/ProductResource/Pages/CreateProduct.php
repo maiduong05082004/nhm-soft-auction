@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProductResource\Pages;
 
+use App\Enums\Product\ProductTypeSale;
 use App\Filament\Resources\ProductResource;
 use App\Models\ProductImage;
 use Filament\Actions;
@@ -15,7 +16,8 @@ class CreateProduct extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        if ($data['type_sale'] === 'sale') {
+
+        if ($data['type_sale']->value === ProductTypeSale::SALE->value) {
             $data['min_bid_amount'] = 0;
             $data['max_bid_amount'] = 0;
             $data['start_time'] = null;
@@ -27,7 +29,7 @@ class CreateProduct extends CreateRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        if ($data['type_sale'] === 'sale') {
+        if ($data['type_sale']->value ===  ProductTypeSale::SALE->value) {
             $data['min_bid_amount'] = 0;
             $data['max_bid_amount'] = 0;
             $data['start_time'] = null;

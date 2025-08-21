@@ -49,9 +49,9 @@
                 class="category-checkbox checkbox checkbox-xs checkbox-primary mr-2 flex-shrink-0"
                 {{ $isChecked ? 'checked' : '' }}>
 
-            <span class="category-name text-xs sm:text-sm text-gray-700 group-hover:text-gray-900 leading-tight flex-1">
+            <a href="{{ route('products.list',['category_id' => $category->id]) }}" class="category-name text-xs sm:text-sm text-gray-700 group-hover:text-gray-900 leading-tight flex-1">
                 {{ $category->name }}
-            </span>
+            </a>
 
             @if (isset($category->products_count))
                 <span class="text-xs text-gray-400 ml-2">

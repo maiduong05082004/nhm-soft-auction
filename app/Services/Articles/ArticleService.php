@@ -30,18 +30,18 @@ class ArticleService extends BaseService implements ArticleServiceInterface
 
     public function getRelatedArticles($categoryId, $currentArticleId, $limit = 5)
     {
-        $cacheKey = $this->buildCacheKey('related_article', $categoryId, $currentArticleId, $limit = 5);
-        return Cache::remember($cacheKey, 600, function () use ($categoryId, $currentArticleId, $limit) {
+        // $cacheKey = $this->buildCacheKey('related_article', $categoryId, $currentArticleId, $limit = 5);
+        // return Cache::remember($cacheKey, 600, function () use ($categoryId, $currentArticleId, $limit) {
             return $this->getRepository('article')->getRelatedArticles($categoryId, $currentArticleId, $limit);
-        });
+        // });
     }
 
     public function getArticlesList($query = [], $page = 1, $perPage = 12)
     {
-        $cacheKey = $this->buildCacheKey('articles_list', $query, $page, $perPage);
-        return Cache::remember($cacheKey, 600, function () use ($query, $page, $perPage) {
+        // $cacheKey = $this->buildCacheKey('articles_list', $query, $page, $perPage);
+        // return Cache::remember($cacheKey, 600, function () use ($query, $page, $perPage) {
             return $this->getRepository('article')->getArticlesList($query, $page, $perPage);
-        });
+        // });
     }
 
     public function getAllCategories()

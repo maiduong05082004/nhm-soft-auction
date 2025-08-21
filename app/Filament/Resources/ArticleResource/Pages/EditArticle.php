@@ -16,4 +16,19 @@ class EditArticle extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if ($data['status'] == 'published') {
+            if (empty($this->record->publish_time)) {
+                $data['publish_time'] = now();
+            } else {
+                $data['publish_time'] = $this->record->publish_time;
+            }
+        } else {
+            $data['publish_time'] = null;
+        }
+
+        return $data;
+    }
 }

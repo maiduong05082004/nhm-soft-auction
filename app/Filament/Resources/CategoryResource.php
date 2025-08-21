@@ -56,6 +56,7 @@ class CategoryResource extends Resource
                     ),
                 Forms\Components\FileUpload::make('image')
                     ->label('Hình ảnh')
+                    ->image()
                     ->directory('categories'),
                 SelectTree::make('parent_id')
                     ->label('Danh mục cha')
@@ -93,6 +94,7 @@ class CategoryResource extends Resource
                     ->formatStateUsing(fn ($state, $record) => str_repeat('&nbsp;&nbsp;&nbsp;', $record->level) . $state)
                     ->html()
                     ->sortable()
+                    ->limit(50)
                     ->searchable()
                     ->weight('bold'),
 

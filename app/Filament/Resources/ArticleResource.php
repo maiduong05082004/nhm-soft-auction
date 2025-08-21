@@ -125,6 +125,7 @@ class ArticleResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Hình ảnh')
+                    ->getStateUsing(fn($record) => HelperFunc::generateURLFilePath($record->image))
                     ->circular()
                     ->size(60),
 

@@ -32,14 +32,20 @@
                                 @if (isset($categories))
                                     @foreach ($categories as $category)
                                         <div class="text-center">
-                                            <a href="{{ route("products.list",['category_id' => $category->id] )}}"
+                                            <a href="{{ route('products.list', ['category_id' => $category->id]) }}"
                                                 class="block hover:opacity-80 transition-opacity">
-                                                <img src="{{ asset('images/' . $category['image']) }}"
-                                                    class="w-16 h-16 mx-auto mb-2 rounded-lg object-cover"
-                                                    alt="{{ $category['name'] }}" loading="lazy">
-                                                <h3 class="text-xs font-medium text-gray-700 leading-tight">
+                                                @if (isset($category['image']))
+                                                    <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($category['image']) }}"
+                                                        class="w-16 h-16 mx-auto mb-2 rounded-lg object-cover"
+                                                        alt="{{ $category['name'] }}" loading="lazy" />
+                                                @else
+                                                    <img src="{{ asset('images/default-category.png') }}"
+                                                        class="w-16 h-16 mx-auto mb-2 rounded-lg object-cover"
+                                                        alt="{{ $category['name'] }}" loading="lazy" />
+                                                @endif
+                                                < <h3 class="text-xs font-medium text-gray-700 leading-tight">
                                                     {{ $category['name'] }}
-                                                </h3>
+                                                    </h3>
                                             </a>
                                         </div>
                                     @endforeach
@@ -53,7 +59,7 @@
                                     @if (isset($categories))
                                         @foreach ($categories as $category)
                                             <li>
-                                                <a href="{{ route("products.list",['category_id' => $category->id] )}}"
+                                                <a href="{{ route('products.list', ['category_id' => $category->id]) }}"
                                                     class="block p-2 font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors">
                                                     {{ $category['name'] }}
                                                 </a>
@@ -161,9 +167,13 @@
                                                 $product['firstImage'] &&
                                                 isset($product['firstImage']['image_url'])
                                             ) {
-                                                $imageUrl = \App\Utils\HelperFunc::generateURLFilePath($product['firstImage']['image_url']);
+                                                $imageUrl = \App\Utils\HelperFunc::generateURLFilePath(
+                                                    $product['firstImage']['image_url'],
+                                                );
                                             } elseif (isset($product['image']) && $product['image']) {
-                                                $imageUrl = \App\Utils\HelperFunc::generateURLFilePath($product['image']);
+                                                $imageUrl = \App\Utils\HelperFunc::generateURLFilePath(
+                                                    $product['image'],
+                                                );
                                             }
                                         @endphp
 
@@ -181,9 +191,10 @@
 
                                     <div class="p-2 sm:p-3">
                                         <h3
-                                            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight min-h-[2.5rem] sm:min-h-[3rem] line-clamp-2">
+                                            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight">
                                             <a href="{{ isset($product['slug']) ? route('products.show', [$product['slug']]) : '' }}"
-                                                class="hover:underline ">
+                                                class="hover:underline break-words whitespace-normal overflow-hidden"
+                                                style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; text-overflow: ellipsis; overflow: hidden;">
                                                 {{ $product['name'] ?? 'Tên sản phẩm' }}
                                             </a>
                                         </h3>
@@ -274,11 +285,13 @@
                                                             $product['firstImage'] &&
                                                             isset($product['firstImage']['image_url'])
                                                         ) {
-                                                            $imageUrl = asset(
-                                                                'storage/' . $product['firstImage']['image_url'],
+                                                            $imageUrl = \App\Utils\HelperFunc::generateURLFilePath(
+                                                                $product['firstImage']['image_url'],
                                                             );
                                                         } elseif (isset($product['image']) && $product['image']) {
-                                                            $imageUrl = asset('storage/' . $product['image']);
+                                                            $imageUrl = \App\Utils\HelperFunc::generateURLFilePath(
+                                                                $product['image'],
+                                                            );
                                                         }
                                                     @endphp
 
@@ -297,9 +310,10 @@
 
                                                 <div class="p-2 sm:p-3">
                                                     <h3
-                                                        class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight min-h-[2.5rem] sm:min-h-[3rem] line-clamp-2">
+                                                        class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight">
                                                         <a href="{{ isset($product['slug']) ? route('products.show', [$product['slug']]) : '' }}"
-                                                            class="hover:underline">
+                                                            class="hover:underline break-words whitespace-normal overflow-hidden"
+                                                            style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; text-overflow: ellipsis; overflow: hidden;">
                                                             {{ $product['name'] ?? 'Tên sản phẩm' }}
                                                         </a>
                                                     </h3>
@@ -469,9 +483,13 @@
                                                 $product['firstImage'] &&
                                                 isset($product['firstImage']['image_url'])
                                             ) {
-                                                $imageUrl = asset('storage/' . $product['firstImage']['image_url']);
+                                                $imageUrl = \App\Utils\HelperFunc::generateURLFilePath(
+                                                    $product['firstImage']['image_url'],
+                                                );
                                             } elseif (isset($product['image']) && $product['image']) {
-                                                $imageUrl = asset('storage/' . $product['image']);
+                                                $imageUrl = \App\Utils\HelperFunc::generateURLFilePath(
+                                                    $product['image'],
+                                                );
                                             }
                                         @endphp
 
@@ -490,9 +508,10 @@
 
                                     <div class="p-2 sm:p-3">
                                         <h3
-                                            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight min-h-[2.5rem] sm:min-h-[3rem] line-clamp-2">
+                                            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors leading-tight">
                                             <a href="{{ isset($product['slug']) ? route('products.show', [$product['slug']]) : '' }}"
-                                                class="hover:underline">
+                                                class="hover:underline break-words whitespace-normal overflow-hidden"
+                                                style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; text-overflow: ellipsis; overflow: hidden;">
                                                 {{ $product['name'] ?? 'Tên sản phẩm' }}
                                             </a>
                                         </h3>
@@ -561,7 +580,7 @@
                         class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
                         <div class="relative">
                             @if ($article->image)
-                                <img src="{{ asset('storage/articles/' . $article->image) }}"
+                                <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($article->image) }}"
                                     alt="{{ $article->title }}" class="w-full h-48 object-cover">
                             @else
                                 <div
@@ -582,8 +601,8 @@
                             <h4 class="font-bold text-lg text-gray-900 mb-3 line-clamp-2 leading-snug min-h-[3rem]">
                                 {{ $article->title }}
                             </h4>
-                            <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-snug min-h-[2.5rem]">
-                                {!! $article->content !!}
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-snug">
+                                {{ \Illuminate\Support\Str::limit(strip_tags($article->content), 200) }}
                             </p>
 
                             <div class="flex items-center justify-between mt-4">
