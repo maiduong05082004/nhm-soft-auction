@@ -62,12 +62,22 @@ class ProductResource extends Resource
                 ->label('Dạng sản phẩm')
                 ->options(ProductTypeSale::getOptions())
                 ->required()
-                ->default(ProductTypeSale::SALE)
+                ->default(ProductTypeSale::SALE->value)
                 ->live(),
             Forms\Components\TextInput::make('price')
                 ->label('Giá')
                 ->numeric()
-                ->required(),
+                ->requiredIf('type_sale', ProductTypeSale::SALE->value)
+                ->visible(function ($get) {
+                    $t = $get('type_sale');
+                    $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
+                    return $v === ProductTypeSale::SALE->value;
+                })
+                ->dehydrated(function ($get) {
+                    $t = $get('type_sale');
+                    $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
+                    return $v === ProductTypeSale::SALE->value;
+                }),
             Forms\Components\TextInput::make('stock')
                 ->label('Số lượng')
                 ->numeric()
@@ -77,17 +87,27 @@ class ProductResource extends Resource
                 ->label('Giá Dưới')
                 ->numeric()
                 ->default(0)
-                ->requiredIf('type_sale', ProductTypeSale::AUCTION)
-                ->visible(fn($get) => $get('type_sale') === ProductTypeSale::AUCTION),
+                ->requiredIf('type_sale', ProductTypeSale::AUCTION->value)
+                ->visible(function ($get) {
+                    $t = $get('type_sale');
+                    $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
+                    return $v === ProductTypeSale::AUCTION->value;
+                }),
             Forms\Components\TextInput::make('max_bid_amount')
                 ->label('Giá Trên')
                 ->numeric()
                 ->default(0)
-                ->requiredIf('type_sale', ProductTypeSale::AUCTION)
-                ->visible(fn($get) => $get('type_sale') === ProductTypeSale::AUCTION)
+                ->requiredIf('type_sale', ProductTypeSale::AUCTION->value)
+                ->visible(function ($get) {
+                    $t = $get('type_sale');
+                    $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
+                    return $v === ProductTypeSale::AUCTION->value;
+                })
                 ->rules([
                     fn($get) => function ($attribute, $value, $fail) use ($get) {
-                        if ($get('type_sale') === ProductTypeSale::AUCTION) {
+                        $t = $get('type_sale');
+                        $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
+                        if ($v === ProductTypeSale::AUCTION->value) {
                             $min = $get('min_bid_amount');
                             if ($min !== null && $value <= $min) {
                                 $fail('Giá trên phải lớn hơn giá dưới.');
@@ -95,16 +115,34 @@ class ProductResource extends Resource
                         }
                     }
                 ]),
+            Forms\Components\TextInput::make('step_price')
+                ->label('Bước giá')
+                ->numeric()
+                ->default(10000)
+                ->requiredIf('type_sale', ProductTypeSale::AUCTION->value)
+                ->visible(function ($get) {
+                    $t = $get('type_sale');
+                    $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
+                    return $v === ProductTypeSale::AUCTION->value;
+                }),
             Forms\Components\DateTimePicker::make('start_time')
                 ->label('Thời gian bắt đầu')
                 ->seconds(true)
                 ->required()
-                ->visible(fn($get) => $get('type_sale') === ProductTypeSale::AUCTION),
+                ->visible(function ($get) {
+                    $t = $get('type_sale');
+                    $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
+                    return $v === ProductTypeSale::AUCTION->value;
+                }),
             Forms\Components\DateTimePicker::make('end_time')
                 ->label('Thời gian kết thúc')
                 ->seconds(true)
                 ->required()
-                ->visible(fn($get) => $get('type_sale') === ProductTypeSale::AUCTION),
+                ->visible(function ($get) {
+                    $t = $get('type_sale');
+                    $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
+                    return $v === ProductTypeSale::AUCTION->value;
+                }),
             SelectTree::make('category_id')
                 ->label('Danh mục')
                 ->formatStateUsing(fn($state) => (string) $state)
