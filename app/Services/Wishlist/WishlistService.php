@@ -59,4 +59,28 @@ class WishlistService extends BaseService implements WishlistServiceInterface
             'product_id' => $productId
         ]);
     }
+
+    public function getSummary(int $userId): array
+    {
+        try {
+            $count = $this->getRepository('wishlist')
+                ->query()
+                ->where('user_id', $userId)
+                ->count();
+
+            return [
+                'success' => true,
+                'message' => 'Lấy thông tin wishlist thành công!',
+                'data' => [
+                    'count' => (int) $count,
+                ],
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi lấy thông tin wishlist!',
+                'data' => null,
+            ];
+        }
+    }
 }

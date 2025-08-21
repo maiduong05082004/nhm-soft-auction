@@ -38,6 +38,11 @@
     </div>
 
 
+    @php
+        $headerCartCount = $headerCartCount ?? 0;
+        $headerWishlistCount = $headerWishlistCount ?? 0;
+    @endphp
+
     <div id="toast" class="fixed top-4 right-0 z-50 hidden sm:block">
         <div class="bg-white border-l-4 text-gray-700 p-3 sm:p-4 rounded shadow-lg max-w-xs sm:max-w-sm transition-all duration-300 transform translate-x-full"
             id="toast-content">
@@ -56,19 +61,7 @@
         </div>
     </div>
 
-    @php
-        $headerCartCount = 0;
-        try {
-            if (auth()->check()) {
-                $cartRes = app(\App\Services\Cart\CartServiceInterface::class)->getUserCart(auth()->id());
-                if (!empty($cartRes['success']) && !empty($cartRes['data']['cartItems'])) {
-                    $headerCartCount = count($cartRes['data']['cartItems']);
-                }
-            }
-        } catch (\Throwable $e) {
-            $headerCartCount = 0;
-        }
-    @endphp
+    
 
     <div id="mobile-toast" class="fixed bottom-4 left-4 right-4 z-50 hidden sm:hidden">
         <div class="bg-white border-l-4 text-gray-700 p-3 rounded shadow-lg transition-all duration-300 transform translate-y-full"
@@ -149,11 +142,11 @@
                                transition-all duration-300 hover:-translate-y-0.5 relative">
                             <x-heroicon-o-heart class="w-6 h-6 mb-1"></x-heroicon-o-heart>
                             @auth
-                                <span id="wishlist-count"
-                                    class="absolute -top-0.5 right-3 bg-red-500 text-white text-xs font-bold rounded-full
-                   h-5 w-5 flex items-center justify-center shadow">
-
-                                </span>
+                                @if ($headerWishlistCount > 0)
+                                    <span id="wishlist-count"
+                                        class="absolute -top-0.5 right-3 bg-red-600 text-white text-xs font-bold rounded-full
+                                    h-5 w-5 flex items-center justify-center shadow">{{ $headerWishlistCount }}</span>
+                                @endif
                             @endauth
                             <span class="text-xs font-medium">Yêu thích</span>
                         </a>

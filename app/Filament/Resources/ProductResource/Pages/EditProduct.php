@@ -19,11 +19,14 @@ class EditProduct extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        if ($data['type_sale'] === 'sale') {
+        $typeSale = is_string($data['type_sale']) ? $data['type_sale'] : (string) $data['type_sale'];
+        if ($typeSale === 'sale' || $typeSale === '1') {
             $data['min_bid_amount'] = 0;
             $data['max_bid_amount'] = 0;
             $data['start_time'] = null;
             $data['end_time'] = null;
+        } else if ($typeSale === 'auction' || $typeSale === '2') {
+            $data['price'] = $data['max_bid_amount'] ?? 0;
         }
         return $data;
     }
