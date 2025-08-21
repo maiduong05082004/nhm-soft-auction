@@ -18,6 +18,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use FilamentTiptapEditor\TiptapEditor;
+use FilamentTiptapEditor\Enums\TiptapOutput;
 use App\Utils\HelperFunc;
 use Filament\Tables\Actions\Action as TableAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -124,6 +125,10 @@ class ProductResource extends Resource
                     $t = $get('type_sale');
                     $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
                     return $v === ProductTypeSale::AUCTION->value;
+                })
+                ->dehydrated(false)
+                ->default(function (?\App\Models\Product $record) {
+                    return $record?->auction?->step_price;
                 }),
             Forms\Components\DateTimePicker::make('start_time')
                 ->label('Thời gian bắt đầu')
@@ -180,6 +185,7 @@ class ProductResource extends Resource
                 ->hidden(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
             TiptapEditor::make('description')
                 ->label('Miêu tả sản phẩm')
+                ->output(TiptapOutput::Html)
                 ->extraInputAttributes([
                     'style' => 'min-height: 400px;'
                 ])

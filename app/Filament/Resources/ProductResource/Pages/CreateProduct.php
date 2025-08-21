@@ -4,8 +4,8 @@ namespace App\Filament\Resources\ProductResource\Pages;
 
 use App\Enums\Product\ProductTypeSale;
 use App\Filament\Resources\ProductResource;
-use App\Models\ProductImage;
-use App\Models\Auction;
+use App\Services\Products\ProductServiceInterface;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -20,7 +20,6 @@ class CreateProduct extends CreateRecord
         $typeSale = is_object($data['type_sale']) && method_exists($data['type_sale'], 'value')
             ? $data['type_sale']->value
             : (int) $data['type_sale'];
-
         if ($typeSale === ProductTypeSale::SALE->value) {
             $data['min_bid_amount'] = 0;
             $data['max_bid_amount'] = 0;
@@ -52,35 +51,11 @@ class CreateProduct extends CreateRecord
     }
 
 
-    protected function afterCreate(): void
+    protected function handleRecordCreation(array $data): Model
     {
-        $product = $this->record;
-        $images = $this->data['images'] ?? [];
-        $nu = 1;
-        foreach ($images as $imagePath) {
-
-            ProductImage::create([
-                'product_id' => $product->id,
-                'image_url' => $imagePath,
-                'status' => 'active',
-                'position' => $nu
-            ]);
-            $nu++;
-        }
-
-        // Auto create auction record if type_sale is AUCTION
-        $typeSale = is_object($this->data['type_sale']) && method_exists($this->data['type_sale'], 'value')
-            ? $this->data['type_sale']->value
-            : (int) $this->data['type_sale'];
-        if ($typeSale === ProductTypeSale::AUCTION->value) {
-            Auction::create([
-                'product_id' => $product->id,
-                'start_price' => $this->data['min_bid_amount'] ?? 0,
-                'step_price' => $this->data['step_price'] ?? 10000,
-                'start_time' => $this->data['start_time'] ?? now(),
-                'end_time' => $this->data['end_time'] ?? now()->addDays(7),
-                'status' => 'active',
-            ]);
-        }
+        /** @var ProductServiceInterface $productService */
+        $productService = app(ProductServiceInterface::class);
+        $data['images'] = $data['images'] ?? [];
+        return $productService->createProductWithSideEffects($data, auth()->id());
     }
 }
