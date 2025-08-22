@@ -1,7 +1,7 @@
 <div class="bg-white  shadow-sm  p-6 mb-6">
     <header class="mb-6">
         <h1 class="text-xl font-bold text-gray-800 pb-3 border-b border-gray-200">
-            {{ $section['title'] . $products->count()}}
+            {{ $section['title']}}
         </h1>
     </header>
 

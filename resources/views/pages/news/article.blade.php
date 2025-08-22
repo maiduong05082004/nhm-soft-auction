@@ -14,28 +14,29 @@
 
 @section('content')
     <section class="site-banner max-w-7xl mx-auto my-3" aria-label="Promotional Banner">
-        @if (isset($article->image))
-            <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($article->image) }}" class="w-full h-auto object-cover"
-                alt="AuctionsClone promotional banner" loading="lazy">
-        @else
-            <img src="{{ asset('storage/images/default.png') }} class="w-full h-auto object-cover"
-                alt="AuctionsClone promotional banner" loading="lazy">
-        @endif
+
     </section>
     <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 my-6 md:px-0 px-4">
         <article class="lg:col-span-8 bg-base-100 p-6 rounded-lg shadow">
-            <header class="prose max-w-none px-4 sm:px-6 lg:px-0 mb-6">
+            <header class="prose max-w-none px-0 sm:px-6 lg:px-0 mb-6">
                 <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-tight text-gray-900">
                     {{ $article->title }}
                 </h1>
-
+                @if (isset($article->image))
+                    <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($article->image) }}"
+                        class="w-full h-auto object-cover" alt="AuctionsClone promotional banner" loading="lazy">
+                @else
+                    <img src="{{ asset('storage/images/default.png') }} class="w-full h-auto object-cover"
+                        alt="AuctionsClone promotional banner" loading="lazy">
+                @endif
                 <div class="mt-3 flex flex-col sm:flex-row sm:items-center sm:gap-4 text-sm text-gray-500">
                     <div class="flex items-center gap-2">
                         <x-heroicon-o-user class="h-4 w-4"></x-heroicon-o-user>
                         <span>{{ $article->author?->name ?? 'Ban biên tập' }}</span>
                     </div>
                     <div class="flex items-center gap-2 mt-2 sm:mt-0">
-                        <time datetime="{{ $article->created_at }}">{{ $article->created_at }}</time>
+                        <span
+                            class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($article->publish_time)->diffForHumans() }}</span>
                         <span aria-hidden="true">•</span>
                         <x-heroicon-o-eye class="w-4 h-4"></x-heroicon-o-eye>
                         <span>{{ $article->view }}</span>
@@ -44,7 +45,7 @@
             </header>
 
 
-            <article class="prose prose-lg lg:max-w-3xl mx-auto px-4 sm:px-6 min-h-[360px]">
+            <article class="prose prose-lg lg:max-w-3xl mx-auto px-0 sm:px-6 min-h-[360px]">
                 {!! $article->content !!}
             </article>
 
@@ -140,17 +141,61 @@
                 <h2 class="text-xl font-bold mb-4 border-b pb-2">Bài viết liên quan</h2>
                 <ul class="space-y-3">
                     @foreach ($related_articles as $featured)
-                        <li class="flex gap-3">
-                            <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($featured->image) }}"
-                                alt="{{ $featured->title }}" class="w-20 h-14 object-cover rounded">
-                            <div class="flex flex-col">
-                                <a href="" class="text-sm font-semibold hover:text-primary">
-                                    {{ Str::limit($featured->title, 60) }}
-                                </a>
-                                <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-snug">
-                                    {{ \Illuminate\Support\Str::limit(strip_tags($article->content), 80) }}
-                                </p>
+                        <li class="group hover:bg-gray-50 rounded-lg transition-all md:block hidden duration-200 relative">
+                            <a href="{{ route('news.detail', $featured->slug) }}" class="absolute inset-0 z-10"
+                                aria-hidden="true">
+                                <span class="sr-only">Xem: {{ $featured->title }}</span>
+                            </a>
+
+                            <div class="flex gap-3 sm:gap-4 p-2 sm:p-3 relative z-0">
+                                <div class="flex-shrink-0">
+                                    <div class="relative overflow-hidden rounded-lg bg-gray-100">
+                                        <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($featured->image) }}"
+                                            alt="{{ $featured->title }}"
+                                            class="w-16 h-12 sm:w-20 sm:h-14 md:w-24 md:h-16 object-cover transition-transform duration-300 group-hover:scale-105"
+                                            onerror="this.src='{{ asset('images/product_default.jpg') }}'" loading="lazy">
+                                        <div
+                                            class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex-1 min-w-0 flex flex-col justify-between">
+                                    <div class="mb-1 sm:mb-2">
+                                        <span
+                                            class="block text-sm sm:text-base font-semibold text-gray-900 hover:text-primary transition-colors duration-200 leading-tight">
+                                            <span class="line-clamp-2 sm:line-clamp-1">
+                                                {{ Str::limit($featured->title, 60) }}
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <div class="flex-1">
+                                        <p
+                                            class="text-gray-600 text-xs sm:text-sm line-clamp-2 sm:line-clamp-3 leading-relaxed">
+                                            {{ \Illuminate\Support\Str::limit(strip_tags($featured->content), 80) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="hidden sm:flex items-center gap-2 mt-2 text-xs text-gray-500">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>5 phút đọc</span>
+                                    </div>
+                                </div>
+                                <div class="absolute top-2 right-2 z-20 flex items-center gap-2">
+                                    <button type="button" class="bg-white p-1 rounded shadow-sm relative z-20">
+                                    </button>
+                                </div>
                             </div>
+                        </li>
+
+
+
+                        <li class="group hover:bg-gray-50 rounded-lg transition-all duration-200 block md:hidden">
+                            <x-article-card :article="$featured" />
                         </li>
                     @endforeach
                 </ul>
@@ -172,67 +217,7 @@
                 <div class="swiper-wrapper">
                     @foreach ($related_articles as $similar)
                         <div class="swiper-slide">
-                            <article
-                                class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
-                                <div class="relative">
-                                    @if ($similar->image)
-                                        <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($similar->image) }}"
-                                            alt="{{ $similar->title }}" class="w-full h-48 object-cover">
-                                    @else
-                                        <div
-                                            class="w-full h-48 bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
-                                            <i class="fas fa-newspaper text-white text-3xl"></i>
-                                        </div>
-                                    @endif
-
-                                    <div class="absolute top-4 left-4">
-                                        <span
-                                            class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                                            {{ $similar->category->name }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="p-6">
-                                    <h4
-                                        class="font-bold text-lg text-gray-900 mb-3 line-clamp-2 leading-snug min-h-[3rem]">
-                                        {{ $similar->title }}
-                                    </h4>
-                                    <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-snug">
-                                        {{ \Illuminate\Support\Str::limit(strip_tags($similar->content), 200) }}
-                                    </p>
-
-                                    <div class="flex items-center justify-between mt-4">
-                                        @if ($similar['author']['avatar'])
-                                            <div class="text-sm text-gray-500 flex gap-1">
-                                                <img src="{{ asset('storage/avatar') . '/' . $similar['author']['avatar'] }}"
-                                                    class="rounded-2xl w-4" alt="">
-                                                <span class="whitespace-nowrap">{{ $similar['author']['name'] }}</span>
-                                            </div>
-                                        @else
-                                            <div class="text-sm text-gray-500 flex gap-1">
-                                                <x-heroicon-o-user class="w-4"></x-heroicon-o-user>
-                                                <span class="whitespace-nowrap">{{ $similar['author']['name'] }}</span>
-                                            </div>
-                                        @endif
-
-                                        <div class="text-sm text-gray-500 flex gap-1">
-                                            <x-heroicon-o-eye class="w-4"></x-heroicon-o-eye>
-                                            <span class="whitespace-nowrap">{{ $similar['view'] }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center justify-between mt-4">
-                                        <span class="text-xs text-gray-500 flex">
-                                            <div class="">
-                                                {{ \Carbon\Carbon::parse($similar->publish_time)->diffForHumans() }}</div>
-                                        </span>
-                                        <a href="{{ route('news.detail', $similar->slug) }}"
-                                            class="text-blue-600 hover:text-blue-800 font-medium text-sm">
-                                            Đọc thêm <i class="fas fa-chevron-right ml-1"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </article>
+                            <x-article-card :article="$similar" />
                         </div>
                     @endforeach
                 </div>
