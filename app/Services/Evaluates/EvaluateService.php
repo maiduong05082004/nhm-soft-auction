@@ -33,4 +33,17 @@ class EvaluateService extends BaseService implements EvaluateServiceInterface
             'ratingDistribution' => $ratingDistribution,
         ];
     }
+
+    public function getUserSellerRatingStats(int $userId)
+    {
+        $totalReviews = $this->repositories['evaluate']->getUserTotalSellerReviews($userId);
+        $averageRating = $this->repositories['evaluate']->getUserAverageSellerRating($userId);
+        $ratingDistribution = $this->repositories['evaluate']->getUserSellerRatingDistribution($userId);
+
+        return [
+            'sellerTotalReviews' => $totalReviews,
+            'sellerAverageRating' => $totalReviews > 0 ? round($averageRating, 1) : 0,
+            'sellerRatingDistribution' => $ratingDistribution,
+        ];
+    }
 }

@@ -13,6 +13,9 @@ use App\Repositories\Auctions\AuctionRepository;
 use App\Repositories\Categories\CategoryRepository;
 use App\Repositories\Wishlist\WishlistRepository;
 use App\Repositories\TransactionPoint\TransactionPointRepository;
+use App\Repositories\OrderDetails\OrderDetailRepository;
+use App\Repositories\Payments\PaymentRepository;
+use App\Repositories\Orders\OrderRepository;
 use App\Services\Evaluates\EvaluateService;
 use App\Services\Config\ConfigService;
 use App\Services\Products\ProductServiceInterface;
@@ -37,7 +40,9 @@ class ProductService extends BaseService implements ProductServiceInterface
         CategoryRepository $categoryRepo,
         EvaluateService $evaluateService,
         ConfigService $configService,
-        TransactionPointRepository $transactionPointRepo
+        TransactionPointRepository $transactionPointRepo,
+        OrderDetailRepository $orderDetailRepo,
+        PaymentRepository $paymentRepo
     ) {
         parent::__construct([
             'product' => $productRepo,
@@ -47,6 +52,9 @@ class ProductService extends BaseService implements ProductServiceInterface
             'wishlist' => $wishlistRepo,
             'category' => $categoryRepo,
             'transactionPoint' => $transactionPointRepo,
+            'order' => app(OrderRepository::class),
+            'orderDetail' => $orderDetailRepo,
+            'payment' => $paymentRepo,
         ]);
         $this->productRepository = $productRepo;
         $this->evaluateService = $evaluateService;
@@ -81,6 +89,27 @@ class ProductService extends BaseService implements ProductServiceInterface
                 $highestBid = null;
             }
             $recentBids = $this->repositories['auction']->getRecentBids($auction->id, 10);
+            $orderDetail = null;
+            $order = null;
+
+            if ($highestBid) {
+                $ordersOfProduct = $this->repositories['order']->getAll(['product_id' => $product->id]);
+                if ($ordersOfProduct && $ordersOfProduct->count() > 0) {
+                    $orderDetailIds = $ordersOfProduct->pluck('order_detail_id')->filter()->values();
+                    if ($orderDetailIds->count() > 0) {
+                        $orderDetail = $this->repositories['orderDetail']->getAll([
+                            'user_id' => $highestBid->user_id,
+                        ])->first(function ($od) use ($orderDetailIds) {
+                            return $orderDetailIds->contains($od->id);
+                        });
+                        if ($orderDetail) {
+                            $order = $ordersOfProduct->firstWhere('order_detail_id', $orderDetail->id);
+                        }
+                    }
+                }
+            }
+            $payment = $orderDetail ? $this->repositories['payment']->getAll(['order_detail_id' => $orderDetail->id])->first() : null;
+
             $auctionData = [
                 'auction' => $auction,
                 'highest_bid' => $highestBid,
@@ -88,12 +117,21 @@ class ProductService extends BaseService implements ProductServiceInterface
                 'current_price' => $currentPrice,
                 'min_next_bid' => ($currentPrice ?? 0) + ($auction->step_price ?? 0),
                 'recent_bids' => $recentBids,
+                'order' => $order,
+                'orderDetail' => $orderDetail,
+                'payment' => $payment,
             ];
         }
 
         $followersCount = $this->repositories['wishlist']->getAll(['product_id' => $product->id])->count();
 
         $evaluateStats = $this->evaluateService->getProductRatingStats($product->id);
+        $statUserId = $user->id ?? null;
+        $sellerStats = $statUserId ? $this->evaluateService->getUserSellerRatingStats((int) $statUserId) : [
+            'sellerTotalReviews' => 0,
+            'sellerAverageRating' => 0,
+            'sellerRatingDistribution' => [1=>0,2=>0,3=>0,4=>0,5=>0],
+        ];
 
         $productStateLabel = 'Chưa có thông tin';
         if (isset($product->state)) {
@@ -113,7 +151,7 @@ class ProductService extends BaseService implements ProductServiceInterface
         $priceOneCoin = $this->configService->getConfigValue('PRICE_ONE_COIN', 1000);
         $totalCoinCost = $coinBindProductAuction * $priceOneCoin;
 
-        return compact('product', 'product_images', 'auction', 'user', 'product_category', 'typeSale', 'totalBids', 'currentPrice', 'auctionData', 'followersCount', 'productStateLabel', 'productPaymentMethodLabel', 'coinBindProductAuction', 'priceOneCoin', 'totalCoinCost') + $evaluateStats;
+        return compact('product', 'product_images', 'auction', 'user', 'product_category', 'typeSale', 'totalBids', 'currentPrice', 'auctionData', 'followersCount', 'productStateLabel', 'productPaymentMethodLabel', 'coinBindProductAuction', 'priceOneCoin', 'totalCoinCost') + $evaluateStats + $sellerStats;
     }
 
     public function filterProductList($query = [], $page = 1, $perPage = 12)

@@ -43,7 +43,7 @@
                     </div>
 
                     <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200">
+                        class="btn btn-neutral text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200">
                         <i class="fas fa-search mr-2"></i>Tìm kiếm
                     </button>
                 </form>
@@ -158,14 +158,14 @@
                             Thử thay đổi từ khóa tìm kiếm hoặc danh mục để xem thêm kết quả.
                         </p>
                         <a href="{{ route('news.list') }}"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                            class="btn btn-neutral text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
                             <i class="fas fa-list mr-2"></i>Xem tất cả bài viết
                         </a>
                     </div>
                 @endif
             </section>
 
-            <section class="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white text-center">
+            <section class="mt-16 bg-gradient-to-r from-[#646068] to-[#777f92] rounded-2xl p-8 text-white text-center">
                 <h3 class="text-2xl md:text-3xl font-bold mb-4">
                     Đăng ký nhận tin tức mới nhất
                 </h3>

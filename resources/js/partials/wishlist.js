@@ -51,7 +51,15 @@
     const $mobileActionButtons = $('#mobile-action-buttons');
 
     const setWishlistCount = (n = 0) => {
-        $wishlistCount.text(Number.isInteger(n) ? n : 0);
+        const next = Number.isInteger(n) ? n : 0;
+        $wishlistCount.text(next);
+        if ($wishlistCount.length) {
+            if (next > 0) {
+                $wishlistCount.removeClass('hidden');
+            } else {
+                $wishlistCount.addClass('hidden');
+            }
+        }
     };
 
     const incrementWishlistCount = (delta = 1) => {
