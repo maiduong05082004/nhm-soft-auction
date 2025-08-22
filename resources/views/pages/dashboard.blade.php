@@ -360,7 +360,7 @@
                                             onerror="this.src='{{ asset('images/product_default.jpg') }}'">
 
                                         <button type="button"
-                                            class="heart-icon absolute bottom-1 sm:bottom-2 right-1 sm:right-2 p-1 sm:p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200"
+                                            class="wishlist-btn absolute bottom-1 sm:bottom-2 right-1 sm:right-2 p-1 sm:p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200"
                                             aria-label="Thêm vào danh sách yêu thích">
                                             <x-heroicon-o-heart
                                                 class="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 hover:text-red-500" />
@@ -479,7 +479,7 @@
                                                         onerror="this.src='{{ asset('images/product_default.jpg') }}'">
 
                                                     <button type="button"
-                                                        class="heart-icon absolute bottom-1 sm:bottom-2 right-1 sm:right-2 p-1 sm:p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200"
+                                                        class="wishlist-btn absolute" bottom-1 sm:bottom-2 right-1 sm:right-2 p-1 sm:p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200"
                                                         aria-label="Thêm vào danh sách yêu thích">
                                                         <x-heroicon-o-heart
                                                             class="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 hover:text-red-500" />
@@ -677,7 +677,7 @@
                                             onerror="this.src='{{ asset('images/product_default.jpg') }}'">
 
                                         <button type="button"
-                                            class="heart-icon absolute bottom-1 sm:bottom-2 right-1 sm:right-2 p-1 sm:p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200"
+                                            class="wishlist-btn absolute bottom-1 sm:bottom-2 right-1 sm:right-2 p-1 sm:p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200"
                                             aria-label="Thêm vào danh sách yêu thích">
                                             <x-heroicon-o-heart
                                                 class="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 hover:text-red-500" />
@@ -831,3 +831,4 @@
     </div>
 
 @endsection
+

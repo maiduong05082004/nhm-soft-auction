@@ -139,33 +139,29 @@
 
                         <a href="{{ route('wishlist.list') }}"
                             class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
-                               transition-all duration-300 hover:-translate-y-0.5 relative">
+                            transition-all duration-300 hover:-translate-y-0.5 relative">
                             <x-heroicon-o-heart class="w-6 h-6 mb-1"></x-heroicon-o-heart>
                             @auth
-                                @if ($headerWishlistCount > 0)
-                                    <span id="wishlist-count"
-                                        class="absolute -top-0.5 right-3 bg-red-600 text-white text-xs font-bold rounded-full
-                                    h-5 w-5 flex items-center justify-center shadow">{{ $headerWishlistCount }}</span>
-                                @endif
+                                <span id="wishlist-count" 
+                                    class="absolute -top-0.5 right-3 !bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow">
+                                    {{ $headerWishlistCount > 0 ? $headerWishlistCount : '' }}
+                                </span>
                             @endauth
                             <span class="text-xs font-medium">Yêu thích</span>
                         </a>
-
                         <a href="{{ route('cart.index') }}"
                             class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
                                transition-all duration-300 hover:-translate-y-0.5 relative">
                             <x-heroicon-o-shopping-cart class="w-6 h-6 mb-1"></x-heroicon-o-shopping-cart>
                             @auth
                                 @if ($headerCartCount > 0)
-                                    <span id="header-cart-count" class="absolute -top-0.5 right-3 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow">
+                                    <span id="header-cart-count" class="absolute -top-0.5 right-3 !bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow">
                                         {{ $headerCartCount }}
                                     </span>
                                 @endif
                             @endauth
                             <span class="text-xs font-medium">Giỏ hàng</span>
                         </a>
-
-
                     </div>
                 </div>
 
