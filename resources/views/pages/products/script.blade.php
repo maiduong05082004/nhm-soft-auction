@@ -366,7 +366,7 @@
         `;
         
         toastContainer.appendChild(toast);
-        
+
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.parentNode.removeChild(toast);
@@ -394,7 +394,7 @@
         
         toastContainer.appendChild(toast);
         
-        setTimeout(() => {
+            setTimeout(() => {
             if (toast.parentNode) {
                 toast.parentNode.removeChild(toast);
             }
