@@ -78,7 +78,7 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         }
 
         if (!empty($query['is_new'])) {
-            $builder->where('created_at', '<=', now()->subWeek());
+            $builder->where('created_at', '>=', now()->subWeek());
         }
         if (!empty($query['orderBy'])) {
             switch ($query['orderBy']) {

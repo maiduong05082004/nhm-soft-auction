@@ -156,7 +156,7 @@
                         ${addToCartHtml}
                         <button type="button" data-id='${pid}' 
                             class="remove-wishlist-btn flex items-center justify-center w-10 h-10 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 group/btn"
-                            title="Xóa khỏi wishlist">
+                            title="Xóa khỏi danh sách yêu thích">
                             <svg class="w-5 h-5 group-hover/btn:scale-110 transition-transform duration-200"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
