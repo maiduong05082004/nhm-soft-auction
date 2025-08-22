@@ -12,9 +12,15 @@ use App\Repositories\Users\UserRepository;
 use App\Repositories\Auctions\AuctionRepository;
 use App\Repositories\Categories\CategoryRepository;
 use App\Repositories\Wishlist\WishlistRepository;
+use App\Repositories\TransactionPoint\TransactionPointRepository;
 use App\Services\Evaluates\EvaluateService;
 use App\Services\Config\ConfigService;
 use App\Services\Products\ProductServiceInterface;
+use App\Enums\Permission\RoleConstant;
+use App\Enums\Config\ConfigName;
+use App\Exceptions\ServiceException;
+use Illuminate\Support\Facades\DB;
+use App\Models\Product;
 
 class ProductService extends BaseService implements ProductServiceInterface
 {
@@ -30,7 +36,8 @@ class ProductService extends BaseService implements ProductServiceInterface
         WishlistRepository $wishlistRepo,
         CategoryRepository $categoryRepo,
         EvaluateService $evaluateService,
-        ConfigService $configService
+        ConfigService $configService,
+        TransactionPointRepository $transactionPointRepo
     ) {
         parent::__construct([
             'product' => $productRepo,
@@ -38,7 +45,8 @@ class ProductService extends BaseService implements ProductServiceInterface
             'user' => $userRepo,
             'auction' => $auctionRepo,
             'wishlist' => $wishlistRepo,
-            'category' => $categoryRepo
+            'category' => $categoryRepo,
+            'transactionPoint' => $transactionPointRepo,
         ]);
         $this->productRepository = $productRepo;
         $this->evaluateService = $evaluateService;
@@ -131,4 +139,87 @@ class ProductService extends BaseService implements ProductServiceInterface
         return $prefix . '_' . $serialized;
     }
 
+    public function createProductWithSideEffects(array $data, int $userId): Product
+    {
+        $typeRaw = $data['type_sale'] ?? ProductTypeSale::SALE->value;
+        $typeSale = is_object($typeRaw) && method_exists($typeRaw, 'value') ? $typeRaw->value : (int) $typeRaw;
+
+        $user = $this->repositories['user']->find($userId);
+        if (!$user) {
+            throw new ServiceException('Không tìm thấy người dùng.');
+        }
+
+        $coinCost = 0;
+        if (!$user->hasRole(RoleConstant::ADMIN->value)) {
+            $coinCost = (int) ($typeSale === ProductTypeSale::SALE->value
+                ? $this->configService->getConfigValue(ConfigName::COIN_POST_PRODUCT_SALE->value, 0)
+                : $this->configService->getConfigValue(ConfigName::COIN_POST_PRODUCT_AUCTION->value, 0));
+
+            if ($coinCost > 0 && (int) $user->current_balance < $coinCost) {
+                throw new ServiceException('Số dư coin của bạn không đủ để đăng sản phẩm.');
+            }
+        }
+
+        if ($typeSale === ProductTypeSale::SALE->value) {
+            $data['min_bid_amount'] = 0;
+            $data['max_bid_amount'] = 0;
+            $data['start_time'] = null;
+            $data['end_time'] = null;
+        } else if ($typeSale === ProductTypeSale::AUCTION->value) {
+            $data['price'] = $data['max_bid_amount'] ?? 0;
+        }
+
+        $images = $data['images'] ?? [];
+        unset($data['images']);
+        if (isset($data['seo']) && is_array($data['seo'])) {
+            $data['seo'] = [
+                'title' => $data['seo']['title'] ?? null,
+                'description' => $data['seo']['description'] ?? null,
+                'keywords' => $data['seo']['keywords'] ?? null,
+            ];
+        }
+        if (isset($data['description']) && is_array($data['description'])) {
+            $data['description'] = $data['description']['html'] ?? json_encode($data['description'], JSON_UNESCAPED_UNICODE);
+        }
+        $data['created_by'] = $userId;
+
+        return DB::transaction(function () use ($data, $typeSale, $images, $coinCost, $user) {
+            /** @var Product $product */
+            $product = $this->repositories['product']->insertOne($data);
+
+            $position = 1;
+            foreach ($images as $imagePath) {
+                $this->repositories['productImage']->insertOne([
+                    'product_id' => $product->id,
+                    'image_url' => $imagePath,
+                    'status' => 'active',
+                    'position' => $position,
+                ]);
+                $position++;
+            }
+
+            if ($typeSale === ProductTypeSale::AUCTION->value) {
+                $this->repositories['auction']->insertOne([
+                    'product_id' => $product->id,
+                    'start_price' => $data['min_bid_amount'] ?? 0,
+                    'step_price' => $data['step_price'] ?? 10000,
+                    'start_time' => $data['start_time'] ?? now(),
+                    'end_time' => $data['end_time'] ?? now()->addDays(7),
+                    'status' => 'active',
+                ]);
+            }
+
+            if ($coinCost > 0 && !$user->hasRole(RoleConstant::ADMIN->value)) {
+                $user->current_balance = (int) $user->current_balance - $coinCost;
+                $user->save();
+                $this->repositories['transactionPoint']->insertOne([
+                    'user_id' => $user->id,
+                    'point' => -$coinCost,
+                    'description' => 'Phí đăng sản phẩm #' . $product->id,
+                ]);
+            }
+
+            return $product;
+        });
+    }
 }
