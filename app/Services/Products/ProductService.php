@@ -64,6 +64,7 @@ class ProductService extends BaseService implements ProductServiceInterface
     public function show($product)
     {
         $user = $this->repositories['user']->getAll(['id' => $product->created_by])->first();
+        $userPresent = $this->repositories['user']->getAll(['id' => auth()->id()])->first();
         $product->load(['images', 'category']);
         $product_images = $this->repositories['productImage']->getAll(['product_id' => $product->id]);
         $product_category = $this->repositories['product']->getAll(
@@ -151,7 +152,7 @@ class ProductService extends BaseService implements ProductServiceInterface
         $priceOneCoin = $this->configService->getConfigValue('PRICE_ONE_COIN', 1000);
         $totalCoinCost = $coinBindProductAuction * $priceOneCoin;
 
-        return compact('product', 'product_images', 'auction', 'user', 'product_category', 'typeSale', 'totalBids', 'currentPrice', 'auctionData', 'followersCount', 'productStateLabel', 'productPaymentMethodLabel', 'coinBindProductAuction', 'priceOneCoin', 'totalCoinCost') + $evaluateStats + $sellerStats;
+        return compact('product', 'product_images', 'auction', 'user', 'userPresent', 'product_category', 'typeSale', 'totalBids', 'currentPrice', 'auctionData', 'followersCount', 'productStateLabel', 'productPaymentMethodLabel', 'coinBindProductAuction', 'priceOneCoin', 'totalCoinCost') + $evaluateStats + $sellerStats;
     }
 
     public function filterProductList($query = [], $page = 1, $perPage = 12)
