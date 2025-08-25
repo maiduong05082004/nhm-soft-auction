@@ -366,7 +366,7 @@
         `;
         
         toastContainer.appendChild(toast);
-        
+
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.parentNode.removeChild(toast);
@@ -394,10 +394,59 @@
         
         toastContainer.appendChild(toast);
         
-        setTimeout(() => {
+            setTimeout(() => {
             if (toast.parentNode) {
                 toast.parentNode.removeChild(toast);
             }
         }, 3000);
     }
+</script>
+
+<script>
+    (function attachAddToCartAjax(){
+        const $form = $('#add-to-cart-form');
+        if ($form.length === 0) return;
+
+        $.ajaxSetup({
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || '' }
+        });
+
+        function setCartBadge(next) {
+            const $badge = $('#header-cart-count');
+            $badge.text(Number.isInteger(next) ? next : 0);
+            if (Number(next) > 0) $badge.removeClass('hidden');
+        }
+
+        function incCartBadge(delta) {
+            const $badge = $('#header-cart-count');
+            const cur = parseInt(($badge.text() || '0').trim(), 10) || 0;
+            setCartBadge(Math.max(0, cur + delta));
+        }
+
+        $form.on('submit', function(e){
+            e.preventDefault();
+            const $this = $(this);
+            const url = $this.attr('action');
+            const qty = parseInt(($('#quantity').val() || '1'), 10) || 1;
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: $this.serialize(),
+                dataType: 'json'
+            }).done(function(resp){
+                if (resp && resp.success && resp.data && Number.isInteger(resp.data.count)) {
+                    setCartBadge(resp.data.count);
+                } else {
+                    incCartBadge(qty);
+                }
+                if (typeof showToast === 'function') {
+                    showToast(resp && resp.message ? resp.message : 'Đã thêm vào giỏ hàng', 'success');
+                }
+            }).fail(function(){
+                $this.off('submit');
+                $this.trigger('submit');
+            });
+        });
+    })();
 </script>

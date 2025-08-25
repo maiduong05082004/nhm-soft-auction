@@ -70,6 +70,18 @@
         }, 8000);
     }
 
+    function setHeaderCartCount(next) {
+        const badge = document.getElementById('header-cart-count');
+        if (!badge) return;
+        const n = parseInt(next || 0, 10) || 0;
+        badge.textContent = String(n);
+        if (n > 0) {
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
     function increaseQuantity(productId) {
         const inputs = document.querySelectorAll(`[id="quantity-input-${productId}"]`);
 
@@ -337,6 +349,8 @@
                     itemContainer.fadeOut(300, function() {
                         $(this).remove();
 
+                        setHeaderCartCount(response.data.cart_count);
+
                         if (response.data.cart_count === 0) {
                             location.reload();
                         } else {
@@ -348,7 +362,7 @@
                         .cart_total) + ' ₫');
                     $('#cart-total').text(new Intl.NumberFormat('vi-VN').format(response.data.cart_total) +
                         ' ₫');
-                    $('#cart-count').text(response.data.cart_total);
+                    $('#cart-count').text(response.data.cart_count);
 
                     showToast(response.message);
                 }
@@ -378,6 +392,7 @@
             },
             success: function(response) {
                 if (response.success) {
+                    setHeaderCartCount(0);
                     location.reload();
                 }
             },

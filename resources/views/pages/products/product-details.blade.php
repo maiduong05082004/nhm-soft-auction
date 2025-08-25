@@ -11,7 +11,7 @@
         <div class="breadcrumbs text-sm">
             <ul>
                 <li><a href="{{ route('home') }}">Trang chủ</a></li>
-                <li><a>Sản phẩm</a></li>
+                <li><a href="{{ route('products.list') }}">Sản phẩm</a></li>
                 <li>{{ $product->name }}</li>
             </ul>
         </div>
@@ -89,19 +89,20 @@
                                         <div class="flex items-center space-x-2 mt-1">
                                             <div class="flex items-center">
                                                 <span class="text-yellow-500">★</span>
-                                                <span class="ml-1 font-semibold">4.5</span>
+                                                <span
+                                                    class="ml-1 font-semibold">{{ number_format($sellerAverageRating ?? 0, 1) }}</span>
                                             </div>
-                                            <span class="text-gray-500">(50 đánh giá)</span>
+                                            <span class="text-gray-500">({{ $sellerTotalReviews ?? 0 }} đánh giá)</span>
                                         </div>
                                         <p class="text-gray-600 mt-2">Cửa hàng uy tín chuyên bán các sản phẩm công nghệ
                                             chính
                                             hãng</p>
-                                        <button
+                                        {{-- <button
                                             class="mt-4 bg-transparent border border-gray-400 text-gray-700 py-2 px-4 rounded">
                                             <a href="https://www.nitori.com.vn/" target="_blank">
                                                 Xem cửa hàng
                                             </a>
-                                        </button>
+                                        </button> --}}
                                     </div>
                                 </div>
                             </div>
@@ -282,27 +283,33 @@
                                                     ₫</span></div>
                                         @endif
                                         @if ($isCurrentUserWinner)
-                                            <div class="rounded-lg p-3 bg-yellow-100 border border-yellow-200">
-                                                <div class="text-sm text-gray-800 mb-2">Trạng thái thanh toán:
-                                                    <span class="badge badge-warning ml-2">Chờ thanh toán</span>
-                                                </div>
-                                                <form method="POST" action="{{ route('auction.pay-now') }}"
-                                                    class="flex flex-col sm:flex-row gap-2">
-                                                    @csrf
-                                                    <input type="hidden" name="auction_id"
-                                                        value="{{ $auctionData['auction']->id ?? '' }}" />
-                                                    <button type="submit" class="btn btn-neutral flex-1">Thanh toán
-                                                        ngay</button>
-                                                    @if (!empty($user->email))
-                                                        <a href="mailto:{{ $user->email }}" class="btn btn-outline">Liên
-                                                            hệ người bán</a>
-                                                    @elseif (!empty($user->phone))
-                                                        <a href="tel:{{ $user->phone }}" class="btn btn-outline">Liên hệ
-                                                            người bán</a>
+                                            @php
+                                                $pm = $auctionData['payment'] ?? null;
+                                                $paid = $pm && ($pm->status === 'success');
+                                            @endphp
+                                            <div class="rounded-lg p-3 border {{ $paid ? 'bg-green-50 border-green-200' : 'bg-yellow-100 border-yellow-200' }}">
+                                                <div class="text-sm text-gray-800">
+                                                    Trạng thái thanh toán:
+                                                    @if ($paid)
+                                                        <span class="badge badge-success ml-2">Đã thanh toán</span>
                                                     @else
-                                                        <a href="#" class="btn btn-outline">Liên hệ người bán</a>
+                                                        <span class="badge badge-warning ml-2">Chờ thanh toán</span>
                                                     @endif
-                                                </form>
+                                                </div>
+                                                @unless ($paid)
+                                                    <form method="POST" action="{{ route('auction.pay-now') }}" class="flex flex-col sm:flex-row gap-2">
+                                                        @csrf
+                                                        <input type="hidden" name="auction_id" value="{{ $auctionData['auction']->id ?? '' }}" />
+                                                        <button type="submit" class="btn btn-neutral flex-1">Thanh toán ngay</button>
+                                                        @if (!empty($user->email))
+                                                            <a href="mailto:{{ $user->email }}" class="btn btn-outline">Liên hệ người bán</a>
+                                                        @elseif (!empty($user->phone))
+                                                            <a href="tel:{{ $user->phone }}" class="btn btn-outline">Liên hệ người bán</a>
+                                                        @else
+                                                            <a href="#" class="btn btn-outline">Liên hệ người bán</a>
+                                                        @endif
+                                                    </form>
+                                                @endunless
                                             </div>
                                         @endif
 
@@ -456,7 +463,7 @@
                                 </div>
                             @endif
                         @else
-                            <form action="{{ route('cart.add', $product->id) }}" method="POST" class="mt-4">
+                            <form id="add-to-cart-form" action="{{ route('cart.add', $product->id) }}" method="POST" class="mt-4">
                                 @csrf
                                 <div class="flex items-center space-x-4">
                                     <div class="flex flex-col">
@@ -575,7 +582,7 @@
                                                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                                     class="size-6">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                        d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0118 0Z" />
                                                 </svg>
                                                 <span class="font-medium">Bạn có thể đấu giá ngay bây giờ!</span>
                                             </div>
@@ -693,19 +700,20 @@
                                         <div class="flex items-center space-x-2 mt-1">
                                             <div class="flex items-center">
                                                 <span class="text-yellow-500">★</span>
-                                                <span class="ml-1 font-semibold">4.5</span>
+                                                <span
+                                                    class="ml-1 font-semibold">{{ number_format($sellerAverageRating ?? 0, 1) }}</span>
                                             </div>
-                                            <span class="text-gray-500">(50 đánh giá)</span>
+                                            <span class="text-gray-500">({{ $sellerTotalReviews ?? 0 }} đánh giá)</span>
                                         </div>
                                         <p class="text-gray-600 mt-2">Cửa hàng uy tín chuyên bán các sản phẩm công nghệ
                                             chính
                                             hãng</p>
-                                        <button
+                                        {{-- <button
                                             class="mt-4 bg-transparent border border-gray-400 text-gray-700 py-2 px-4 rounded">
                                             <a href="https://www.nitori.com.vn/" target="_blank">
                                                 Xem cửa hàng
                                             </a>
-                                        </button>
+                                        </button> --}}
                                     </div>
                                 </div>
                             </div>

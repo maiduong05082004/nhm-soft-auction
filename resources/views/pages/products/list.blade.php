@@ -270,7 +270,7 @@
 
                         <div class="space-y-3 pt-4 border-t border-gray-200">
                             <button type="submit"
-                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm">
+                                class="w-full btn btn-neutral text-white font-medium py-2 px-4 rounded-md transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm">
                                 <x-heroicon-o-magnifying-glass class="h-4 w-4 inline-block mr-2" />
                                 <span class="hidden sm:inline">Áp dụng bộ lọc</span>
                                 <span class="sm:hidden">Lọc</span>
