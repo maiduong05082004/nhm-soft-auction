@@ -22,11 +22,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 use App\Services\Orders\OrderService;
+use App\Enums\Permission\RoleConstant;
 
 class OrderResource extends Resource
 {
     protected static ?string $model = OrderDetail::class;
     protected static ?string $recordTitleAttribute = 'number';
+    protected static ?string $modelLabel = 'Chi tiết đơn hàng';
     protected static ?string $navigationLabel = 'Đơn hàng';
     protected static ?string $pluralModelLabel = 'Đơn hàng';
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
@@ -37,6 +39,22 @@ class OrderResource extends Resource
     protected static function orderService(): OrderService
     {
         return static::$orderServiceInstance ??= app(OrderService::class);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
+    }
+
+    public static function canCreate(): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->hasRole(RoleConstant::ADMIN);
     }
 
     public static function form(Form $form): Form
@@ -51,10 +69,11 @@ class OrderResource extends Resource
 
                         Forms\Components\Section::make('Sản phẩm trong đơn hàng')
                             ->headerActions([
-                                Action::make('reset')
-                                    ->modalHeading('Are you sure?')
-                                    ->modalDescription('All existing items will be removed from the order.')
+                                Action::make('Xóa toàn bộ')
+                                    ->modalHeading('Bạn có chắc chắn?')
+                                    ->modalDescription('Tất cả sả phấm sẽ bị xóa khỏi đơn hàng.')
                                     ->requiresConfirmation()
+                                    ->visible(fn() => auth()->user()->hasRole(RoleConstant::ADMIN))
                                     ->color('danger')
                                     ->action(fn(Forms\Set $set) => $set('items', [])),
                             ])
@@ -73,8 +92,7 @@ class OrderResource extends Resource
                                     ->content(function (Forms\Get $get): string {
                                         $shippingFee = (float) ($get('shipping_fee') ?: 0);
                                         return number_format($shippingFee, 0, ',', '.') . ' ₫';
-                                    })
-                                    ->columnSpan('full')
+                                    })->columnSpan(['lg' => 1])
                                     ->extraAttributes(['class' => 'text-base text-gray-600']),
                                 Forms\Components\Placeholder::make('total_display')
                                     ->label('Tổng tiền đơn hàng')
@@ -82,32 +100,25 @@ class OrderResource extends Resource
                                         $items = $get('items') ?? [];
                                         $shippingFee = (float) ($get('shipping_fee') ?: 0);
                                         return static::orderService()->formatCurrency(static::orderService()->calculateTotal($items, $shippingFee));
-                                    })
-                                    ->columnSpan('full')
+                                    })->columnSpan(['lg' => 1])
                                     ->extraAttributes(['class' => 'text-lg font-bold text-green-600']),
+                                Forms\Components\Placeholder::make('created_at')
+                                    ->label('Thời điểm tạo')->columnSpan(['lg' => 1])
+                                    ->content(fn(OrderDetail $record): ?string => $record->created_at?->diffForHumans()),
+
+                                Forms\Components\Placeholder::make('updated_at')
+                                    ->label('Thời điểm sửa lần cuối')->columnSpan(['lg' => 1])
+                                    ->content(fn(OrderDetail $record): ?string => $record->updated_at?->diffForHumans()),
                             ]),
                     ])
-                    ->columnSpan(['lg' => fn(?OrderDetail $record) => $record === null ? 3 : 2]),
-
-                Forms\Components\Section::make()
-                    ->schema([
-                        Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
-                            ->content(fn(OrderDetail $record): ?string => $record->created_at?->diffForHumans()),
-
-                        Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
-                            ->content(fn(OrderDetail $record): ?string => $record->updated_at?->diffForHumans()),
-                    ])
-                    ->columnSpan(['lg' => 1])
-                    ->hidden(fn(?OrderDetail $record) => $record === null),
+                    ->columnSpan(['lg' =>  3]),
             ])
             ->columns(3);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->recordUrl(null)
             ->columns([
                 Tables\Columns\TextColumn::make('code_orders')
                     ->label('Mã đơn hàng')
@@ -142,7 +153,7 @@ class OrderResource extends Resource
                     ->sortable()
                     ->summarize([
                         Tables\Columns\Summarizers\Sum::make()
-                        ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫'),
+                            ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫'),
                     ]),
 
                 Tables\Columns\TextColumn::make('created_at')
@@ -186,12 +197,14 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->label('Chỉnh sửa'),
+                    ->label('Chỉnh sửa')
+                    ->visible(fn() => auth()->user()->hasRole(RoleConstant::ADMIN)),
                 Tables\Actions\ViewAction::make()
                     ->label('Xem'),
             ])
             ->groupedBulkActions([
                 Tables\Actions\DeleteBulkAction::make()
+                    ->visible(fn() => auth()->user()->hasRole(RoleConstant::ADMIN))
                     ->action(function () {
                         Notification::make()
                             ->title('Now, now, don\'t be cheeky, leave some records for others to play with!')
@@ -234,8 +247,21 @@ class OrderResource extends Resource
     /** @return Builder<Order> */
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->withoutGlobalScope(SoftDeletingScope::class);
+        $query = parent::getEloquentQuery()->withoutGlobalScope(SoftDeletingScope::class);
+
+        $user = auth()->user();
+
+        if (!$user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if (!$user->hasRole(RoleConstant::ADMIN)) {
+            $query->where('user_id', $user->id);
+        }
+
+        return $query;
     }
+
 
     public static function getGloballySearchableAttributes(): array
     {
@@ -259,10 +285,8 @@ class OrderResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        /** @var class-string<Model> $modelClass */
-        $modelClass = static::$model;
 
-        return (string) $modelClass::where('id', '!=', null)->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     /** @return Forms\Components\Component[] */
@@ -383,6 +407,7 @@ class OrderResource extends Resource
 
             Forms\Components\ToggleButtons::make('status')
                 ->inline()
+                ->label('Trạng thái')
                 ->options(OrderStatus::class)
                 ->required(),
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OrderResource\Pages;
 
+use App\Enums\Permission\RoleConstant;
 use App\Filament\Resources\OrderResource;
 use Filament\Actions;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
@@ -37,13 +38,17 @@ class ListOrders extends ListRecords
 
     public function getTabs(): array
     {
+        $user = auth()->user();
+        if ($user->hasRole(RoleConstant::CUSTOMER)) {
+            return [];
+        }
         return [
             null => Tab::make('Tất cả'),
-            'Đơn mới' => Tab::make()->query(fn ($query) => $query->where('status', '1')),
-            'Đang xử lý' => Tab::make()->query(fn ($query) => $query->where('status', '2')),
-            'Đã giao' => Tab::make()->query(fn ($query) => $query->where('status', '3')),
-            'Đã giao' => Tab::make()->query(fn ($query) => $query->where('status', '4')),
-            'Đã hủy' => Tab::make()->query(fn ($query) => $query->where('status', '5')),
+            'Đơn mới' => Tab::make()->query(fn($query) => $query->where('status', '1')),
+            'Đang xử lý' => Tab::make()->query(fn($query) => $query->where('status', '2')),
+            'Đã giao' => Tab::make()->query(fn($query) => $query->where('status', '3')),
+            'Đã giao' => Tab::make()->query(fn($query) => $query->where('status', '4')),
+            'Đã hủy' => Tab::make()->query(fn($query) => $query->where('status', '5')),
         ];
     }
 }

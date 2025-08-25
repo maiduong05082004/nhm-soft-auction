@@ -1,5 +1,5 @@
-<title>@sections('title')</title>
 <meta charset="utf-8">
+<title>@yield('title', 'Auctions')</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="@yield('meta_description', 'Mô tả mặc định cho trang đấu giá của bạn')">
 <meta name="keywords" content="@yield('meta_keywords', 'đấu giá, mua bán, auctions')">
@@ -23,7 +23,7 @@
 
 @include('partial.schema')
 
-@vite(['resources/css/app.css', 'resources/js/app.js','resources/js/partials/wishlist.js'])
+@vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/partials/wishlist.js'])
 <script>
     function showToast(message, type = 'success') {
         const isDesktop = window.innerWidth >= 640;

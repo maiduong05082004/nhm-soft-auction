@@ -10,6 +10,8 @@ class EditOrder extends EditRecord
 {
     protected static string $resource = OrderResource::class;
 
+    protected static ?string $navigationLabel = 'Chi tiết đơn hàng';
+
     protected function getActions(): array
     {
         return [

@@ -21,7 +21,7 @@
                 <div class="bg-white rounded-lg shadow p-4">
                     <div class="aspect-[4/3] w-full overflow-hidden rounded mb-4">
                         <img id="main-image"
-                            src="{{ isset($product_images->first()->image_url) ? \App\Utils\HelperFunc::generateURLFilePath($product_images->first()->image_url) : 'https://via.placeholder.com/800x600?text=No+Image' }}"
+                            src="{{ null !== $product_images->first() ? \App\Utils\HelperFunc::generateURLFilePath($product_images->first()->image_url) : asset('images/product_default.jpg') }}"
                             class="w-full h-full object-contain" alt="{{ $product->name }}">
                     </div>
                     <div class="grid grid-cols-3 lg:grid-cols-4 gap-3">
@@ -900,103 +900,9 @@
         <div class="swiper popularProductsSwiper">
             <div class="swiper-wrapper">
                 @foreach ($product_category as $item)
-                    @php
-                        $thumb = optional($item->images->first())->image_url;
-
-                        $itemAuction = null;
-                        $itemBids = 0;
-                        $itemCurrentPrice = $item->price;
-                        $itemTimeLeft = null;
-
-                        if ($item->type_sale === ($typeSale['AUCTION'] ?? 2)) {
-                            $itemAuction = \App\Models\Auction::where('product_id', $item->id)->first();
-
-                            if ($itemAuction) {
-                                $itemBids = $itemAuction->bids()->count();
-                                $highestBid = $itemAuction->bids()->orderBy('bid_price', 'desc')->first();
-                                $itemCurrentPrice = $highestBid ? $highestBid->bid_price : $itemAuction->start_price;
-
-                                $now = \Carbon\Carbon::now();
-                                $endTime = \Carbon\Carbon::parse($itemAuction->end_time);
-
-                                if ($endTime->gt($now)) {
-                                    $diff = $now->diff($endTime);
-                                    if ($diff->days > 0) {
-                                        $itemTimeLeft = $diff->days . ' ngày ' . $diff->h . ' giờ';
-                                    } else {
-                                        $itemTimeLeft = $diff->h . ' giờ ' . $diff->i . ' phút';
-                                    }
-                                } else {
-                                    $itemTimeLeft = 'Đã kết thúc';
-                                }
-                            }
-                        }
-                    @endphp
+                   
                     <div class="swiper-slide">
-                        <div class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                            <a href="{{ route('products.show', $item) }}" class="block">
-                                <img class="w-full h-48 object-cover"
-                                    src="{{ $thumb ? \App\Utils\HelperFunc::generateURLFilePath($thumb) : asset('images/product_default.jpg') }}"
-                                    alt="{{ $item->name }}" />
-                            </a>
-                            <div class="p-4">
-                                <h3 class="text-lg font-bold text-gray-900 mb-6 line-clamp-2 min-h-[3.5rem]">
-                                    {{ $item->name }}
-                                </h3>
-
-                                <div class="space-y-2 mb-4">
-                                    <div class="flex justify-between items-center">
-
-                                        @if ($item->type_sale === ($typeSale['AUCTION'] ?? 2))
-                                            <span class="text-sm text-gray-600">Giá hiện tại:</span>
-                                            <span class="text-xl font-bold text-green-600">
-                                                {{ number_format($itemCurrentPrice, 0, ',', '.') }} ₫
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-600">Giá bán:</span>
-                                            <span class="text-xl font-bold text-red-600">
-                                                {{ number_format($item->price, 0, ',', '.') }} ₫
-                                            </span>
-                                        @endif
-
-                                    </div>
-
-                                    @if ($item->type_sale === ($typeSale['AUCTION'] ?? 2) && $itemAuction)
-                                        <div class="flex justify-between items-center">
-                                            @if ($itemTimeLeft && $itemTimeLeft !== 'Đã kết thúc')
-                                                <div class="flex items-center text-sm text-gray-600">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                        class="w-4 h-4 mr-1">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                    </svg>
-                                                    <span>{{ $itemTimeLeft }}</span>
-                                                </div>
-                                            @endif
-                                            <div class="flex items-center text-sm text-gray-600">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-4 h-4 mr-1">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                                                </svg>
-                                                <span>{{ $itemBids }} lượt</span>
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
-
-                                <a href="{{ route('products.show', $item) }}"
-                                    class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg text-center block transition-colors">
-                                    @if ($item->type_sale === ($typeSale['AUCTION'] ?? 2))
-                                        <button class="btn btn-neutral w-full">Tham gia đấu giá</button>
-                                    @else
-                                        <button class="btn btn-neutral w-full">Mua ngay</button>
-                                    @endif
-                                </a>
-                            </div>
-                        </div>
+                        <x-product-card :product="$item" />
                     </div>
                 @endforeach
             </div>

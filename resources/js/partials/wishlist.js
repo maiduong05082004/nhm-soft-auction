@@ -124,10 +124,8 @@
 
             const productSlug = product.slug || pid;
             const productUrl = API.product_detail.replace(':id', encodeURIComponent(productSlug));
-            const firstImage = product.first_image || product.firstImage || null;
-            const imagePath = (firstImage && (firstImage.image_url || firstImage.url)) || product.image || '';
-            const imageUrl = imagePath
-                ? (API.home + '/file/' + encodeURIComponent(imagePath))
+            const imageUrl = product.first_image || null
+                ? (API.home + '/file/' + product.first_image.image_url )
                 : DEFAULT_IMG;
 
             const name = product.name || 'Sản phẩm';
@@ -168,14 +166,6 @@
                         class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         onerror="this.src='${DEFAULT_IMG}'">
                 </a>
-                <button type="button" data-id="${pid}" 
-                    class="remove-wishlist-btn absolute top-2 right-2 flex items-center justify-center w-8 h-8 text-red-600 bg-white/90 backdrop-blur-sm hover:bg-red-50 rounded-full shadow-sm transition-all duration-200"
-                    title="Xóa khỏi danh sách yêu thích" aria-label="Xóa">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H3M4 7h16" />
-                    </svg>
-                </button>
             </div>
             
             <div class="p-3">
@@ -311,7 +301,9 @@
                 showToastSafe(AUTH_MESSAGE, 'info');
                 return;
             }
-            showToastSafe('Lỗi khi thêm danh sách yêu thích', 'error');
+            console.log(err);
+            
+            showToastSafe(  err.responseJSON.message ||'Lỗi khi thêm danh sách yêu thích', 'error');
         } finally {
             $triggerBtn && $triggerBtn.prop('disabled', false);
         }
@@ -356,7 +348,7 @@
                 showToastSafe(AUTH_MESSAGE, 'info');
                 return;
             }
-            showToastSafe('Lỗi khi xóa sản phẩm', 'error');
+            showToastSafe( err.message ||'Lỗi khi xóa sản phẩm', 'error');
         }
     }
 
@@ -387,7 +379,7 @@
                 showToastSafe(AUTH_MESSAGE, 'info');
                 return;
             }
-            showToastSafe('Lỗi khi xóa danh sách yêu thích', 'error');
+            showToastSafe( err.message ||'Lỗi khi xóa danh sách yêu thích', 'error');
         }
     }
     $(document).on('click', '.wishlist-btn', function (e) {

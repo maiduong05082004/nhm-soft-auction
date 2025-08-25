@@ -34,10 +34,13 @@ class ProductResource extends Resource
     protected static ?string $modelLabel = 'Sản phẩm';
 
     protected static ?string  $pluralModelLabel = 'Sản phẩm';
-    public static function canAccess(): bool
+
+
+    public static function canEdit($record): bool
     {
-        return auth()->user()->hasRole(RoleConstant::ADMIN);
+        return auth()->user()->hasRole(RoleConstant::ADMIN) || $record->created_by == auth()->user()->id;
     }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -219,6 +222,7 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->modifyQueryUsing(fn(Builder $query) => $query->with('firstImage', 'category'),)
+            ->recordUrl(fn($record): string => static::getUrl('edit', ['record' => $record]))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->sortable()
@@ -229,7 +233,6 @@ class ProductResource extends Resource
                         if (strlen($state) <= $column->getCharacterLimit()) {
                             return null;
                         }
-                        // Only render the tooltip if the column content exceeds the length limit.
                         return $state;
                     })
                     ->searchable(),
@@ -364,12 +367,16 @@ class ProductResource extends Resource
                     ->label('Xem'),
 
                 Tables\Actions\EditAction::make('Edit')
-                    ->label('Sửa'),
+                    ->label('Sửa')->visible(
+                        fn(Product $record): bool =>
+                        auth()->user()->hasRole(RoleConstant::ADMIN)
+                            || auth()->id() === $record->created_by
+                    ),
                 Tables\Actions\Action::make('delete')
                     ->label('Xóa')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
-                    ->visible(fn() => auth()->user()?->role === 'admin')
+                    ->visible(fn(Product $record) => auth()->user()?->role === 'admin' || auth()->id() === $record->created_by)
                     ->requiresConfirmation()
                     ->modalHeading('Xác nhận xóa sản phẩm')
                     ->modalDescription('Bạn có chắc chắn muốn xóa sản phẩm này không? Thao tác này không thể hoàn tác.')

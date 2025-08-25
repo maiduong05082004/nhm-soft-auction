@@ -88,12 +88,12 @@
                             </h2>
 
                             <div class="grid grid-cols-3 md:grid-cols-5 lg:hidden gap-3 mb-4">
-                                @if (isset($categories))
+                                @if (isset($categories) && count($categories) > 0)
                                     @foreach ($categories as $category)
                                         <div class="text-center">
                                             <a href="{{ route('products.list', ['category_id' => $category->id]) }}"
                                                 class="block hover:opacity-80 transition-opacity">
-                                                @if (isset($category['image']))
+                                                @if (!empty($category['image']))
                                                     <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($category['image']) }}"
                                                         class="w-16 h-16 mx-auto mb-2 rounded-lg object-cover"
                                                         alt="{{ $category['name'] }}" loading="lazy" />
@@ -109,11 +109,13 @@
                                         </div>
                                     @endforeach
                                 @else
-                                    <h2>Không có danh mục nào</h2>
+                                    <h2 class="col-span-3 md:col-span-5 text-center text-gray-500">Không có danh mục nào
+                                    </h2>
                                 @endif
                             </div>
 
-                            <nav class="hidden lg:block" aria-label="Category Navigation">
+
+                            <nav class="hidden lg:block  max-h-[392px] overflow-y-auto" aria-label="Category Navigation">
                                 <ul class="space-y-2">
                                     @if (isset($categories))
                                         @foreach ($categories as $category)
@@ -298,4 +300,3 @@
     </div>
 
 @endsection
-

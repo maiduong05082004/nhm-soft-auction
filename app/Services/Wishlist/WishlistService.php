@@ -51,7 +51,7 @@ class WishlistService extends BaseService implements WishlistServiceInterface
             ->exists();
 
         if ($exists) {
-            throw new ServiceException('Sản phẩm đã có trong wishlist');
+            throw new ServiceException('Sản phẩm đã có trong danh sách yêu thích');
         }
 
         return $repo->insertOne([
