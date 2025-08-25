@@ -34,14 +34,14 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $query_section1[''] = '';
+        $query_section1['is_hot'] = 'true';
         $query_section2['orderBy'] = 'view_desc';
-        $query_section3['is_hot'] = 'true';
+        $query_section3['is_new'] = 'true';
         $query_section4['type'] = 'auction';
-        $products1 = $this->productService->filterProductList($query_section1, 1, 10);
-        $products2 = $this->productService->filterProductList($query_section2, 1, 10);
-        $products3 = $this->productService->filterProductList($query_section3, 1, 10);
-        $products4 = $this->productService->filterProductList($query_section4, 1, 10);
+        $products1 = $this->productService->filterProductList($query_section1, 1, 12);
+        $products2 = $this->productService->filterProductList($query_section2, 1, 12);
+        $products3 = $this->productService->filterProductList($query_section3, 1, 12);
+        $products4 = $this->productService->filterProductList($query_section4, 1, 12);
         $categories = $this->productService->getTreeListCategory();
         $articles = $this->articleService->getArticlesList([], 1, 12);
 

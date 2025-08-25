@@ -210,7 +210,7 @@
             <div class="p-4 bg-gray-50">
                 <form action="{{ route('products.list') }}" method="GET" class="space-y-3">
                     <div class="relative">
-                        <input type="search" name="name" placeholder="Tìm kiếm sản phẩm..."
+                        <input type="search" name="product_name" placeholder="Tìm kiếm sản phẩm..."
                             x-model="searchQuery" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
                             aria-label="Tìm kiếm sản phẩm">
                         <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none"
@@ -286,7 +286,7 @@
             <div class="p-6">
                 <form action="{{ route('products.list') }}" method="GET" class="space-y-4">
                     <div class="relative">
-                        <input type="search" name="name" x-ref="searchInput" x-model="searchQuery"
+                        <input type="search" name="product_name" x-ref="searchInput" x-model="searchQuery"
                             placeholder="Nhập từ khóa tìm kiếm..."
                             class="w-full pl-12 pr-4 py-3 text-lg border border-gray-300"
                             aria-label="Từ khóa tìm kiếm" autocomplete="off">

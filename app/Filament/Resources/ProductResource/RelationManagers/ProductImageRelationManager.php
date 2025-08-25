@@ -50,10 +50,7 @@ class ProductImageRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ViewAction::make()->mutateFormDataUsing(function (array $data): array {
-                    $data['image_url'] = HelperFunc::generateURLFilePath($data['image_url']);
-                    return $data;
-                })
+                Tables\Actions\ViewAction::make()
             ]);
     }
 }

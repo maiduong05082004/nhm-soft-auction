@@ -22,6 +22,7 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
+    protected static ?string $modelLabel = 'Danh mục';
     protected static ?string $pluralModelLabel = 'Danh mục';
 
     public static function canAccess(): bool
@@ -36,24 +37,19 @@ class CategoryResource extends Resource
                     ->label('Tên danh mục')
                     ->required()
                     ->maxLength(255)
-                    ->live(onBlur: true),
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if (!$state) return;
+                        $baseSlug = \Illuminate\Support\Str::slug($state);
+                        $slug = $baseSlug . '-' . HelperFunc::getTimestampAsId();
+                        $set('slug', $slug);
+                    }),
 
                 Forms\Components\TextInput::make('slug')
                     ->label('Slug')
                     ->required()
                     ->maxLength(255)
-                    ->unique(ignoreRecord: true)
-                    ->suffixAction(
-                        \Filament\Forms\Components\Actions\Action::make('generateSlug')
-                            ->label('Auto generate')
-                            ->icon('heroicon-m-arrow-path')
-                            ->action(function ($get, $set) {
-                                $title = $get('name');
-                                if ($title) {
-                                    $set('slug', \Illuminate\Support\Str::slug($title));
-                                }
-                            })
-                    ),
+                    ->unique(ignoreRecord: true),
                 Forms\Components\FileUpload::make('image')
                     ->label('Hình ảnh')
                     ->image()
