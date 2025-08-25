@@ -14,7 +14,7 @@
         <div class="w-full flex justify-center">
             <div class="my-4">
                 <a href="{{ $section['target'] }}"
-                    class="bg-slate-600 text-white rounded-lg py-2 px-4 hover:bg-slate-700 transition-colors">
+                    class="btn btn-neutral rounded-lg py-2 px-4 transition-colors hover:bg-slate-900">
                     Xem thêm
                 </a>
             </div>

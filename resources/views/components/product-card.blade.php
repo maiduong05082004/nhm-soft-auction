@@ -19,7 +19,7 @@
             </span>
         @endif
 
-        @if (isset($product['type_sale']) && $product['type_sale'] == 2)
+        @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
             <span
                 class="absolute top-1 sm:top-2 right-1 sm:right-2 z-30 bg-orange-500 text-white text-xs font-bold px-1 sm:px-2 py-1 rounded">
                 <span class="hidden sm:inline">Đấu giá</span>
@@ -56,18 +56,32 @@
         </h3>
 
         <div class="flex items-center justify-between mb-1 sm:mb-2">
-            <span class="text-xs text-gray-500">Giá:</span>
+            @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
+                <span class="text-xs text-gray-500">Giá hiện tại:</span>
+            @else
+                <span class="text-xs text-gray-500">Giá:</span>
+            @endif
             <span class="text-xs sm:text-sm font-bold text-orange-600">
                 @php
                     $priceDisplay = '0đ';
-                    if (!empty($product['price'])) {
-                        $priceDisplay = number_format($product['price']) . 'đ';
-                    } elseif (isset($product['min_bid_price']) && isset($product['max_bid_price'])) {
-                        $priceDisplay =
-                            number_format($product['min_bid_price']) .
-                            ' - ' .
-                            number_format($product['max_bid_price']) .
-                            'đ';
+
+                    if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value) {
+                        $auction = \App\Models\Auction::where('product_id', $product['id'] ?? null)->first();
+
+                        if ($auction) {
+                            $highestBid = $auction->bids()->orderBy('bid_price', 'desc')->first();
+                            $currentPrice = $highestBid ? $highestBid->bid_price : $auction->start_price;
+                            $priceDisplay = number_format($currentPrice, 0, ',', '.') . 'đ';
+                        }
+                    } else {
+                        if (!empty($product['price'])) {
+                            $priceDisplay = number_format($product['price'], 0, ',', '.') . 'đ';
+                        } elseif (isset($product['min_bid_price']) && isset($product['max_bid_price'])) {
+                            $priceDisplay = number_format($product['min_bid_price'], 0, ',', '.')
+                                . ' - '
+                                . number_format($product['max_bid_price'], 0, ',', '.')
+                                . 'đ';
+                        }
                     }
                 @endphp
                 {{ $priceDisplay }}

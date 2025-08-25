@@ -132,74 +132,69 @@
             const typeSale = Number(product.type_sale || 0);
             console.log(typeSale);
 
-            const addToCartHtml = typeSale === 1
-                ? `<form action="${API.cart_add.replace(':id', pid)}" method="POST" class="add-cart-form">
-                <input type="hidden" name="_token" value="${$('meta[name=\"csrf-token\"]').attr('content')}">
-                <input type="hidden" name="product_id" value="${pid}">
-                <button type="submit"
-                    class="flex items-center justify-center w-10 h-10 text-gray-400 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                    title="Thêm vào giỏ">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v4a2 2 0 01-2 2H9a2 2 0 01-2-2v-4.01" />
-                    </svg>
-                </button>
-            </form>`
-                : `<button type="button" disabled class="flex items-center justify-center w-10 h-10 text-gray-300 bg-gray-50 rounded-lg cursor-not-allowed" title="Không thể thêm vào giỏ"> 
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13" />
-              </svg>
-           </button>`;
+            const csrf = $('meta[name="csrf-token"]').attr('content');
+            const isSale = typeSale === 1;
+            const actionsHtml = isSale
+                ? `
+                <div class="grid grid-cols-3 gap-2">
+                    <a href="${productUrl}" class="btn btn-sm btn-outline w-full col-span-2">Xem chi tiết</a>
+                    <form action="${API.cart_add.replace(':id', pid)}" method="POST" class="add-cart-form col-span-1">
+                        <input type="hidden" name="_token" value="${csrf}">
+                        <input type="hidden" name="product_id" value="${pid}">
+                        <button type="submit" class="btn btn-sm btn-neutral w-full" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v4a2 2 0 01-2 2H9a2 2 0 01-2-2v-4.01" />
+                            </svg>
+                        </button>
+                    </form>
+                </div>`
+                : `
+                <div>
+                    <a href="${productUrl}" class="btn btn-sm btn-outline w-full">Xem chi tiết</a>
+                </div>`;
 
-            const priceHtml = product.price
-                ? `<div class="text-sm font-bold text-green-600">${formatPrice(product.price)}</div>`
-                : (product.min_bid_amount && product.max_bid_amount
-                    ? `<div class="text-xs font-bold text-green-600">${formatPrice(product.min_bid_amount)} - ${formatPrice(product.max_bid_amount)}</div>`
-                    : `<div class="text-sm font-bold text-green-600">0 ₫</div>`);
+        const priceHtml = product.price
+            ? `<div class="text-[15px] font-bold text-orange-600">${formatPrice(product.price)}</div>`
+            : (product.min_bid_amount && product.max_bid_amount
+                ? `<div class="text-[13px] font-semibold text-green-700">${formatPrice(product.min_bid_amount)} - ${formatPrice(product.max_bid_amount)}</div>`
+                : `<div class="text-[15px] font-bold text-orange-600">0 ₫</div>`);
 
-            const itemHtml = `
-        <div class="bg-[#f5f5f5] rounded-lg border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300" id="wishlist-item-${pid}">
-            <div class="relative overflow-hidden bg-gray-50">
+                        const itemHtml = `
+        <div class="group bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300" id="wishlist-item-${pid}">
+            <div class="relative bg-gray-50">
                 <a href="${productUrl}" class="block aspect-square">
-                    <img src="${imageUrl}" alt="${escapeHtml(name)}" 
-                        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                    <img src="${imageUrl}" alt="${escapeHtml(name)}"
+                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         onerror="this.src='${DEFAULT_IMG}'">
                 </a>
+
+                ${typeSale === 2
+                    ? `<span class="absolute top-2 left-2 badge badge-warning gap-1 text-[10px]">Đấu giá</span>`
+                    : `<span class="absolute top-2 left-2 badge badge-accent gap-1 text-[10px]">Bán hàng</span>`}
+
+                <button type="button" data-id="${pid}"
+                    class="remove-wishlist-btn absolute top-2 right-2 btn btn-xs btn-circle bg-white text-red-500 hover:bg-red-50 shadow">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
-            
+
             <div class="p-3">
-                <h3 class="font-medium text-sm text-gray-900 mb-2 line-clamp-2 leading-tight min-h-9 " style="min-height: 38px">
+                <h3 class="font-semibold text-[14px] text-slate-900 mb-1 line-clamp-2 min-h-[38px]">
                     <a href="${productUrl}" class="hover:text-blue-600 transition-colors">${escapeHtml(name)}</a>
                 </h3>
-                
-                <div class="mb-3">
+
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-xs text-slate-500">
+                        ${typeSale === 2 ? 'Giá hiện tại:' : 'Giá:'}
+                    </div>
                     ${priceHtml}
                 </div>
-                
-                <div class="flex items-center justify-between gap-2">
-                    <a href="${productUrl}"
-                        class="flex items-center justify-center flex-1 h-8 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all duration-200 text-xs font-medium"
-                        title="Xem sản phẩm">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        Xem
-                    </a>
-                    
-                    ${addToCartHtml}
-                     <button type="button" data-id="${pid}" 
-                        class="remove-wishlist-btn flex items-center justify-center w-10 h-10 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200"
-                        title="Xóa khỏi danh sách yêu thích" aria-label="Xóa">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1h3M4 7h16" />
-                        </svg>
-                    </button>
-                </div>
+
+                ${actionsHtml}
             </div>
         </div>
         `;
