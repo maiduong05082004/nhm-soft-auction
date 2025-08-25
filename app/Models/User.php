@@ -120,11 +120,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(AuctionBid::class);
     }
 
-    public function transactions()
-    {
-        return $this->hasMany(Transaction::class)->orderBy('created_at', 'desc');
-    }
-
     public function articles()
     {
         return $this->hasMany(Article::class);

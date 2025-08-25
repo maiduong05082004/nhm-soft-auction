@@ -992,7 +992,9 @@
 
                     <div class="text-sm text-gray-600">
                         <p>Bạn có chắc chắn muốn tham gia đấu giá sản phẩm này?</p>
-                        <p class="mt-1">Phí sẽ được trừ từ tài khoản của bạn ngay lập tức.</p>
+                        @unless ($userHasBidded)
+                            <p class="mt-1">Phí sẽ được trừ từ tài khoản của bạn ngay lập tức.</p>
+                        @endunless
                     </div>
                 </div>
 
