@@ -163,7 +163,7 @@
                 <form id="mobile-search-form" action="{{ route('products.list') }}" method="GET"
                     class="space-y-3">
                     <div class="relative">
-                        <input type="search" name="product_name" id="mobile-search-input"
+                        <input type="search" name="name" id="mobile-search-input"
                             placeholder="Tìm kiếm sản phẩm..."
                             class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
                             aria-label="Tìm kiếm sản phẩm">
@@ -232,7 +232,7 @@
                 <div class="p-6">
                     <form id="search-form" action="{{ route('products.list') }}" method="GET" class="space-y-4">
                         <div class="relative">
-                            <input type="search" name="product_name" id="search-input"
+                            <input type="search" name="name" id="search-input"
                                 placeholder="Nhập từ khóa tìm kiếm..."
                                 class="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 rounded-lg"
                                 aria-label="Từ khóa tìm kiếm" autocomplete="off">

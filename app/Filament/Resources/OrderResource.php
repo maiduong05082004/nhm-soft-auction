@@ -34,6 +34,11 @@ class OrderResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?int $navigationSort = 1;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
+    }
+
     protected static ?OrderService $orderServiceInstance = null;
 
     protected static function orderService(): OrderService

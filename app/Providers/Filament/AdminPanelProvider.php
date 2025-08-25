@@ -12,6 +12,7 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Navigation\NavigationItem;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -47,6 +48,13 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
 //                Widgets\FilamentInfoWidget::class,
             ])
+            ->navigationItems([
+                NavigationItem::make()
+                    ->label('Quay lại trang chủ')
+                    ->icon('heroicon-s-arrow-left')
+                    ->url(url('/'))
+                    ->sort(-100),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -61,5 +69,6 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+
     }
 }
