@@ -17,11 +17,6 @@
                 class="absolute top-1 sm:top-2 left-1 sm:left-2 z-30 bg-red-500 text-white text-xs font-bold px-1 sm:px-2 py-1 rounded uppercase">
                 Hot
             </span>
-        @elseif (!empty($product['created_at']) && \Carbon\Carbon::parse($product['created_at'])->gt(now()->subWeek()))
-            <span
-                class="absolute top-1 sm:top-2 right-1 sm:right-2 z-30 bg-green-500 text-white text-xs font-bold px-1 sm:px-2 py-1 rounded uppercase">
-                Mới
-            </span>
         @endif
 
         @if (isset($product['type_sale']) && $product['type_sale'] == 2)
@@ -29,6 +24,11 @@
                 class="absolute top-1 sm:top-2 right-1 sm:right-2 z-30 bg-orange-500 text-white text-xs font-bold px-1 sm:px-2 py-1 rounded">
                 <span class="hidden sm:inline">Đấu giá</span>
                 <span class="sm:hidden">ĐG</span>
+            </span>
+        @elseif (!empty($product['created_at']) && \Carbon\Carbon::parse($product['created_at'])->gt(now()->subWeek()))
+            <span
+                class="absolute top-1 sm:top-2 right-1 sm:right-2 z-30 bg-green-500 text-white text-xs font-bold px-1 sm:px-2 py-1 rounded uppercase">
+                Mới
             </span>
         @endif
 

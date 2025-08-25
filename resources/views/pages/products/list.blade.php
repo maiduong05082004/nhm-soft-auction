@@ -101,7 +101,7 @@
                                 <span class="sm:hidden">Tên</span>
                             </h3>
                             <div class="space-y-2">
-                                <input type="text" name="q" value="{{ request('q') }}"
+                                <input type="text" name="product_name" value="{{ request('q') }}"
                                     placeholder="Nhập tên sản phẩm..."
                                     class="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm">
                             </div>

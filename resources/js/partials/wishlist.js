@@ -293,9 +293,9 @@
                 } else {
                     incrementWishlistCount(1);
                 }
-                showToastSafe(resp.message || 'Đã thêm vào danh sách yêu thích', 'success');
+                showToastSafe('Đã thêm vào danh sách yêu thích', 'success');
             } else {
-                showToastSafe(resp.message || 'Thêm thất bại', 'error');
+                showToastSafe('Thêm thất bại', 'error');
             }
         } catch (err) {
             console.error(err);
@@ -303,7 +303,7 @@
                 showToastSafe(AUTH_MESSAGE, 'info');
                 return;
             }
-            showToastSafe((err.responseJSON && err.responseJSON.message) || 'Lỗi khi thêm danh sách yêu thích', 'error');
+            showToastSafe('Lỗi khi thêm danh sách yêu thích', 'error');
         } finally {
             $triggerBtn && $triggerBtn.prop('disabled', false);
         }

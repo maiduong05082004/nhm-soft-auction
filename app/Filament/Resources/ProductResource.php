@@ -257,8 +257,8 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Trạng thái')
                     ->color(fn($state) => match ($state) {
-                        ProductStatus::ACTIVE => 'success',
-                        ProductStatus::INACTIVE => 'warning',
+                        ProductStatus::ACTIVE->value => 'success',
+                        ProductStatus::INACTIVE->value => 'warning',
                         default => 'default',
                     })->formatStateUsing(fn($state) => $state ? 'hoạt động' : 'không hoạt động'),
                 Tables\Columns\TextColumn::make('type_sale')

@@ -53,5 +53,11 @@ class ConfigSeeder extends Seeder
         //     'config_value' => 10,
         //     'description' => 'Thời gian delay để đấu giá sản phẩm (đơn vị là phút)',
         // ]);
+        // Config::query()->create([
+        //     'config_key' => ConfigName::MARQUEE_CONTENT,
+        //     'config_value' => '🔥 Khuyến mãi lớn trong tuần, mua ngay kẻo lỡ! 🔥',
+        //     'description' => 'Nội dung văn bản chạy ở thanh thông báo marquee trên đầu trang',
+        // ]);
+        
     }
 }
