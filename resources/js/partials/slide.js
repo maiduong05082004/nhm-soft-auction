@@ -1,7 +1,6 @@
 import Swiper from "swiper";
-import { Navigation, Scrollbar } from "swiper/modules";
+import { Navigation } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/scrollbar";
 
 document.addEventListener("DOMContentLoaded", () => {
     new Swiper(".slide-product", {
@@ -56,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     new Swiper('.similar-articles-swiper', {
         slidesPerView: 1,
         spaceBetween: 20,
+        modules: [Navigation],
         loop: true,
         autoplay: {
             delay: 5000,

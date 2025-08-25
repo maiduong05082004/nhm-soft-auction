@@ -139,33 +139,28 @@
 
                         <a href="{{ route('wishlist.list') }}"
                             class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
-                               transition-all duration-300 hover:-translate-y-0.5 relative">
+                            transition-all duration-300 hover:-translate-y-0.5 relative">
                             <x-heroicon-o-heart class="w-6 h-6 mb-1"></x-heroicon-o-heart>
                             @auth
-                                @if ($headerWishlistCount > 0)
-                                    <span id="wishlist-count"
-                                        class="absolute -top-0.5 right-3 bg-red-600 text-white text-xs font-bold rounded-full
-                                    h-5 w-5 flex items-center justify-center shadow">{{ $headerWishlistCount }}</span>
-                                @endif
+                                <span id="wishlist-count"
+                                      class="absolute -top-0.5 right-3 !bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow pointer-events-none {{ ($headerWishlistCount ?? 0) > 0 ? '' : 'hidden' }}">
+                                    {{ $headerWishlistCount ?? 0 }}
+                                </span>
                             @endauth
                             <span class="text-xs font-medium">Yêu thích</span>
                         </a>
-
                         <a href="{{ route('cart.index') }}"
                             class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
                                transition-all duration-300 hover:-translate-y-0.5 relative">
                             <x-heroicon-o-shopping-cart class="w-6 h-6 mb-1"></x-heroicon-o-shopping-cart>
                             @auth
-                                @if ($headerCartCount > 0)
-                                    <span id="header-cart-count" class="absolute -top-0.5 right-3 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow">
-                                        {{ $headerCartCount }}
-                                    </span>
-                                @endif
+                                <span id="header-cart-count"
+                                      class="absolute -top-0.5 right-3 !bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow pointer-events-none {{ ($headerCartCount ?? 0) > 0 ? '' : 'hidden' }}">
+                                    {{ $headerCartCount ?? 0 }}
+                                </span>
                             @endauth
                             <span class="text-xs font-medium">Giỏ hàng</span>
                         </a>
-
-
                     </div>
                 </div>
 
@@ -215,7 +210,7 @@
             <div class="p-4 bg-gray-50">
                 <form action="{{ route('products.list') }}" method="GET" class="space-y-3">
                     <div class="relative">
-                        <input type="search" name="name" placeholder="Tìm kiếm sản phẩm..."
+                        <input type="search" name="product_name" placeholder="Tìm kiếm sản phẩm..."
                             x-model="searchQuery" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
                             aria-label="Tìm kiếm sản phẩm">
                         <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none"
@@ -291,7 +286,7 @@
             <div class="p-6">
                 <form action="{{ route('products.list') }}" method="GET" class="space-y-4">
                     <div class="relative">
-                        <input type="search" name="name" x-ref="searchInput" x-model="searchQuery"
+                        <input type="search" name="product_name" x-ref="searchInput" x-model="searchQuery"
                             placeholder="Nhập từ khóa tìm kiếm..."
                             class="w-full pl-12 pr-4 py-3 text-lg border border-gray-300"
                             aria-label="Từ khóa tìm kiếm" autocomplete="off">

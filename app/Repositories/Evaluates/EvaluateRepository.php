@@ -30,17 +30,17 @@ class EvaluateRepository extends BaseRepository implements EvaluateRepositoryInt
 
     public function getRatingDistribution($productId)
     {
-        $evaluates = $this->model->where('product_id', $productId)
+        $rows = $this->model->selectRaw('star_rating, COUNT(*) as total')
+            ->where('product_id', $productId)
             ->where('status', 'active')
-            ->get();
+            ->groupBy('star_rating')
+            ->pluck('total', 'star_rating');
 
-        return [
-            5 => $evaluates->where('star_rating', 5)->count(),
-            4 => $evaluates->where('star_rating', 4)->count(),
-            3 => $evaluates->where('star_rating', 3)->count(),
-            2 => $evaluates->where('star_rating', 2)->count(),
-            1 => $evaluates->where('star_rating', 1)->count(),
-        ];
+        $distribution = [];
+        for ($i = 5; $i >= 1; $i--) {
+            $distribution[$i] = (int) ($rows[$i] ?? 0);
+        }
+        return $distribution;
     }
 
     public function getTotalReviews($productId)
@@ -48,5 +48,34 @@ class EvaluateRepository extends BaseRepository implements EvaluateRepositoryInt
         return $this->model->where('product_id', $productId)
             ->where('status', 'active')
             ->count();
+    }
+
+    public function getUserAverageSellerRating(int $userId)
+    {
+        return $this->model->where('status', 'active')
+            ->where('user_id', $userId)
+            ->avg('seller_rating');
+    }
+
+    public function getUserTotalSellerReviews(int $userId)
+    {
+        return $this->model->where('status', 'active')
+            ->where('user_id', $userId)
+            ->count();
+    }
+
+    public function getUserSellerRatingDistribution(int $userId)
+    {
+        $rows = $this->model->selectRaw('seller_rating, COUNT(*) as total')
+            ->where('status', 'active')
+            ->where('user_id', $userId)
+            ->groupBy('seller_rating')
+            ->pluck('total', 'seller_rating');
+
+        $distribution = [];
+        for ($i = 5; $i >= 1; $i--) {
+            $distribution[$i] = (int) ($rows[$i] ?? 0);
+        }
+        return $distribution;
     }
 }

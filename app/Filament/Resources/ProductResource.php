@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Permission\RoleConstant;
 use App\Enums\Product\ProductPaymentMethod;
 use App\Enums\Product\ProductState;
 use App\Enums\Product\ProductStatus;
@@ -18,6 +19,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use FilamentTiptapEditor\TiptapEditor;
+use FilamentTiptapEditor\Enums\TiptapOutput;
 use App\Utils\HelperFunc;
 use Filament\Tables\Actions\Action as TableAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,7 +34,10 @@ class ProductResource extends Resource
     protected static ?string $modelLabel = 'Sản phẩm';
 
     protected static ?string  $pluralModelLabel = 'Sản phẩm';
-
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
+    }
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -42,7 +47,7 @@ class ProductResource extends Resource
                 ->maxLength(255)
                 ->live(debounce: 500)
                 ->afterStateUpdated(function ($state, callable $set) {
-                    if (!$state){
+                    if (!$state) {
                         $set('slug', '');
                         return;
                     };
@@ -124,6 +129,10 @@ class ProductResource extends Resource
                     $t = $get('type_sale');
                     $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
                     return $v === ProductTypeSale::AUCTION->value;
+                })
+                ->dehydrated(false)
+                ->default(function (?\App\Models\Product $record) {
+                    return $record?->auction?->step_price;
                 }),
             Forms\Components\DateTimePicker::make('start_time')
                 ->label('Thời gian bắt đầu')
@@ -180,6 +189,7 @@ class ProductResource extends Resource
                 ->hidden(fn($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
             TiptapEditor::make('description')
                 ->label('Miêu tả sản phẩm')
+                ->output(TiptapOutput::Html)
                 ->extraInputAttributes([
                     'style' => 'min-height: 400px;'
                 ])
@@ -246,11 +256,11 @@ class ProductResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Trạng thái')
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn($state) => match ($state) {
                         ProductStatus::ACTIVE->value => 'success',
                         ProductStatus::INACTIVE->value => 'warning',
                         default => 'default',
-                    })->formatStateUsing(fn(string $state): string => $state === 'active' ? 'hoạt động' : 'không hoạt động'),
+                    })->formatStateUsing(fn($state) => $state ? 'hoạt động' : 'không hoạt động'),
                 Tables\Columns\TextColumn::make('type_sale')
                     ->label('Dạng Sản Phẩm')
                     ->formatStateUsing(fn($state): string => $state == 1 ? 'Bán trực tiếp' : ($state == 2 ? 'Đấu giá' : 'Không xác định'))
@@ -267,7 +277,7 @@ class ProductResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\ImageColumn::make('images.image_url')
                     ->label('Hình ảnh')
-                    ->getStateUsing(fn ($record) => HelperFunc::generateURLFilePath($record->images->pluck('image_url')->first()))
+                    ->getStateUsing(fn($record) => HelperFunc::generateURLFilePath($record->images->pluck('image_url')->first()))
                     ->disk('public')
                     ->height(100)
                     ->width(100)

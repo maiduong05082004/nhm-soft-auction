@@ -43,7 +43,7 @@
                     </div>
 
                     <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200">
+                        class="btn btn-neutral text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200">
                         <i class="fas fa-search mr-2"></i>Tìm kiếm
                     </button>
                 </form>
@@ -81,65 +81,7 @@
                 @if ($articles->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         @foreach ($articles as $article)
-                            <article
-                                class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
-                                <div class="relative">
-                                    @if ($article->image)
-                                        <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($article->image) }}"
-                                            alt="{{ $article->title }}" class="w-full h-48 object-cover">
-                                    @else
-                                        <div
-                                            class="w-full h-48 bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
-                                            <i class="fas fa-newspaper text-white text-3xl"></i>
-                                        </div>
-                                    @endif
-
-                                    <div class="absolute top-4 left-4">
-                                        <span
-                                            class="bg-{{ $article->category->color ?? 'blue' }}-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                                            {{ $article->category->name }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="p-6">
-                                    <h4 class="font-bold text-lg text-gray-900 mb-3 line-clamp-2 leading-snug min-h-[3rem]">
-                                        {{ $article->title }}
-                                    </h4>
-                                    <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-snug">
-                                        {{ \Illuminate\Support\Str::limit(strip_tags($article->content), 200) }}
-                                    </p>
-                                    <div class="flex items-center justify-between mt-4">
-                                        @if ($article['author']['avatar'])
-                                            <div class="text-sm text-gray-500 flex gap-1">
-                                                <img src="{{ asset('storage/avatar') . '/' . $article['author']['avatar'] }}"
-                                                    class="rounded-2xl w-4" alt="">
-                                                <span class="whitespace-nowrap">{{ $article['author']['name'] }}</span>
-                                            </div>
-                                        @else
-                                            <div class="text-sm text-gray-500 flex gap-1">
-                                                <x-heroicon-o-user class="w-4"></x-heroicon-o-user>
-                                                <span class="whitespace-nowrap">{{ $article['author']['name'] }}</span>
-                                            </div>
-                                        @endif
-
-                                        <div class="text-sm text-gray-500 flex gap-1">
-                                            <x-heroicon-o-eye class="w-4"></x-heroicon-o-eye>
-                                            <span class="whitespace-nowrap">{{ $article['view'] }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center justify-between mt-4">
-                                        <span class="text-xs text-gray-500 flex">
-                                            <div class="">
-                                                {{ \Carbon\Carbon::parse($article->publish_time)->diffForHumans() }}</div>
-                                        </span>
-                                        <a href="{{ route('news.detail', $article->slug) }}"
-                                            class="text-blue-600 hover:text-blue-800 font-medium text-sm">
-                                            Đọc thêm <i class="fas fa-chevron-right ml-1"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </article>
+                            <x-article-card :article="$article" />
                         @endforeach
                     </div>
 
@@ -158,14 +100,14 @@
                             Thử thay đổi từ khóa tìm kiếm hoặc danh mục để xem thêm kết quả.
                         </p>
                         <a href="{{ route('news.list') }}"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                            class="btn btn-neutral text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
                             <i class="fas fa-list mr-2"></i>Xem tất cả bài viết
                         </a>
                     </div>
                 @endif
             </section>
 
-            <section class="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white text-center">
+            <section class="mt-16 bg-gradient-to-r from-[#646068] to-[#777f92] rounded-2xl p-8 text-white text-center">
                 <h3 class="text-2xl md:text-3xl font-bold mb-4">
                     Đăng ký nhận tin tức mới nhất
                 </h3>
@@ -174,9 +116,9 @@
                 </p>
                 <div class="max-w-md mx-auto flex gap-4">
                     <input type="email" placeholder="Nhập email của bạn..."
-                        class="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white">
+                        class="flex-1 px-4 py-3 rounded-lg text-blue-600 focus:outline-none focus:ring-2 focus:ring-white">
                     <button
-                        class="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                        class="bg-white text-blue-600 hover:bg-slate-400 px-6 py-3 rounded-lg font-medium transition-colors duration-200">
                         <i class="fas fa-paper-plane mr-2"></i>Đăng ký
                     </button>
                 </div>
