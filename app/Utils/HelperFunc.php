@@ -32,7 +32,7 @@ class HelperFunc
         return [];
     }
 
-    public static  function removeVietnameseTones($str): array|string|null
+    public static function removeVietnameseTones($str): array|string|null
     {
         $unicode = [
             'a'=>'á|à|ả|ã|ạ|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ',
