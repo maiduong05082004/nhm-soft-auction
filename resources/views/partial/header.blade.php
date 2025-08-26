@@ -68,7 +68,7 @@
                             <span class="text-xs font-medium">sản phẩm</span>
                         </a>
 
-                        <a href="{{ route('products.list', ['product_type' => 'auction']) }}"
+                        <a href="{{ route('auctions.my-participating') }}"
                             class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
                                transition-all duration-300 hover:-translate-y-0.5 relative">
                             <x-heroicon-o-shopping-bag class="w-6 h-6 mb-1"></x-heroicon-o-shopping-bag>

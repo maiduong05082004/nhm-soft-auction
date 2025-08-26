@@ -73,4 +73,18 @@ class AuctionRepository extends BaseRepository implements AuctionRepositoryInter
         return $this->model->where('id', $auctionId)
             ->update(['status' => $status]);
     }
+
+    public function getUserParticipatingAuctions($userId)
+    {
+        return $this->model->whereHas('bids', function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->where('status', 'active')
+            ->where('start_time', '<=', now())
+            ->where('end_time', '>=', now())
+            ->with(['product.images', 'bids' => function($query) use ($userId) {
+                $query->where('user_id', $userId)->orderBy('bid_time', 'desc');
+            }])
+            ->get();
+    }
 }

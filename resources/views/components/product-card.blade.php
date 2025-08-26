@@ -1,5 +1,4 @@
-<article
-    class="product-card group relative rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg bg-[#f5f5f5]">
+<article class="product-card group bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
     @php
         $url = isset($product['slug']) ? route('products.show', [$product['slug']]) : '#';
 
@@ -11,87 +10,111 @@
         }
     @endphp
 
-    <div class="relative aspect-square overflow-hidden">
-        @if (isset($product['is_hot']) && $product['is_hot'])
-            <span
-                class="absolute top-1 sm:top-2 left-1 sm:left-2 z-30 bg-red-500 text-white text-xs font-bold px-1 sm:px-2 py-1 rounded uppercase">
-                Hot
-            </span>
-        @endif
-
-        @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
-            <span
-                class="absolute top-1 sm:top-2 right-1 sm:right-2 z-30 bg-orange-500 text-white text-xs font-bold px-1 sm:px-2 py-1 rounded">
-                <span class="hidden sm:inline">Đấu giá</span>
-                <span class="sm:hidden">ĐG</span>
-            </span>
-        @elseif (!empty($product['created_at']) && \Carbon\Carbon::parse($product['created_at'])->gt(now()->subWeek()))
-            <span
-                class="absolute top-1 sm:top-2 right-1 sm:right-2 z-30 bg-green-500 text-white text-xs font-bold px-1 sm:px-2 py-1 rounded uppercase">
-                Mới
-            </span>
-        @endif
-
-        <a href="{{ $url }}" class="block w-full h-full z-0"
-            aria-label="{{ $product['name'] ?? 'Xem sản phẩm' }}">
+    <div class="relative bg-gray-50">
+        <a href="{{ $url }}" class="block aspect-square">
             <img src="{{ $imageUrl }}"
                 class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 alt="{{ $product['name'] ?? 'Sản phẩm' }}" loading="lazy"
                 onerror="this.src='{{ asset('images/product_default.jpg') }}'">
         </a>
 
-        <button type="button" id="btn-add-wishlist"
-            class="wishlist-btn absolute bottom-1 sm:bottom-2 right-1 sm:right-2 p-1 sm:p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 z-40"
+        @if (isset($product['is_hot']) && $product['is_hot'])
+            <span class="absolute top-2 left-2 badge badge-error gap-1 text-[10px]">Hot</span>
+        @endif
+
+        @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
+            <span class="absolute top-2 right-2 badge badge-warning gap-1 text-[10px]">Đấu giá</span>
+        @elseif (!empty($product['created_at']) && \Carbon\Carbon::parse($product['created_at'])->gt(now()->subWeek()))
+            <span class="absolute top-2 right-2 badge badge-accent gap-1 text-[10px]">Mới</span>
+        @endif
+
+        <button type="button" 
+            class="wishlist-btn absolute bottom-2 right-2 btn btn-xs btn-circle bg-white text-red-500 hover:bg-red-50 shadow"
             aria-label="Thêm vào danh sách yêu thích" data-id="{{ $product['id'] }}">
-            <x-heroicon-o-heart class="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 hover:text-red-500" />
+            <x-heroicon-o-heart class="h-3.5 w-3.5" />
         </button>
     </div>
 
-    <div class="p-2 sm:p-3">
-        <h3
-            class="text-xs sm:text-sm font-semibold text-gray-800 mb-2 group-hover:text-orange-500 transition-colors line-clamp-2 leading-tight min-h-[40px]">
-            <a href="{{ $url }}" class="">
-                {{ $product['name'] ?? 'Tên sản phẩm' }}
-            </a>
+    <div class="p-3">
+        <h3 class="font-semibold text-[14px] text-slate-900 mb-1 line-clamp-2 min-h-[38px]">
+            <a href="{{ $url }}" class="hover:text-blue-600 transition-colors">{{ $product['name'] ?? 'Tên sản phẩm' }}</a>
         </h3>
 
-        <div class="flex items-center justify-between mb-1 sm:mb-2">
-            @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
-                <span class="text-xs text-gray-500">Giá hiện tại:</span>
-            @else
-                <span class="text-xs text-gray-500">Giá:</span>
-            @endif
-            <span class="text-xs sm:text-sm font-bold text-orange-600">
-                @php
-                    $priceDisplay = '0đ';
+        @php
+            if (isset($product['price_display']) && isset($product['is_long_price'])) {
+                $priceDisplay = $product['price_display'];
+                $isLongPrice = $product['is_long_price'];
+            } else {
+                $priceDisplay = '0 ₫';
+                $isLongPrice = false;
 
-                    if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value) {
-                        $auction = \App\Models\Auction::where('product_id', $product['id'] ?? null)->first();
+                if (!empty($product['price'])) {
+                    $priceDisplay = number_format($product['price'], 0, ',', '.') . ' ₫';
+                    $priceLength = strlen(preg_replace('/[^0-9]/', '', $product['price']));
+                    $isLongPrice = $priceLength >= 10;
+                } elseif (isset($product['min_bid_amount']) && isset($product['max_bid_amount'])) {
+                    $priceDisplay = number_format($product['min_bid_amount'], 0, ',', '.')
+                        . ' - '
+                        . number_format($product['max_bid_amount'], 0, ',', '.')
+                        . ' ₫';
+                    $priceLength = strlen(preg_replace('/[^0-9]/', '', $product['max_bid_amount']));
+                    $isLongPrice = $priceLength >= 10;
+                }
+            }
+        @endphp
 
-                        if ($auction) {
-                            $highestBid = $auction->bids()->orderBy('bid_price', 'desc')->first();
-                            $currentPrice = $highestBid ? $highestBid->bid_price : $auction->start_price;
-                            $priceDisplay = number_format($currentPrice, 0, ',', '.') . 'đ';
-                        }
-                    } else {
-                        if (!empty($product['price'])) {
-                            $priceDisplay = number_format($product['price'], 0, ',', '.') . 'đ';
-                        } elseif (isset($product['min_bid_price']) && isset($product['max_bid_price'])) {
-                            $priceDisplay = number_format($product['min_bid_price'], 0, ',', '.')
-                                . ' - '
-                                . number_format($product['max_bid_price'], 0, ',', '.')
-                                . 'đ';
-                        }
-                    }
-                @endphp
-                {{ $priceDisplay }}
-            </span>
-        </div>
+        @if ($isLongPrice)
+            <div class="mb-2">
+                <div class="text-xs text-slate-500 mb-1">
+                    @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
+                        Hiện tại:
+                    @else
+                        Giá:
+                    @endif
+                </div>
+                <div class="text-[15px] font-bold text-orange-600 break-words">
+                    {{ $priceDisplay }}
+                </div>
+            </div>
+        @else
+            <div class="flex items-center justify-between mb-2">
+                <div class="text-xs text-slate-500">
+                    @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
+                        Hiện tại:
+                    @else
+                        Giá:
+                    @endif
+                </div>
+                <div class="text-[15px] font-bold text-orange-600">
+                    {{ $priceDisplay }}
+                </div>
+            </div>
+        @endif
 
         @if (!empty($product['views']))
-            <div class="flex items-center text-xs text-gray-500">
+            <div class="flex items-center text-xs text-slate-500 mb-2">
                 <x-heroicon-o-eye class="h-3 w-3 mr-1 flex-shrink-0" />
                 <span class="truncate">{{ number_format($product['views']) }} lượt xem</span>
+            </div>
+        @endif
+
+        @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::SALE->value)
+            <div class="grid grid-cols-3 gap-2">
+                <a href="{{ $url }}" class="btn btn-sm btn-outline w-full col-span-2 text-[11px]">Xem chi tiết</a>
+                <form action="{{ route('cart.add', ['product' => $product['id']]) }}" method="POST" class="add-cart-form col-span-1">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product['id'] }}">
+                    <button type="submit" class="btn btn-sm btn-neutral w-full text-[11px]" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v4a2 2 0 01-2 2H9a2 2 0 01-2-2v-4.01" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        @else
+            <div class="w-full">
+                <a href="{{ $url }}" class="btn btn-sm btn-outline w-full">Xem chi tiết</a>
             </div>
         @endif
     </div>

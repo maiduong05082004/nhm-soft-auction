@@ -67,6 +67,7 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('cart')->group(function 
 
 Route::middleware(['auth:sanctum', 'verified'])->prefix('auctions')->group(function () {
     Route::get('/', [AuctionController::class, 'getActiveAuctions'])->name('auctions.index');
+    Route::get('/my-participating', [AuctionController::class, 'getUserParticipatingAuctions'])->name('auctions.my-participating');
     Route::get('/{productId}', [AuctionController::class, 'show'])->name('auctions.show');
     Route::post('/{productId}/bid', [AuctionController::class, 'bid'])->name('auctions.bid');
     Route::get('/{auctionId}/user-history', [AuctionController::class, 'getUserBidHistory'])->name('auctions.user-history');
