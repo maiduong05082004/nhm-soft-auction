@@ -19,12 +19,9 @@ use App\Repositories\Orders\OrderRepository;
 use App\Services\Evaluates\EvaluateService;
 use App\Services\Config\ConfigService;
 use App\Services\Products\ProductServiceInterface;
-use App\Enums\Permission\RoleConstant;
-use App\Enums\Config\ConfigName;
 use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
 use App\Models\Product;
-use Illuminate\Database\Eloquent\Collection;
 
 class ProductService extends BaseService implements ProductServiceInterface
 {

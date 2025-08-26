@@ -17,6 +17,8 @@ class TransactionPoint extends Model
         'point',
         'description',
         'user_id',
+        'status',
+        'transaction_payment_id'
     ];
 
     protected static function boot()
@@ -31,5 +33,10 @@ class TransactionPoint extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function transactionPayment()
+    {
+        return $this->belongsTo(TransactionPayment::class);
     }
 }
