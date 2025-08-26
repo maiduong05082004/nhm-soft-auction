@@ -1,4 +1,4 @@
-<div class="header-container">
+<div class="header-container sticky top-0 z-50 ">
     <div id="config-route" data-wishlist-get="{{ route('wishlist.get-items') }}"
         data-wishlist-add="{{ route('wishlist.add') }}" data-wishlist-remove="{{ route('wishlist.remove') }}"
         data-wishlist-clear="{{ route('wishlist.clear') }}" data-cart-add="{{ route('cart.add', [':id']) }}"
@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    <header class="bg-white/95 backdrop-blur-sm sticky top-0 z-40 animate-(--animate-header-fade-in) shadow-sm">
+    <header class="bg-white/95 backdrop-blur-sm z-40 animate-(--animate-header-fade-in) shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-2">
             <nav class="flex items-center justify-between h-16 lg:h-20" aria-label="Main navigation">
 

@@ -53,7 +53,17 @@ class MembershipPlan extends Model
         });
     }
 
+    public function membershipUsers()
+    {
+        return $this->hasMany(MembershipUser::class);
+    }
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'membership_users')
+            ->withPivot(['start_date', 'end_date', 'status'])
+            ->withTimestamps();
+    }
 
     public function getConfig(ConfigMembership $key, $default = null)
     {
