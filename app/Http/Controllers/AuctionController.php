@@ -122,4 +122,15 @@ class AuctionController extends Controller
             return redirect()->back()->with('error', $result['message']);
         }
     }
+
+    public function getUserParticipatingAuctions()
+    {
+        $result = $this->auctionService->getUserParticipatingAuctions($this->userId);
+
+        if ($result['success']) {
+            return view('pages.auctions.user-participating', ['auctions' => $result['data']]);
+        } else {
+            return redirect()->back()->with('error', $result['message']);
+        }
+    }
 }

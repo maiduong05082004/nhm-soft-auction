@@ -131,7 +131,7 @@ class ProductService extends BaseService implements ProductServiceInterface
         $sellerStats = $statUserId ? $this->evaluateService->getUserSellerRatingStats((int) $statUserId) : [
             'sellerTotalReviews' => 0,
             'sellerAverageRating' => 0,
-            'sellerRatingDistribution' => [1=>0,2=>0,3=>0,4=>0,5=>0],
+            'sellerRatingDistribution' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
         ];
 
         $productStateLabel = 'Chưa có thông tin';
@@ -141,7 +141,7 @@ class ProductService extends BaseService implements ProductServiceInterface
                 $productStateLabel = $productState->getLabel($productState);
             }
         }
-        if(isset($product->pay_method)) {
+        if (isset($product->pay_method)) {
             $productPaymentMethod = ProductPaymentMethod::tryFrom($product->pay_method);
             if ($productPaymentMethod) {
                 $productPaymentMethodLabel = $productPaymentMethod->getLabel($productPaymentMethod);
@@ -157,18 +157,56 @@ class ProductService extends BaseService implements ProductServiceInterface
 
     public function filterProductList($query = [], $page = 1, $perPage = 12)
     {
-        $cacheKey = $this->buildCacheKey('products_lists', $query, $page, $perPage);
-        // return Cache::remember($cacheKey, 600, function () use ($query, $page, $perPage) {
-            return $this->productRepository->getProductByFilter($query, $page, $perPage);
-        // });
+        $paginator = $this->productRepository->getProductByFilter($query, $page, $perPage);
+
+        $collection = $paginator->through(function ($product) {
+            $product->price_display = $this->getProductPriceDisplay($product);
+            return $product;
+        });
+
+        return $collection;
     }
 
-    public function getTreeListCategory ( ) {
+    private function getProductPriceDisplay($product)
+    {
+        $priceDisplay = '0 ₫';
+
+        if ((int)($product->type_sale ?? 0) === ProductTypeSale::AUCTION->value) {
+            $auction = $product->relationLoaded('auction')
+                ? $product->auction
+                : $this->repositories['auction']->getAuctionByProductId($product->id);
+
+            if ($auction) {
+                $highestBid = $this->repositories['auction']->getHighestBid($auction->id);
+                $currentPrice = $highestBid ? $highestBid->bid_price : ($auction->start_price ?? 0);
+                $priceDisplay = $this->formatPrice($currentPrice);
+            }
+        } else {
+            if (!empty($product->price)) {
+                $priceDisplay = $this->formatPrice($product->price);
+            } elseif (!empty($product->min_bid_amount) && !empty($product->max_bid_amount)) {
+                $priceDisplay = $this->formatPrice($product->min_bid_amount)
+                    . ' - '
+                    . $this->formatPrice($product->max_bid_amount);
+            }
+        }
+
+        return $priceDisplay;
+    }
+
+    private function formatPrice($price)
+    {
+        return number_format((float)$price, 0, ',', '.') . ' ₫';
+    }
+
+    public function getTreeListCategory()
+    {
         $cacheKey = $this->buildCacheKey('product_category');
         return $this->repositories['category']->getTreeList();
     }
 
-    public function incrementViewCount ($productId) {
+    public function incrementViewCount($productId)
+    {
         return $this->productRepository->incrementViewCount($productId);
     }
 
