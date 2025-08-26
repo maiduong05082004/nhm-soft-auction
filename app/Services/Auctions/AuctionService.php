@@ -302,8 +302,6 @@ class AuctionService extends BaseService implements AuctionServiceInterface
         
         $auction->current_price_display = number_format($currentPrice, 0, ',', '.') . ' ₫';
         
-        $priceLength = strlen(preg_replace('/[^0-9]/', '', $currentPrice));
-        $auction->is_long_price = $priceLength >= 10;
         
         $auction->starting_price_display = number_format($auction->starting_price, 0, ',', '.') . ' ₫';
         

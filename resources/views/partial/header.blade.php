@@ -174,7 +174,7 @@
                         </svg>
                     </div>
                     <button type="submit"
-                        class="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-300">
+                        class="w-full btn btn-neutral py-2 rounded-lg font-medium transition-colors duration-300">
                         Tìm kiếm
                     </button>
                 </form>
@@ -234,7 +234,7 @@
                         <div class="relative">
                             <input type="search" name="name" id="search-input"
                                 placeholder="Nhập từ khóa tìm kiếm..."
-                                class="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 rounded-lg"
+                                class="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 rounded-lg active:border-slate-400"
                                 aria-label="Từ khóa tìm kiếm" autocomplete="off">
                             <svg class="absolute left-4 top-3.5 w-6 h-6 text-gray-400" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -243,9 +243,9 @@
                             </svg>
                         </div>
 
-                        <div class="flex space-x-3 pt-4">
+                        <div class="!mb-5 float-right">
                             <button type="submit"
-                                class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-300">
+                                class="btn btn-neutral flex-1 py-3 rounded-lg font-medium transition-colors duration-300">
                                 Tìm kiếm
                             </button>
                             <button type="button" id="cancel-search"

@@ -25,7 +25,6 @@
                             'image_url' => $auction->product->images->first()->image_url
                         ] : null,
                         'price_display' => $auction->current_price_display,
-                        'is_long_price' => $auction->is_long_price
                     ];
                 @endphp
                 

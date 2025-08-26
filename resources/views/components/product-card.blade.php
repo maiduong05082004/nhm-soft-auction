@@ -40,56 +40,18 @@
             <a href="{{ $url }}" class="hover:text-blue-600 transition-colors">{{ $product['name'] ?? 'Tên sản phẩm' }}</a>
         </h3>
 
-        @php
-            if (isset($product['price_display']) && isset($product['is_long_price'])) {
-                $priceDisplay = $product['price_display'];
-                $isLongPrice = $product['is_long_price'];
-            } else {
-                $priceDisplay = '0 ₫';
-                $isLongPrice = false;
-
-                if (!empty($product['price'])) {
-                    $priceDisplay = number_format($product['price'], 0, ',', '.') . ' ₫';
-                    $priceLength = strlen(preg_replace('/[^0-9]/', '', $product['price']));
-                    $isLongPrice = $priceLength >= 10;
-                } elseif (isset($product['min_bid_amount']) && isset($product['max_bid_amount'])) {
-                    $priceDisplay = number_format($product['min_bid_amount'], 0, ',', '.')
-                        . ' - '
-                        . number_format($product['max_bid_amount'], 0, ',', '.')
-                        . ' ₫';
-                    $priceLength = strlen(preg_replace('/[^0-9]/', '', $product['max_bid_amount']));
-                    $isLongPrice = $priceLength >= 10;
-                }
-            }
-        @endphp
-
-        @if ($isLongPrice)
-            <div class="mb-2">
-                <div class="text-xs text-slate-500 mb-1">
-                    @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
-                        Hiện tại:
-                    @else
-                        Giá:
-                    @endif
-                </div>
-                <div class="text-[15px] font-bold text-orange-600 break-words">
-                    {{ $priceDisplay }}
-                </div>
+        <div class="flex items-center justify-between mb-2">
+            <div class="text-xs text-slate-500">
+                @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
+                    Hiện tại:
+                @else
+                    Giá:
+                @endif
             </div>
-        @else
-            <div class="flex items-center justify-between mb-2">
-                <div class="text-xs text-slate-500">
-                    @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
-                        Hiện tại:
-                    @else
-                        Giá:
-                    @endif
-                </div>
-                <div class="text-[15px] font-bold text-orange-600">
-                    {{ $priceDisplay }}
-                </div>
+            <div class="text-[12px] font-bold text-orange-600 whitespace-nowrap overflow-hidden text-ellipsis">
+                {{ $product['price_display'] ?? '0 ₫' }}
             </div>
-        @endif
+        </div>
 
         @if (!empty($product['views']))
             <div class="flex items-center text-xs text-slate-500 mb-2">
