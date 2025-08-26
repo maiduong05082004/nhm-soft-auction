@@ -28,7 +28,7 @@
 
     <div class="p-6">
         <h4 id="article-{{ $article->id }}-title"
-            class="font-bold text-lg text-gray-900 mb-3  min-h-[3rem] transition-colors duration-300 group-hover:text-blue-600">
+            class="font-bold text-lg text-gray-900 mb-3  min-h-[3rem] transition-colors duration-300 group-hover:text-slate-700">
             <a href="{{ route('news.detail', $article->slug) }}" class="inline-block line-clamp-2 leading-snug">
                 {{ \Illuminate\Support\Str::limit(strip_tags($article->title), 70)  }}
             </a>

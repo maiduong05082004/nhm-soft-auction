@@ -11,4 +11,5 @@ interface AuctionRepositoryInterface extends BaseRepositoryInterface
     public function getHighestBid($auctionId);
     public function getAuctionByProductId($productId);
     public function updateAuctionStatus($auctionId, $status);
+    public function getUserParticipatingAuctions($userId);
 }
