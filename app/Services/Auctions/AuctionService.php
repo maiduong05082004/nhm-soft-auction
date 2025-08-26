@@ -274,4 +274,41 @@ class AuctionService extends BaseService implements AuctionServiceInterface
             ];
         }
     }
+
+    public function getUserParticipatingAuctions($userId)
+    {
+        try {
+            $auctions = $this->auctionRepo->getUserParticipatingAuctions($userId);
+
+            $auctions->each(function($auction) {
+                $this->processAuctionData($auction);
+            });
+
+            return [
+                'success' => true,
+                'data' => $auctions
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi lấy danh sách sản phẩm đấu giá của user!'
+            ];
+        }
+    }
+
+    private function processAuctionData($auction)
+    {
+        $highestBid = $auction->bids()->orderBy('bid_price', 'desc')->first();
+        $currentPrice = $highestBid ? $highestBid->bid_price : $auction->starting_price;
+        
+        $auction->current_price_display = number_format($currentPrice, 0, ',', '.') . ' ₫';
+        
+        
+        $auction->starting_price_display = number_format($auction->starting_price, 0, ',', '.') . ' ₫';
+        
+        $auction->highest_bid_display = $highestBid ? number_format($highestBid->bid_price, 0, ',', '.') . ' ₫' : $auction->starting_price_display;
+        
+        $userBid = $auction->bids()->where('user_id', auth()->id())->orderBy('bid_time', 'desc')->first();
+        $auction->user_bid_display = $userBid ? number_format($userBid->bid_price, 0, ',', '.') . ' ₫' : 'Chưa đặt giá';
+    }
 }

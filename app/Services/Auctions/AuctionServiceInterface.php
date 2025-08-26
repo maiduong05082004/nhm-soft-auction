@@ -12,4 +12,5 @@ interface AuctionServiceInterface extends BaseServiceInterface
     public function getUserBidHistory($auctionId, $userId);
     public function validateBid($auctionId, $bidPrice, $userId);
     public function getActiveAuctions();
+    public function getUserParticipatingAuctions($userId);
 }
