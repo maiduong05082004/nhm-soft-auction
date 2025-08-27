@@ -17,11 +17,29 @@
 <meta name="twitter:title" content="@yield('twitter_title', 'Auctions Clone')">
 <meta name="twitter:description" content="@yield('twitter_description', 'Mô tả cho Twitter Card')">
 <meta name="twitter:image" content="@yield('twitter_image', asset('images/default-twitter.jpg'))">
+<!-- Buộc thông báo chỉ hỗ trợ light mode -->
+<meta name="color-scheme" content="only light">
+<meta name="supported-color-schemes" content="light">
+
+<!-- Theme color (address bar / mobile) - khai báo rõ cho light -->
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+
+<style>
+  /* Tối đa hoá loại trừ "auto dark" của browser */
+  :root, html, body {
+    color-scheme: only light !important;
+    background-color: ##f2f4f6 !important;
+    color: #111111 !important;
+    /* Tắt forced colors trên những browser hỗ trợ */
+    forced-color-adjust: none;
+  }
+</style>
 
 <!-- Canonical -->
 <link rel="canonical" href="{{ url()->current() }}">
 
 @include('partial.schema')
+
 
 @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/partials/wishlist.js'])
 <script>
