@@ -149,8 +149,9 @@ class ProductService extends BaseService implements ProductServiceInterface
         $coinBindProductAuction = $this->configService->getConfigValue('COIN_BIND_PRODUCT_AUCTION', 10);
         $priceOneCoin = $this->configService->getConfigValue('PRICE_ONE_COIN', 1000);
         $totalCoinCost = $coinBindProductAuction * $priceOneCoin;
+        $categories = $this->getTreeListCategory();
 
-        return compact('product', 'product_images', 'auction', 'user', 'userPresent', 'product_category', 'typeSale', 'totalBids', 'currentPrice', 'auctionData', 'followersCount', 'productStateLabel', 'productPaymentMethodLabel', 'coinBindProductAuction', 'priceOneCoin', 'totalCoinCost') + $evaluateStats + $sellerStats;
+        return compact('product', 'product_images', 'auction', 'user', 'userPresent', 'product_category','categories' ,'typeSale', 'totalBids', 'currentPrice', 'auctionData', 'followersCount', 'productStateLabel', 'productPaymentMethodLabel', 'coinBindProductAuction', 'priceOneCoin', 'totalCoinCost') + $evaluateStats + $sellerStats;
     }
 
     public function filterProductList($query = [], $page = 1, $perPage = 12)

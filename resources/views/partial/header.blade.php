@@ -9,7 +9,7 @@
         $headerWishlistCount = $headerWishlistCount ?? 0;
     @endphp
 
-    <div id="toast" class="fixed top-4 right-0 z-50 hidden sm:block">
+    <div id="toast" class="fixed top-4 right-0 z-50 hidden ">
         <div class="bg-white border-l-4 text-gray-700 p-3 sm:p-4 rounded shadow-lg max-w-xs sm:max-w-sm transition-all duration-300 transform translate-x-full"
             id="toast-content">
             <div class="flex items-center">
@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    <header class="bg-white/95 backdrop-blur-sm z-40 animate-(--animate-header-fade-in) shadow-sm">
+    <header class="bg-white/95 backdrop-blur-sm z-40 animate-(--animate-header-fade-in) shadow-sm z-[999]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-2">
             <nav class="flex items-center justify-between h-16 lg:h-20" aria-label="Main navigation">
 
@@ -83,8 +83,8 @@
                         </a>
 
                         <div class="relative group">
-                            <a href="{{ route('home') . '/admin' }}"
-                                class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
+                            <a href="{{ route('filament.admin.pages.dashboard') }}"
+                               class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
                                    transition-all duration-300 cursor-pointer hover:-translate-y-0.5"
                                 aria-expanded="false" aria-haspopup="true">
                                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,6 +159,68 @@
         </div>
 
         <div class="flex flex-col h-full overflow-y-auto">
+            <div class="grid grid-cols-3 gap-2 p-2">
+                    <a href="{{ route('products.list') }}"
+                       class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
+                               transition-all duration-300 hover:-translate-y-0.5 relative">
+                        <x-heroicon-o-shopping-bag class="w-6 h-6 mb-1"></x-heroicon-o-shopping-bag>
+                        <span class="text-xs font-medium">sản phẩm</span>
+                    </a>
+
+                    <a href="{{ route('auctions.my-participating') }}"
+                       class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
+                               transition-all duration-300 hover:-translate-y-0.5 relative">
+                        <x-heroicon-o-shopping-bag class="w-6 h-6 mb-1"></x-heroicon-o-shopping-bag>
+                        <span class="text-xs font-medium">Đấu giá</span>
+                    </a>
+
+                    <a href="{{ route('news.list') }}"
+                       class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
+                               transition-all duration-300 hover:-translate-y-0.5 relative">
+                        <x-heroicon-o-newspaper class="w-6 h-6 mb-1"></x-heroicon-o-newspaper>
+                        <span class="text-xs font-medium">Tin tức</span>
+                    </a>
+
+                    <div class="relative group">
+                        <a href="{{ route('filament.admin.pages.dashboard') }}"
+                           class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
+                                   transition-all duration-300 cursor-pointer hover:-translate-y-0.5"
+                           aria-expanded="false" aria-haspopup="true">
+                            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                </path>
+                            </svg>
+                            <span class="text-xs font-medium">Tài khoản</span>
+                        </a>
+                    </div>
+
+                    <a href="{{ route('wishlist.list') }}"
+                       class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
+                            transition-all duration-300 hover:-translate-y-0.5 relative">
+                        <x-heroicon-o-heart class="w-6 h-6 mb-1"></x-heroicon-o-heart>
+                        @auth
+                            <span id="wishlist-count"
+                                  class="absolute -top-0.5 right-3 !bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow pointer-events-none {{ ($headerWishlistCount ?? 0) > 0 ? '' : 'hidden' }}">
+                                    {{ $headerWishlistCount ?? 0 }}
+                                </span>
+                        @endauth
+                        <span class="text-xs font-medium">Yêu thích</span>
+                    </a>
+                    <a href="{{ route('cart.index') }}"
+                       class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
+                               transition-all duration-300 hover:-translate-y-0.5 relative">
+                        <x-heroicon-o-shopping-cart class="w-6 h-6 mb-1"></x-heroicon-o-shopping-cart>
+                        @auth
+                            <span id="header-cart-count"
+                                  class="absolute -top-0.5 right-3 !bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow pointer-events-none {{ ($headerCartCount ?? 0) > 0 ? '' : 'hidden' }}">
+                                    {{ $headerCartCount ?? 0 }}
+                                </span>
+                        @endauth
+                        <span class="text-xs font-medium">Giỏ hàng</span>
+                    </a>
+                </div>
+
             <div class="p-4 bg-gray-50">
                 <form id="mobile-search-form" action="{{ route('products.list') }}" method="GET"
                     class="space-y-3">

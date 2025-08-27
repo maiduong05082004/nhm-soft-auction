@@ -5,6 +5,7 @@ $(document).ready(function () {
     let searchQuery = '';
 
     function openMobileMenu() {
+        console.log('test')
         mobileMenuOpen = true;
         $('#mobile-overlay').removeClass('hidden').css('opacity', '0').animate({ opacity: 1 }, 300);
         $('#mobile-menu').removeClass('translate-x-full').addClass('translate-x-0');

@@ -68,7 +68,7 @@
                                     </a>
                                 </div>
                                 <div class="text-center">
-                                    <a href="{{ route('products.list') }}"
+                                    <a href="{{ route('filament.admin.resources.buy-memberships.index') }}"
                                         class="block hover:opacity-80 transition-opacity">
                                         <x-heroicon-o-user class="w-8 h-8 mx-auto mb-2 rounded-lg"></x-heroicon-o-user>
                                         <h3 class="text-xs font-medium text-gray-700 leading-tight">
