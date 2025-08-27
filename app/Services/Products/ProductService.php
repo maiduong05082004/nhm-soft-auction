@@ -128,11 +128,19 @@ class ProductService extends BaseService implements ProductServiceInterface
 
         $evaluateStats = $this->evaluateService->getProductRatingStats($product->id);
         $statUserId = $user->id ?? null;
-        $sellerStats = $statUserId ? $this->evaluateService->getUserSellerRatingStats((int) $statUserId) : [
-            'sellerTotalReviews' => 0,
-            'sellerAverageRating' => 0,
-            'sellerRatingDistribution' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
-        ];
+        if($statUserId){
+            $sellerStats = $this->evaluateService->getUserSellerRatingStats((int) $statUserId);
+        } else{
+            $defaultStats = [];
+            for($i = 1; $i <= 5; $i++) {
+                $defaultStats[$i] = 0;
+            }
+            $sellerStats = $statUserId ? $this->evaluateService->getUserSellerRatingStats((int) $statUserId) : [
+                'sellerTotalReviews' => 0,
+                'sellerAverageRating' => 0,
+                'sellerRatingDistribution' => $defaultStats,
+            ];
+        }
 
         $productStateLabel = 'Chưa có thông tin';
         if (isset($product->state)) {
