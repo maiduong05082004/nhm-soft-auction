@@ -93,13 +93,12 @@ class PointPackageService extends BaseService implements PointPackageServiceInte
                             $points = $transactionPoint->point;
 
                             // Cập nhật trạng thái user
-                            $user = $this->getRepository('user')->query()
+                            $this->getRepository('user')
+                                ->query()
                                 ->where('id', $record->user_id)
-                                ->first();
-
-                            if ($user) {
-                                $user->update(['current_balance' => $user->current_balance + $points]);
-                            }
+                                ->update([
+                                    'current_balance' => DB::raw("current_balance + {$points}")
+                                ]);
                         }
 
                         DB::commit();
