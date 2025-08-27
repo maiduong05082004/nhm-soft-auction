@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('banner_types', function (Blueprint $table) {
-            $table->integer('status')->default(1)->comment('0: inactive, 1: active')->change();
+            $table->dropColumn('status');
+            $table->integer('status')->default(1)->comment('0: inactive, 1: active');
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('banner_types', function (Blueprint $table) {
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->dropColumn('status');
         });
     }
 };

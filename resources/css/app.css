@@ -2,12 +2,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@plugin "daisyui" {
+    themes: nord --default;
+}
 @source "../**/*.blade.php";
 @source "../**/*.js";
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 @source "../../storage/framework/views/*.php";
 
-@plugin "daisyui";
+
+
+
 
 .popularProductsSwiper .swiper-button-next,
 .popularProductsSwiper .swiper-button-prev {
@@ -57,12 +63,12 @@
         width: 28px !important;
         height: 28px !important;
     }
-    
+
     .popularProductsSwiper .swiper-button-next::after,
     .popularProductsSwiper .swiper-button-prev::after {
         font-size: 12px !important;
     }
-    
+
     .popularProductsSwiper .swiper-pagination-bullet {
         width: 6px !important;
         height: 6px !important;

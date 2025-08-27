@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transaction_point', function (Blueprint $table) {
-            $table->integer('status')->default(1);
+            $table->integer('status')->default(1)->change();
             $table->foreignId('transaction_payment_id')->constrained('transaction_payment')->onDelete('cascade');
         });
     }
@@ -23,7 +23,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('transaction_point', function (Blueprint $table) {
-            $table->dropIfExists('transaction_point');
+            $table->dropColumn('status');
+            $table->dropForeign('transaction_payment_id');
+            $table->dropColumn('transaction_payment_id');
         });
     }
 };
