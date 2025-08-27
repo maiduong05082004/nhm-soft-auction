@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\BannerType;
 use App\Services\Articles\ArticleService;
+use App\Services\Banners\BannerServiceInterface;
 use App\Services\Category\CategoryServiceInterface;
 use App\Services\Products\ProductServiceInterface;
 use App\Services\Cart\CartServiceInterface;
@@ -17,12 +19,14 @@ class DashboardController extends Controller
     protected $articleService;
     protected CartServiceInterface $cartService;
     protected WishlistServiceInterface $wishlistService;
+    protected BannerServiceInterface $bannerService;
     public function __construct(
         ProductServiceInterface $productService,
         CategoryServiceInterface $categoryService,
         ArticleService $articleService,
         CartServiceInterface $cartService,
-        WishlistServiceInterface $wishlistService
+        WishlistServiceInterface $wishlistService,
+        BannerServiceInterface $bannerService
     )
     {
         $this->productService = $productService;
@@ -30,6 +34,7 @@ class DashboardController extends Controller
         $this->articleService = $articleService;
         $this->cartService = $cartService;
         $this->wishlistService = $wishlistService;
+        $this->bannerService = $bannerService;
     }
 
     public function index()
@@ -47,6 +52,10 @@ class DashboardController extends Controller
 
         $headerCartCount = 0;
         $headerWishlistCount = 0;
+
+        $banner_primary = $this->bannerService->getByNameTypeBanner(BannerType::PRIMARY_HOME->value)->first();
+        $list_know = $this->bannerService->getByNameTypeBanner(BannerType::SIDEBAR_HOME->value);
+        $advertise = $this->bannerService->getByNameTypeBanner(BannerType::CONTENT_HOME->value);
         if (auth()->check()) {
             $cartSummary = $this->cartService->getCartSummary(auth()->id());
             if (!empty($cartSummary['success']) && !empty($cartSummary['data'])) {
@@ -61,7 +70,7 @@ class DashboardController extends Controller
 
         return view('pages.dashboard', compact(
             'products1', 'products2', 'products3', 'products4', 'categories', 'articles',
-            'headerCartCount', 'headerWishlistCount'
+            'headerCartCount', 'headerWishlistCount', 'banner_primary','list_know', 'advertise'
         ));
     }
 }

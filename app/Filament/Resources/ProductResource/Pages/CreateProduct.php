@@ -22,7 +22,7 @@ class CreateProduct extends CreateRecord
     public function mount(): void
     {
         parent::mount();
-        
+
         if (auth()->user()->hasRole(RoleConstant::ADMIN)) {
             return;
         }
@@ -50,11 +50,10 @@ class CreateProduct extends CreateRecord
                 ->send();
             redirect()->to(BuyMembershipResource::getUrl());
         }
-        
-        $plansUsers = array_filter($user['membershipUsers']->all(), fn($item) => $item['status'] == CommonConstant::ACTIVE);
 
-        if (!empty($plansUsers) && !empty($plansUsers[0]['membershipPlan']['config'])) {
-            $config = $plansUsers[0]['membershipPlan']['config'];
+        $plansUsers = array_filter($user['membershipUsers']->all(), fn($item) => $item['status'] == CommonConstant::ACTIVE);
+        if (!empty($plansUsers) && !empty($plansUsers[1]['membershipPlan']['config']) && $plansUsers[1]['membershipPlan']['config']['free_product_listing']) {
+            $config = $plansUsers[1]['membershipPlan']['config'];
 
             if (!empty($config['free_product_listing'])) {
             } elseif ($productsCount >= ($config['max_products_per_month'] ?? 0)) {
@@ -66,7 +65,15 @@ class CreateProduct extends CreateRecord
 
                 redirect()->to(BuyMembershipResource::getUrl());
             }
-        } 
+        } else {
+            Notification::make()
+                ->title('Không đủ quyền')
+                ->warning()
+                ->body('Bạn cần nâng cấp hoặc kích hoạt gói thành viên khác. Vui lòng chọn gói để tiếp tục.')
+                ->send();
+
+            redirect()->to(BuyMembershipResource::getUrl());
+        }
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array

@@ -8,6 +8,8 @@ use App\Services\Auctions\AuctionService;
 use App\Services\Auctions\AuctionServiceInterface;
 use App\Services\Auth\AuthService;
 use App\Services\Auth\AuthServiceInterface;
+use App\Services\Banners\BannerService as BannersBannerService;
+use App\Services\Banners\BannerServiceInterface;
 use App\Services\BaseService;
 use App\Services\BaseServiceInterface;
 use App\Services\Cart\CartService;
@@ -56,6 +58,7 @@ class ServiceAppProvider extends ServiceProvider
         $this->app->bind(AuctionServiceInterface::class, AuctionService::class);
         $this->app->bind(EvaluateServiceInterface::class, EvaluateService::class);
         $this->app->bind(PointPackageServiceInterface::class, PointPackageService::class);
+        $this->app->bind(BannerServiceInterface::class, BannersBannerService::class);
     }
 
     /**

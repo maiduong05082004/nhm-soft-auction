@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\BannerType;
 use App\Models\CategoryArticle;
 use App\Repositories\CategoryArticle\CategoryArticleRepository;
 use App\Services\Articles\ArticleServiceInterface;
+use App\Services\Banners\BannerServiceInterface;
 use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
     protected $articleService;
-    public function __construct(ArticleServiceInterface $articleService)
+    protected $bannerService;
+    public function __construct(ArticleServiceInterface $articleService, BannerServiceInterface $bannerService)
     {
         $this->articleService = $articleService;
+        $this->bannerService = $bannerService;
     }
 
     public function list(Request $request)
@@ -33,7 +37,7 @@ class NewsController extends Controller
             $query['category'] = $category;
         }
 
-        if(!empty($orderBy)){
+        if (!empty($orderBy)) {
             $query['orderBy'] = $orderBy;
         }
 
@@ -42,8 +46,9 @@ class NewsController extends Controller
         $articles->appends($request->query());
 
         $categories = $this->articleService->getTreeListCategory();
+        $primary = $this->bannerService->getByNameTypeBanner(BannerType::PRIMARY_NEWS->value)->first();
 
-        return view('pages.news.list', compact('articles', 'categories', 'q', 'category'));
+        return view('pages.news.list', compact('articles', 'categories', 'q', 'category', 'primary'));
     }
 
     public function article(string $slug)
@@ -60,8 +65,8 @@ class NewsController extends Controller
             $article->id,
             5
         );
-
-        return view('pages.news.article', compact('article', 'related_articles'));
+        $banner = $this->bannerService->getByNameTypeBanner(BannerType::SIDEBAR_ARTICLE->value)->first();
+        return view('pages.news.article', compact('article', 'related_articles','banner'));
     }
 
     public function category(Request $request, string $categorySlug)

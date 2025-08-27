@@ -30,11 +30,11 @@ class BannerTypeSeeder extends Seeder
             // ],
 
             // [
-            //     'name' => BannerType::SIDEBAR_ARTICLE,
+            //     'name' => BannerType::PRIMARY_NEWS,
             //     'description' => 'Banner chính trang tin tức ( banner chính khi người dùng trup cập trang tin tức, chỉ có thể đặt duy nhất 1 )'
             // ],
             // [
-            //     'name' => BannerType::PRIMARY_NEWS,
+            //     'name' => BannerType::SIDEBAR_ARTICLE,
             //     'description' => 'Banner nhỏ phần sidebar bên phải bài viết (chỉ có thể đặt duy nhất 1)'
             // ],
         ];
