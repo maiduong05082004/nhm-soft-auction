@@ -172,8 +172,34 @@
         }
     }
 
+    // Function mới cho tab mobile
+    function showTabMobile(tabId) {
+        const contents = document.querySelectorAll('.tab-content-mobile');
+        contents.forEach(content => {
+            content.style.display = 'none';
+        });
+
+        const tabs = document.querySelectorAll('[onclick^="showTabMobile"]');
+        tabs.forEach(tab => {
+            tab.classList.remove('border-blue-500');
+            tab.classList.add('border-transparent');
+        });
+
+        const selectedContent = document.getElementById(tabId);
+        if (selectedContent) {
+            selectedContent.style.display = 'block';
+        }
+
+        const activeTab = document.querySelector(`[onclick="showTabMobile('${tabId}')"]`);
+        if (activeTab) {
+            activeTab.classList.remove('border-transparent');
+            activeTab.classList.add('border-blue-500');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         showTab('description');
+        showTabMobile('description-mobile');
     });
 
     function decreaseQuantity() {

@@ -34,9 +34,8 @@
                         @endforeach
                     </div>
                 </div>
-
                 @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2))
-                    <div class="bg-white rounded-lg shadow-sm p-6 mt-6">
+                    <div class="bg-white rounded-lg shadow-sm p-6 mt-6 lg:block hidden">
                         <div class="w-full">
                             <div class="grid w-full grid-cols-3">
                                 <button onclick="showTab('description')"
@@ -94,9 +93,7 @@
                                             </div>
                                             <span class="text-gray-500">({{ $sellerTotalReviews ?? 0 }} đánh giá)</span>
                                         </div>
-                                        <p class="text-gray-600 mt-2">Cửa hàng uy tín chuyên bán các sản phẩm công nghệ
-                                            chính
-                                            hãng</p>
+                                        <p class="text-gray-600 mt-2">{{ $user->introduce ?? 'Chưa có giới thiệu' }}</p>
                                         {{-- <button
                                             class="mt-4 bg-transparent border border-gray-400 text-gray-700 py-2 px-4 rounded">
                                             <a href="https://www.nitori.com.vn/" target="_blank">
@@ -110,7 +107,6 @@
                     </div>
                 @endif
             </div>
-
             <div class="col-span-12 lg:col-span-5 text-base">
                 <div class="bg-white rounded-lg shadow p-6 space-y-4">
                     <h1 class="text-2xl font-bold">
@@ -295,7 +291,7 @@
                                                 $paid = $pm && ($pm->status === 'success');
                                             @endphp
                                             <div class="rounded-lg p-3 border {{ $paid ? 'bg-green-50 border-green-200' : 'bg-yellow-100 border-yellow-200' }}">
-                                                <div class="text-sm text-gray-800">
+                                                <div class="text-sm text-gray-800 mb-3">
                                                     Trạng thái thanh toán:
                                                     @if ($paid)
                                                         <span class="badge badge-success ml-2">Đã thanh toán</span>
@@ -392,7 +388,7 @@
                                     @if ($product->max_bid_amount)
                                         <div>
                                             <button type="button"
-                                                class="w-full btn btn-outline font-semibold rounded-lg">
+                                                class="w-full btn btn-outline font-semibold rounded-lg hidden">
                                                 Mua ngay: {{ number_format($product->max_bid_amount, 0, ',', '.') }} ₫
                                             </button>
                                         </div>
@@ -404,17 +400,8 @@
                                             <button type="button" class="btn btn-sm btn-outline increment-bid"
                                                 data-increment="500000">+500.000</button>
                                         </div>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <button type="button" class="btn btn-outline !border-[#6c6a69] rounded-lg" id="btn-add-wishlist" data-id="{{ $product->id }}" aria-label="Đã thêm vào danh sách yêu thích">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
-                                                    class="size-[1.2em]">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                                Yêu thích
-                                            </button>
-                                            <button type="button" class="btn btn-outline !border-[#6c6a69] rounded-lg"
+                                        <div class="">
+                                            <button type="button" class="btn btn-outline !border-[#6c6a69] rounded-lg w-full"
                                                 onclick="shareProduct()">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
@@ -750,7 +737,72 @@
                 @endif
             </div>
         </div>
+        @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2))
+        <div class="bg-white rounded-lg shadow-sm p-6 mt-6 lg:hidden block m-4">
+            <div class="w-full">
+                <div class="grid w-full grid-cols-3">
+                    <button onclick="showTabMobile('description-mobile')"
+                        class="p-2 text-center border-b-2 border-blue-500 hover:text-slate-500">Mô
+                        tả</button>
+                    <button onclick="showTabMobile('shipping-mobile')"
+                        class="p-2 text-center border-b-2 border-transparent hover:text-slate-500">Vận
+                        chuyển</button>
+                    <button onclick="showTabMobile('seller-mobile')"
+                        class="p-2 text-center border-b-2 border-transparent hover:text-slate-500">Người
+                        bán</button>
+                </div>
 
+                <div id="description-mobile" class="tab-content-mobile mt-6">
+                    <div class="max-w-none">
+                        <pre class="whitespace-pre-wrap font-sans text-base">{!! $product->description ?? 'Chưa có mô tả sản phẩm' !!}</pre>
+                    </div>
+                </div>
+
+                <div id="shipping-mobile" class="tab-content-mobile mt-6" style="display: none;">
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span>Phí vận chuyển:</span>
+                            <span class="font-semibold">Miễn phí</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Thời gian giao hàng:</span>
+                            <span class="font-semibold">2-3 ngày làm việc</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Đóng gói:</span>
+                            <span class="font-semibold">Cẩn thận, an toàn</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="seller-mobile" class="tab-content-mobile mt-6" style="display: none;">
+                    <div class="flex items-start space-x-4">
+                        <div class="h-16 w-16 bg-gray-300 rounded-full overflow-hidden">
+                            @if ($user->avatar)
+                                <img src="{{ $user->avatar }}" alt="{{ $user->name }}"
+                                    class="object-cover w-full h-full">
+                            @else
+                                <img src="{{ asset('/images/default-user-icon.png') }}"
+                                    alt="{{ $user->name }}" class="object-cover w-full h-full">
+                            @endif
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-lg">{{ $user->name ?? 'Người bán' }}</h3>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <div class="flex items-center">
+                                    <span class="text-yellow-500">★</span>
+                                    <span
+                                        class="ml-1 font-semibold">{{ number_format($sellerAverageRating ?? 0, 1) }}</span>
+                                </div>
+                                <span class="text-gray-500">({{ $sellerTotalReviews ?? 0 }} đánh giá)</span>
+                            </div>
+                            <p class="text-gray-600 mt-2">{{ $user->introduce ?? 'Chưa có giới thiệu' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
         @if ($product->type_sale === ($typeSale['SALE'] ?? 1))
             <div class="bg-white rounded-lg shadow-sm p-6 mt-6">
                 <div class="w-full">
@@ -925,7 +977,7 @@
         @endif
 
         <div class="text-lg font-bold text-gray-600 pt-4 mb-4">Sản phẩm này cùng loại</div>
-        <div class="swiper popularProductsSwiper">
+        <div class="swiper popularProductsSwiper !p-3">
             <div class="swiper-wrapper">
                 @foreach ($product_category as $item)
                    
