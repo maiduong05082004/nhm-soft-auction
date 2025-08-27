@@ -986,8 +986,8 @@
                     </div>
                 @endforeach
             </div>
-            <div class="swiper-button-next !text-gray-600 !w-8 !h-8 !bg-white !rounded-full !shadow-md"></div>
-            <div class="swiper-button-prev !text-gray-600 !w-8 !h-8 !bg-white !rounded-full !shadow-md"></div>
+            <div class="swiper-button-next !text-gray-600 !w-8 !h-8 !bg-white !rounded-full !shadow-md mr-3"></div>
+            <div class="swiper-button-prev !text-gray-600 !w-8 !h-8 !bg-white !rounded-full !shadow-md ml-3"></div>
             <div class="swiper-pagination !bottom-0 !relative !mt-4"></div>
         </div>
     </div>
