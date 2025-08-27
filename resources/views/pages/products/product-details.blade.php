@@ -124,17 +124,24 @@
                     @if ($product->type_sale === ($typeSale['SALE'] ?? 1))
                         <div class="flex items-center justify-between py-2">
                             <div class="flex items-center gap-3">
-                                <div class="rating w-20">
-                                    <div class="mask mask-star-2 bg-[#ffda45]" aria-label="1 star"></div>
-                                    <div class="mask mask-star-2 bg-[#ffda45]" aria-label="2 star"></div>
-                                    <div class="mask mask-star-2 bg-[#ffda45]" aria-label="3 star" aria-current="true">
+                                @if (($totalReviews ?? 0) > 0)
+                                    <div class="rating w-20">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            @if ($i <= ($averageRating ?? 0))
+                                                <div class="mask mask-star-2 bg-[#ffda45]" aria-label="{{ $i }} star"></div>
+                                            @else
+                                                <div class="mask mask-star-2 bg-slate-300" aria-label="{{ $i }} star"></div>
+                                            @endif
+                                        @endfor
                                     </div>
-                                    <div class="mask mask-star-2 bg-[#ffda45]" aria-label="4 star"></div>
-                                    <div class="mask mask-star-2 bg-[#ffda45]" aria-label="5 star"></div>
-                                </div>
-                                <span class="ml-2 text-slate-500"><span class="font-bold text-black">3.1</span> (50 đánh
-                                    giá)</span>
-                                <div class="ml-5 text-slate-600">Đã bán: 118</div>
+                                    <span class="ml-2 text-slate-600">
+                                        <span class="font-bold text-black">{{ number_format($averageRating ?? 0, 1) }}</span> 
+                                        ({{ $totalReviews ?? 0 }} đánh giá)
+                                    </span>
+                                @else
+                                    <span class="text-slate-600">(0 đánh giá)</span>
+                                @endif
+                                <div class="ml-5 text-slate-700">Đã bán: {{ $product->stock ?? 0 }}</div>
                             </div>
                         </div>
                     @endif
