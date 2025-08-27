@@ -30,7 +30,7 @@ class ViewCustomerInfo extends Page
                 ->color('primary'),
             Actions\Action::make('payment')
                 ->label('Nạp tiền')
-                ->url(route('filament.admin.resources.customer-infos.edit'))
+                ->url(route('filament.admin.resources.point-packages.buy'))
                 ->icon('heroicon-o-credit-card')
                 ->color('success'),
         ];

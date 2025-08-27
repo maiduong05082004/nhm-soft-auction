@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Danh sách đấu giá - AuctionsClone')
+@section('title', 'Takaoa Ooku - Nền tảng mua bán, trả giá trực tuyến ')
 @section('meta_description', 'Xem danh sách các sản phẩm đấu giá mới nhất.')
 @section('meta_keywords', 'đấu giá, mua bán, auctions, sản phẩm')
 @section('og_title', 'Danh sách đấu giá')
@@ -13,8 +13,13 @@
 @section('content')
 
     <section class="site-banner overflow-hidden" aria-label="Promotional Banner">
-        <img src="{{ asset('images/banner_buyeeEnSp.png') }}" class="w-full max-h-[585px] object-cover"
-            alt="AuctionsClone promotional banner" loading="lazy">
+        @if ($banner_primary)
+            <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($banner_primary['url_image'] ) }}" class="w-full max-h-[585px] object-cover"
+                alt="Auctions promotional banner" loading="lazy">
+        @else
+            <img src="{{ asset('images/banner_buyeeEnSp.png') }}" class="w-full max-h-[585px] object-cover"
+                alt="AuctionsClone promotional banner" loading="lazy">
+        @endif
     </section>
 
     <div id="page-home" class="my-6 max-w-7xl mx-auto px-4">
@@ -132,58 +137,32 @@
                                 </ul>
                             </nav>
                         </div>
+                        @if ($list_know->count() > 0)
+                            <div class="bg-white p-4">
+                                <h2 class="text-lg font-semibold mb-4 pb-2 border-b border-gray-200">
+                                    Ưu đãi của chúng tôi
+                                </h2>
 
-                        <div class="bg-white p-4">
-                            <h2 class="text-lg font-semibold mb-4 pb-2 border-b border-gray-200">
-                                Quảng cáo
-                            </h2>
-                            <div class="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3">
-                                @php
-                                    $ads = [
-                                        [
-                                            'image' => 'https://s.yimg.jp/images/ymstore/bnr/auc/benefit/376x376.png',
-                                            'link' => '',
-                                        ],
-                                        [
-                                            'image' =>
-                                                'https://s.yimg.jp/images/auct/salespromotion/2022_11/1104_paypayguide/376_376.png',
-                                            'link' => '',
-                                        ],
-                                        [
-                                            'image' =>
-                                                'https://s.yimg.jp/images/smartphone/softbank/v1/common/bnr/2021/0708/376_376.png',
-                                            'link' => '',
-                                        ],
-                                        [
-                                            'image' => 'https://s.yimg.jp/images/bank/campaign/202311/376_376.png',
-                                            'link' => '',
-                                        ],
-                                        [
-                                            'image' =>
-                                                'https://s.yimg.jp/images/bb/promo/v2/external/bnr/221003/yafuoku_ybb.png',
-                                            'link' => '',
-                                        ],
-                                        [
-                                            'image' =>
-                                                'https://s.yimg.jp/images/auct/salespromotion/2023_9/0911_copyright/376_376.png',
-                                            'link' => '',
-                                        ],
-                                    ];
-                                @endphp
-
-                                @foreach ($ads as $index => $ad)
-                                    <div class="aspect-square">
-                                        <a href="{{ $ad['link'] }}"
-                                            class="block hover:opacity-90 transition-opacity duration-300">
-                                            <img src="{{ $ad['image'] }}" alt="Quảng cáo {{ $index + 1 }}"
-                                                class="w-full h-full object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-300"
-                                                loading="lazy">
-                                        </a>
-                                    </div>
-                                @endforeach
+                                <div class="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3">
+                                    @forelse ($list_know as $index => $banner)
+                                        <div class="aspect-square">
+                                            <a href="{{ $banner->link_page ?? 'javascript:void(0);' }}"
+                                                title="{{ $banner->name }}"
+                                                class="block hover:opacity-90 transition-opacity duration-300"
+                                                @if (!empty($banner->link_page)) rel="nofollow sponsored" @endif>
+                                                <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($banner->url_image) }}"
+                                                    alt="{{ $banner->name }}" loading="lazy"
+                                                    class="w-full h-full object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-300">
+                                            </a>
+                                        </div>
+                                    @empty
+                                        <p class="text-sm text-gray-500 col-span-2 text-center">
+                                            Hiện chưa có ưu đãi nào
+                                        </p>
+                                    @endforelse
+                                </div>
                             </div>
-
-                        </div>
+                        @endif
                     </div>
                 </aside>
 
@@ -195,72 +174,48 @@
                         'target' => route('products.list', ['orderBy' => 'view_desc']),
                     ]" :products="$products2" />
                     <x-section-home :section="['title' => 'Sản phẩm mới', 'target' => route('products.list')]" :products="$products3" />
+                    @if ($advertise->count() > 0)
+                        <div class="bg-white p-6 mb-6">
+                            <header class="mb-6">
+                                <h2 class="text-xl font-bold text-gray-800 pb-3 border-b border-gray-200">
+                                    Khám phá trang web của chúng tôi
+                                </h2>
+                            </header>
 
-                    <div class="bg-white p-6 mb-6">
-                        <header class="mb-6">
-                            <h2 class="text-xl font-bold text-gray-800 pb-3 border-b border-gray-200">
-                                Slide Banner
-                            </h2>
-                        </header>
-                        <div class="slide-banner swiper">
-                            <div class="swiper-wrapper mb-6">
-                                @php
-                                    $banners = [
-                                        [
-                                            'image' =>
-                                                'https://s.yimg.jp/images/auct/salespromotion/2025_4/0407_newbuyer/376_376-newbuyer_1000.png',
-                                            'link' => '/',
-                                        ],
-                                        [
-                                            'image' =>
-                                                'https://s.yimg.jp/images/auct/salespromotion/2025_7/0724_lineoa/376_376-2.png',
-                                            'link' => '/',
-                                        ],
-                                        [
-                                            'image' =>
-                                                'https://s.yimg.jp/images/paypayfleamarket/salespromo/2025/02/0225_LINEOA_kuji/img/bnr1_4_376_376.png',
-                                            'link' => '/',
-                                        ],
-                                        [
-                                            'image' =>
-                                                'https://s.yimg.jp/images/auct/salespromotion/2024_3/0328_1start/376_376.png',
-                                            'link' => '/',
-                                        ],
-                                        [
-                                            'image' =>
-                                                'https://s.yimg.jp/images/auct/salespromotion/2025_3/0324_reasonable/376_376.png',
-                                            'link' => '/',
-                                        ],
-                                        [
-                                            'image' =>
-                                                'https://s.yimg.jp/images/auct/salespromotion/2025_8/0814_topics_charity/376_376.png',
-                                            'link' => '/',
-                                        ],
-                                    ];
-                                @endphp
+                            <div class="slide-banner swiper">
+                                <div class="swiper-wrapper mb-6">
+                                    @forelse ($advertise as $banner)
+                                        <div class="swiper-slide">
+                                            <article>
+                                                <a href="{{ $banner->link_page ?? 'javascript:void(0);' }}"
+                                                    title="{{ $banner->name }}"
+                                                    @if (!empty($banner->link_page)) rel="nofollow sponsored" @endif>
+                                                    <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($banner->url_image) }}"
+                                                        alt="{{ $banner->name }}" loading="lazy"
+                                                        class="w-full h-auto object-cover shadow-md transition-transform duration-300 hover:scale-105">
+                                                </a>
+                                            </article>
+                                        </div>
+                                    @empty
+                                        <div class="swiper-slide text-center py-10">
+                                            <p class="text-gray-500 text-sm">Hiện chưa có banner nào</p>
+                                        </div>
+                                    @endforelse
+                                </div>
 
-                                @foreach ($banners as $banner)
-                                    <div class="swiper-slide">
-                                        <article>
-                                            <a href="{{ $banner['link'] }}">
-                                                <img src="{{ $banner['image'] }}" alt="Banner"
-                                                    class="w-full h-auto object-cover shadow-md transition-transform duration-300 hover:scale-105">
-                                            </a>
-                                        </article>
-                                    </div>
-                                @endforeach
+                                <!-- Navigation -->
+                                <button
+                                    class="prev-btn p-2 bg-white rounded-full shadow hover:bg-[#b1b1b1] absolute left-2 top-1/3 transform -translate-y-1/4 z-10">
+                                    <x-heroicon-o-arrow-long-left class="h-6 w-6 mx-auto" />
+                                </button>
+                                <button
+                                    class="next-btn p-2 bg-white rounded-full shadow hover:bg-[#b1b1b1] absolute right-2 top-1/3 transform -translate-y-1/4 z-10">
+                                    <x-heroicon-o-arrow-long-right class="h-6 w-6 mx-auto" />
+                                </button>
                             </div>
-
-                            <button
-                                class="prev-btn p-2 bg-white rounded-full shadow hover:bg-[#b1b1b1] absolute left-2 top-1/3 transform -translate-y-1/4 z-10">
-                                <x-heroicon-o-arrow-long-left class="h-6 w-6 mx-auto" />
-                            </button>
-                            <button
-                                class="next-btn p-2 bg-white rounded-full shadow hover:bg-[#b1b1b1] absolute right-2 top-1/3 transform -translate-y-1/4 z-10">
-                                <x-heroicon-o-arrow-long-right class="h-6 w-6 mx-auto" />
-                            </button>
                         </div>
-                    </div>
+                    @endif
+
                     <x-section-home :section="[
                         'title' => 'Sản phẩm đấu giá',
                         'target' => route('products.list', ['product_type' => 'auction']),

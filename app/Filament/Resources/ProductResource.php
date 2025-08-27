@@ -200,6 +200,22 @@ class ProductResource extends Resource
                 ->columnSpanFull(),
             Forms\Components\Toggle::make('is_hot')
                 ->label('Sản phẩm ưu tiên')
+                ->reactive()
+                ->afterStateUpdated(function (bool $state, callable $set) {
+                    if (!auth()->user()->hasRole(RoleConstant::ADMIN)) {
+                        $can = !auth()->user()['activeMemberships'][0]['config']['featured_listing'];
+
+                        if ($can) {
+                            $set('is_hot', false);
+
+                            Notification::make()
+                                ->title('Không đủ quyền')
+                                ->warning()
+                                ->body('Bạn cần nâng cấp gói thành viên để đánh dấu sản phẩm là ưu tiên hoặc kích hoạt gói khác!')
+                                ->send();
+                        }
+                    }
+                })
                 ->default(false),
             Forms\Components\Group::make()
                 ->schema([
@@ -376,7 +392,7 @@ class ProductResource extends Resource
                     ->label('Xóa')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
-                    ->visible(fn(Product $record) => auth()->user()?->role === 'admin' || auth()->id() === $record->created_by)
+                    ->visible(fn(Product $record) => auth()->user()->hasRole(RoleConstant::ADMIN) || auth()->id() === $record->created_by)
                     ->requiresConfirmation()
                     ->modalHeading('Xác nhận xóa sản phẩm')
                     ->modalDescription('Bạn có chắc chắn muốn xóa sản phẩm này không? Thao tác này không thể hoàn tác.')

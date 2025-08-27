@@ -19,8 +19,6 @@ use App\Repositories\Orders\OrderRepository;
 use App\Services\Evaluates\EvaluateService;
 use App\Services\Config\ConfigService;
 use App\Services\Products\ProductServiceInterface;
-use App\Enums\Permission\RoleConstant;
-use App\Enums\Config\ConfigName;
 use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
 use App\Models\Product;
@@ -210,6 +208,11 @@ class ProductService extends BaseService implements ProductServiceInterface
         return $this->productRepository->incrementViewCount($productId);
     }
 
+    public function getCountProductByCreatedByAndNearMonthly ($userId)  {
+        return $this->productRepository->getCountProductByCreatedByAndNearMonthly($userId);
+    }
+
+
     private function buildCacheKey(string $prefix, ...$params): string
     {
         $serialized = serialize($params);
@@ -226,16 +229,16 @@ class ProductService extends BaseService implements ProductServiceInterface
             throw new ServiceException('Không tìm thấy người dùng.');
         }
 
-        $coinCost = 0;
-        if (!$user->hasRole(RoleConstant::ADMIN->value)) {
-            $coinCost = (int) ($typeSale === ProductTypeSale::SALE->value
-                ? $this->configService->getConfigValue(ConfigName::COIN_POST_PRODUCT_SALE->value, 0)
-                : $this->configService->getConfigValue(ConfigName::COIN_POST_PRODUCT_AUCTION->value, 0));
+        // $coinCost = 0;
+        // if (!$user->hasRole(RoleConstant::ADMIN->value)) {
+        //     $coinCost = (int) ($typeSale === ProductTypeSale::SALE->value
+        //         ? $this->configService->getConfigValue(ConfigName::COIN_POST_PRODUCT_SALE->value, 0)
+        //         : $this->configService->getConfigValue(ConfigName::COIN_POST_PRODUCT_AUCTION->value, 0));
 
-            if ($coinCost > 0 && (int) $user->current_balance < $coinCost) {
-                throw new ServiceException('Số dư coin của bạn không đủ để đăng sản phẩm.');
-            }
-        }
+        //     if ($coinCost > 0 && (int) $user->current_balance < $coinCost) {
+        //         throw new ServiceException('Số dư coin của bạn không đủ để đăng sản phẩm.');
+        //     }
+        // }
 
         if ($typeSale === ProductTypeSale::SALE->value) {
             $data['min_bid_amount'] = 0;
@@ -260,7 +263,8 @@ class ProductService extends BaseService implements ProductServiceInterface
         }
         $data['created_by'] = $userId;
 
-        return DB::transaction(function () use ($data, $typeSale, $images, $coinCost, $user) {
+        // return DB::transaction(function () use ($data, $typeSale, $images, $coinCost, $user) {
+        return DB::transaction(function () use ($data, $typeSale, $images, $user) {
             /** @var Product $product */
             $product = $this->repositories['product']->insertOne($data);
 
@@ -286,15 +290,15 @@ class ProductService extends BaseService implements ProductServiceInterface
                 ]);
             }
 
-            if ($coinCost > 0 && !$user->hasRole(RoleConstant::ADMIN->value)) {
-                $user->current_balance = (int) $user->current_balance - $coinCost;
-                $user->save();
-                $this->repositories['transactionPoint']->insertOne([
-                    'user_id' => $user->id,
-                    'point' => -$coinCost,
-                    'description' => 'Phí đăng sản phẩm #' . $product->id,
-                ]);
-            }
+            // if ($coinCost > 0 && !$user->hasRole(RoleConstant::ADMIN->value)) {
+            //     $user->current_balance = (int) $user->current_balance - $coinCost;
+            //     $user->save();
+            //     $this->repositories['transactionPoint']->insertOne([
+            //         'user_id' => $user->id,
+            //         'point' => -$coinCost,
+            //         'description' => 'Phí đăng sản phẩm #' . $product->id,
+            //     ]);
+            // }
 
             return $product;
         });

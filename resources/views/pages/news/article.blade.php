@@ -176,14 +176,6 @@
                                             {{ \Illuminate\Support\Str::limit(strip_tags($featured->content), 80) }}
                                         </p>
                                     </div>
-
-                                    <div class="hidden sm:flex items-center gap-2 mt-2 text-xs text-gray-500">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span>5 phút đọc</span>
-                                    </div>
                                 </div>
                                 <div class="absolute top-2 right-2 z-20 flex items-center gap-2">
                                     <button type="button" class="bg-white p-1 rounded shadow-sm relative z-20">
@@ -201,12 +193,24 @@
                 </ul>
             </div>
 
-            <div class="bg-base-200 p-4 rounded-lg text-center">
-                <p class="text-sm text-gray-500">Quảng cáo</p>
-                <div class="bg-gray-300 h-40 flex items-center justify-center rounded">
-                    Banner 300x250
+            @if ($banner)
+                <div class="bg-base-200 p-4 rounded-lg text-center">
+                    <a href="{{ $banner['link_page'] }}" title="{{ $banner['name'] ?? 'Xem chi tiết quảng cáo' }}"
+                        rel="nofollow sponsored">
+                        <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($banner['url_image']) }}"
+                            alt="{{ $banner['name'] ?? 'Quảng cáo banner' }}" loading="lazy" class="mx-auto rounded" />
+                    </a>
                 </div>
-            </div>
+            @else
+                <div class="bg-base-200 p-4 rounded-lg text-center">
+                    <p class="text-sm text-gray-500">Quảng cáo</p>
+                    <div class="bg-gray-300 h-40 flex items-center justify-center rounded">
+                        <img src="/images/default-banner-300x250.png" alt="Banner quảng cáo 300x250" loading="lazy"
+                            class="mx-auto rounded" />
+                    </div>
+                </div>
+            @endif
+
         </aside>
     </div>
     <section class="max-w-7xl mx-auto px-4 lg:px-0 my-12">

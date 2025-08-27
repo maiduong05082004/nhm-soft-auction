@@ -9,6 +9,7 @@ use App\Repositories\MembershipTransaction\MembershipTransactionRepositoryInterf
 use App\Repositories\MembershipUser\MembershipUserRepositoryInterface;
 use App\Repositories\TransactionPayment\TransactionPaymentRepositoryInterface;
 use App\Repositories\TransactionPoint\TransactionPointRepositoryInterface;
+use App\Repositories\Users\UserRepositoryInterface;
 use App\Services\BaseService;
 use Illuminate\Support\Facades\DB;
 
@@ -18,14 +19,15 @@ class TransactionService extends BaseService implements TransactionServiceInterf
         TransactionPaymentRepositoryInterface    $transactionPaymentRepository,
         TransactionPointRepositoryInterface      $transactionPointRepository,
         MembershipTransactionRepositoryInterface $membershipTransactionRepository,
-        MembershipUserRepositoryInterface $membershipUserRepository
-    )
-    {
+        MembershipUserRepositoryInterface $membershipUserRepository,
+        UserRepositoryInterface $useRepository
+    ) {
         parent::__construct([
             'transactionPaymentRepository' => $transactionPaymentRepository,
             'transactionPointRepository' => $transactionPointRepository,
             'membershipTransactionRepository' => $membershipTransactionRepository,
             'membershipUserRepository' => $membershipUserRepository,
+            'userRepository' => $useRepository
         ]);
     }
 
@@ -56,6 +58,11 @@ class TransactionService extends BaseService implements TransactionServiceInterf
                             ->where('user_id', $membershipUser->user_id)
                             ->where('id', '!=', $membershipUser->id)
                             ->update(['status' => false]);
+                        // Cập nhật trạng thái user
+                        $this->getRepository('userRepository')->query()
+                            ->where('id', $membershipUser->user_id)
+                            ->update(['membership' =>  1]);
+
                         DB::commit();
 
                         return true;

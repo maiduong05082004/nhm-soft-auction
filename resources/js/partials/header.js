@@ -85,4 +85,13 @@ $(document).ready(function () {
         }
     });
 
+    $(window).on("scroll", function () {
+    if ($(this).scrollTop() > 20) {
+        $(".header-container").addClass("shadow-lg");
+    } else {
+        $(".header-container").removeClass("shadow-lg");
+    }
+});
+
+
 });
