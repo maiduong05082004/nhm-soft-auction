@@ -77,39 +77,45 @@ class AuctionService extends BaseService implements AuctionServiceInterface
 
     public function placeBid($auctionId, $userId, $bidPrice)
     {
+
         try {
             DB::beginTransaction();
-            $bidCoin = $this->configService->getConfigValue('COIN_BIND_PRODUCT_AUCTION', 0);
+            // $bidCoin = $this->configService->getConfigValue('COIN_BIND_PRODUCT_AUCTION', 0);
             $validation = $this->validateBid($auctionId, $bidPrice, $userId);
             if (!$validation['success']) {
                 throw new ServiceException($validation['message']);
             }
-
+            $memberplanActives = auth()->user()['activeMemberships'];
+            if (count($memberplanActives) == 0) {
+                throw new ServiceException('Cần mua hoặc kích hoạt gói thành viên khác để sử dụng tính năng này!');
+            } else if ($memberplanActives[0]['config']['free_auction_participation'] == false) {
+                throw new ServiceException('Cần nâng cấp hoặc kích hoạt gói thành viên khác để sử dụng tính năng này!');
+            }
             $auction = $validation['auction'];
 
-            $userHasBidded = $this->bidRepo->query()
-                ->where('auction_id', $auction->id)
-                ->where('user_id', $userId)
-                ->exists();
+            // $userHasBidded = $this->bidRepo->query()
+            //     ->where('auction_id', $auction->id)
+            //     ->where('user_id', $userId)
+            //     ->exists();
 
-            if (!$userHasBidded) {
-                $user = $this->userRepo->find($userId);
-                if ($user->current_balance < $bidCoin) {
-                    throw new ServiceException('Số dư của bạn không đủ để tham gia đấu giá.');
-                }
-                $user->current_balance -= $bidCoin;
-                $user->save();
-            }
-            if (!$userHasBidded) {
-                $coinToDeduct = (int) ($this->configService->getConfigValue('COIN_BIND_PRODUCT_AUCTION', 0));
-                if ($coinToDeduct > 0) {
-                    $this->transactionPointRepo->insertOne([
-                        'point' => -$coinToDeduct,
-                        'description' => 'Phí tham gia đấu giá phiên #' . $auction->id,
-                        'user_id' => $userId,
-                    ]);
-                }
-            }
+            // if (!$userHasBidded) {
+            //     $user = $this->userRepo->find($userId);
+            //     if ($user->current_balance < $bidCoin) {
+            //         throw new ServiceException('Số dư của bạn không đủ để tham gia đấu giá.');
+            //     }
+            //     $user->current_balance -= $bidCoin;
+            //     $user->save();
+            // }
+            // if (!$userHasBidded) {
+            //     $coinToDeduct = (int) ($this->configService->getConfigValue('COIN_BIND_PRODUCT_AUCTION', 0));
+            //     if ($coinToDeduct > 0) {
+            //         $this->transactionPointRepo->insertOne([
+            //             'point' => -$coinToDeduct,
+            //             'description' => 'Phí tham gia đấu giá phiên #' . $auction->id,
+            //             'user_id' => $userId,
+            //         ]);
+            //     }
+            // }
 
             $bidData = [
                 'auction_id' => $auction->id,
@@ -131,12 +137,6 @@ class AuctionService extends BaseService implements AuctionServiceInterface
             return [
                 'success' => false,
                 'message' => $e->getMessage()
-            ];
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return [
-                'success' => false,
-                'message' => 'Có lỗi xảy ra khi đặt giá thầu!'
             ];
         }
     }
@@ -174,7 +174,7 @@ class AuctionService extends BaseService implements AuctionServiceInterface
                 ->get();
 
             $timeDelay = (int) $this->configService->getConfigValue('TIME_DELAY_AUCTION_BIND', 10);
-            
+
             $latestUserBid = $this->bidRepo->query()
                 ->where('auction_id', $auctionId)
                 ->where('user_id', $userId)
@@ -183,7 +183,7 @@ class AuctionService extends BaseService implements AuctionServiceInterface
 
             $nextBidTime = null;
             $canBidNow = true;
-            
+
             if ($latestUserBid) {
                 $nextBidTime = \Carbon\Carbon::parse($latestUserBid->bid_time)->addMinutes($timeDelay);
                 $canBidNow = now()->gte($nextBidTime);
@@ -217,7 +217,8 @@ class AuctionService extends BaseService implements AuctionServiceInterface
             }
 
             if (($auction->end_time && now()->gte(\Carbon\Carbon::parse($auction->end_time)))
-                || (isset($auction->status) && $auction->status !== 'active')) {
+                || (isset($auction->status) && $auction->status !== 'active')
+            ) {
                 return [
                     'success' => false,
                     'message' => 'Phiên đấu giá đã kết thúc, không thể đấu giá thêm!',
@@ -233,11 +234,11 @@ class AuctionService extends BaseService implements AuctionServiceInterface
             if ($latestUserBid) {
                 $timeDelay = (int) $this->configService->getConfigValue('TIME_DELAY_AUCTION_BIND', 10);
                 $nextBidTime = Carbon::parse($latestUserBid->bid_time)->addMinutes($timeDelay);
-                
+
                 if (now()->lt($nextBidTime)) {
                     $remainingTime = now()->diffInSeconds($nextBidTime);
                     $remainingMinutes = ceil($remainingTime / 60);
-                    
+
                     return [
                         'success' => false,
                         'message' => "Bạn cần chờ thêm {$remainingMinutes} phút nữa mới có thể đấu giá tiếp!",

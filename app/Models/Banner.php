@@ -17,6 +17,8 @@ class Banner extends Model
         'name',
         'url_image',
         'banner_type_id',
+        'link_page',
+        'status'
     ];
 
     protected static function boot()

@@ -10,4 +10,5 @@ interface ProductRepositoryInterface extends BaseRepositoryInterface
 {
     public function getProductByFilter($query = [], $page = 1, $perPage = 12): LengthAwarePaginator;
     public function incrementViewCount($productId);
+    public function getCountProductByCreatedByAndNearMonthly( $userId);
 }

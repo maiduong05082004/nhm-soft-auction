@@ -33,4 +33,9 @@ class TransactionPayment extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function transactionPoint()
+    {
+        return $this->hasOne(TransactionPoint::class);
+    }
 }

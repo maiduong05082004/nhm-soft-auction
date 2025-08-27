@@ -14,7 +14,7 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Filament\Models\Contracts\FilamentUser;
 use Spatie\Permission\Traits\HasRoles;
-
+use App\Enums\CommonConstant;
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasRoles;
@@ -94,6 +94,26 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function membershipUsers()
+    {
+        return $this->hasMany(MembershipUser::class);
+    }
+
+    public function membershipPlans()
+    {
+        return $this->belongsToMany(MembershipPlan::class, 'membership_users')
+            ->withPivot(['start_date', 'end_date', 'status'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Lấy gói membership đang active
+     */
+    public function activeMemberships()
+    {
+        return $this->membershipPlans()->wherePivot('status', CommonConstant::ACTIVE);
+    }
 
     public function wishlists()
     {
@@ -177,6 +197,4 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     {
         return $this->transactions()->where('type_transaction', 'buy_product')->sum('point_change');
     }
-
-
 }

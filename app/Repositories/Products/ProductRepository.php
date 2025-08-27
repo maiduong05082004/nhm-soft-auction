@@ -121,4 +121,8 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
     {
         return $this->model->find($productId)->increment('view');
     }
+
+    public function getCountProductByCreatedByAndNearMonthly($userId) {
+        return $this->model->where('created_by', $userId)->where('created_at','<=',now()->subMonth())->get()->count();
+    }
 }

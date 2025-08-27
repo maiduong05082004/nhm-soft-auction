@@ -3,15 +3,21 @@
 @section('content')
     <div class="max-w-7xl mx-auto px-4">
         <div class="mb-12">
-            <div class="text-center">
-                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-14">
-                    Tin Tức & Sự Kiện
-                </h1>
-                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Cập nhật những thông tin mới nhất về công nghệ, kinh doanh và xã hội
-                </p>
-            </div>
-
+            @if ($primary)
+                <div class="overflow-hidden" aria-label="Promotional Banner">
+                    <img src="{{ asset('images/banner_buyeeEnSp.png') }}" class="w-full max-h-[585px] object-cover"
+                        alt="AuctionsClone promotional banner" loading="lazy">
+                </div>
+            @else
+                <div class="text-center">
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-14">
+                        Tin Tức & Sự Kiện
+                    </h1>
+                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                        Cập nhật những thông tin mới nhất về công nghệ, kinh doanh và xã hội
+                    </p>
+                </div>
+            @endif
             <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
                 <form action="{{ route('news.list') }}" method="GET" class="flex flex-col md:flex-row gap-4">
 

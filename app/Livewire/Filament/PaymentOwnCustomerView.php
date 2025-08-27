@@ -3,6 +3,9 @@
 namespace App\Livewire\Filament;
 
 use App\Services\Auth\AuthServiceInterface;
+use App\Services\Membership\MembershipServiceInterface;
+use App\Services\Orders\OrderServiceInterface;
+use App\Services\PointPackages\PointPackageServiceInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Livewire\Component;
 
@@ -15,8 +18,12 @@ class PaymentOwnCustomerView extends Component
 
     public $sumTransaction;
 
-    public function boot(AuthServiceInterface $authService)
-    {
+    public function boot(
+        AuthServiceInterface $authService,
+        PointPackageServiceInterface $pointPackageService,
+        MembershipServiceInterface $membershipService,
+        OrderServiceInterface $orderService
+    ) {
         $this->authService = $authService;
     }
     public function mount(): void
