@@ -2,6 +2,7 @@
 
 namespace App\Repositories\TransactionPayment;
 
+use App\Enums\Transactions\TransactionPaymentStatus;
 use App\Enums\Transactions\TransactionPaymentType;
 use App\Models\TransactionPayment;
 use App\Repositories\BaseRepository;
@@ -17,13 +18,14 @@ class TransactionPaymentRepository extends BaseRepository implements Transaction
     {
         // Sử dụng cache để lưu trữ kết quả tổng tiền theo userId và type
         // Thời gian lưu cache là 10 phút để giảm tải truy vấn cơ sở dữ liệu
-        $totalPayment = Cache::remember("total_payment_user_{$userId}_type_{$type->value}", now()->addMinutes(10), function () use ($userId, $type) {
+        // $totalPayment = Cache::remember("total_payment_user_{$userId}_type_{$type->value}", now()->addMinutes(10), function () use ($userId, $type) {
             return $this->getQueryBuilder()
                 ->where('user_id', $userId)
                 ->where('type', $type->value)
+                ->where('description', '!=','PAY BY POINTS')
                 ->sum('money');
-        });
-        return $totalPayment;
+        // });
+        // return $totalPayment;
     }
 
 }

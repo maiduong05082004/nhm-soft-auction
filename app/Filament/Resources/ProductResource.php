@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\CommonConstant;
 use App\Enums\Permission\RoleConstant;
 use App\Enums\Product\ProductPaymentMethod;
 use App\Enums\Product\ProductState;
@@ -203,7 +204,8 @@ class ProductResource extends Resource
                 ->reactive()
                 ->afterStateUpdated(function (bool $state, callable $set) {
                     if (!auth()->user()->hasRole(RoleConstant::ADMIN)) {
-                        $can = !auth()->user()['activeMemberships'][0]['config']['featured_listing'];
+                        $plansUsers = array_filter(auth()->user()['membershipUsers']->all(), fn($item) => $item['status'] == CommonConstant::ACTIVE);
+                        $can = ! $plansUsers[array_key_first($plansUsers)]['membershipPlan']['config']['featured_listing'];
 
                         if ($can) {
                             $set('is_hot', false);
@@ -237,7 +239,7 @@ class ProductResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->modifyQueryUsing(fn(Builder $query) => $query->with('firstImage', 'category'),)
+        return $table->modifyQueryUsing(fn(Builder $query) => $query->with('firstImage', 'category')->orderBy('created_at','desc'),)
             ->recordUrl(fn($record): string => static::getUrl('edit', ['record' => $record]))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
