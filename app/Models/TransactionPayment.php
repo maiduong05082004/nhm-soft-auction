@@ -18,6 +18,7 @@ class TransactionPayment extends Model
         'type',
         'description',
         'user_id',
+        'status'
     ];
 
     protected static function boot()

@@ -68,7 +68,7 @@ class PointPackageService extends BaseService implements PointPackageServiceInte
 
     public function getTransactionPaymentByType($type)
     {
-        return $this->getRepository('transactionPayment')->query()->with('transactionPoint')->where('type', $type)->orderBy('created_at');
+        return $this->getRepository('transactionPayment')->query()->with('transactionPoint')->where('type', $type)->orderBy('created_at','desc');
     }
 
     public function confirmPointTransaction(TransactionPayment $record, TransactionPaymentStatus $status)
@@ -87,19 +87,18 @@ class PointPackageService extends BaseService implements PointPackageServiceInte
                             ->query()
                             ->where('transaction_payment_id', $record->id)
                             ->first();
-
+                        
                         if ($transactionPoint) {
                             $transactionPoint->update(['status' => TransactionPaymentStatus::ACTIVE]);
                             $points = $transactionPoint->point;
 
                             // Cập nhật trạng thái user
-                            $user = $this->getRepository('user')->query()
+                            $this->getRepository('user')
+                                ->query()
                                 ->where('id', $record->user_id)
-                                ->first();
-
-                            if ($user) {
-                                $user->update(['current_balance' => $user->current_balance + $points]);
-                            }
+                                ->update([
+                                    'current_balance' => DB::raw("current_balance + {$points}")
+                                ]);
                         }
 
                         DB::commit();

@@ -4,10 +4,16 @@ namespace App\Services\Membership;
 
 use App\Enums\CommonConstant;
 use App\Enums\Membership\MembershipTransactionStatus;
+use App\Enums\PayTypes;
+use App\Enums\Transactions\TransactionPaymentStatus;
+use App\Enums\Transactions\TransactionPaymentType;
 use App\Models\MembershipUser;
 use App\Repositories\MembershipPlan\MembershipPlanRepositoryInterface;
 use App\Repositories\MembershipTransaction\MembershipTransactionRepositoryInterface;
 use App\Repositories\MembershipUser\MembershipUserRepositoryInterface;
+use App\Repositories\TransactionPayment\TransactionPaymentRepositoryInterface;
+use App\Repositories\TransactionPoint\TransactionPointRepositoryInterface;
+use App\Repositories\Users\UserRepository;
 use App\Services\BaseService;
 use Illuminate\Support\Facades\DB;
 
@@ -17,12 +23,17 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
         MembershipPlanRepositoryInterface $membershipPlanRepository,
         MembershipUserRepositoryInterface $membershipUserRepository,
         MembershipTransactionRepositoryInterface $membershipTransactionRepository,
-    )
-    {
+        TransactionPointRepositoryInterface $transactionPointRepository,
+        TransactionPaymentRepositoryInterface $transactionPayment,
+        UserRepository $userRepository
+    ) {
         parent::__construct([
             'membershipPlan' => $membershipPlanRepository,
             'membershipUser' => $membershipUserRepository,
             'membershipTransaction' => $membershipTransactionRepository,
+            'transactionPoint' => $transactionPointRepository,
+            'transactionPayment' => $transactionPayment,
+            'user' => $userRepository
         ]);
     }
 
@@ -42,9 +53,10 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
             ->first();
     }
 
-    public function createMembershipForUser($userId, $membershipPlan, $dataTransfer): bool
+    public function createMembershipForUser($userId, $membershipPlan, $dataTransfer, $payType): bool
     {
         $now = now();
+
         try {
             DB::beginTransaction();
             // Tạo membership cho người dùng
@@ -56,20 +68,61 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                 'end_date' => $now->copy()->addMonths($membershipPlan->duration),
             ]);
 
-            // Tạo giao dịch membership
-            $this->getRepository('membershipTransaction')->insertOne([
-                'user_id' => $userId,
-                'membership_user_id' => $memberUser->id,
-                'money' => $dataTransfer['totalPrice'],
-                'status' => MembershipTransactionStatus::WAITING,
-                'transaction_code' => $dataTransfer['descBank'],
-            ]);
+
+            if ($payType == PayTypes::POINTS->value) {
+                $this->getRepository('membershipTransaction')->insertOne([
+                    'user_id' => $userId,
+                    'membership_user_id' => $memberUser->id,
+                    'money' => $dataTransfer['points'],
+                    'status' => MembershipTransactionStatus::ACTIVE,
+                    'transaction_code' => 'PAY BY POINTS',
+                ]);
+                $memberUser->update(['status' => CommonConstant::ACTIVE]);
+                $this->getRepository('membershipUser')->query()
+                    ->where('user_id', $memberUser->user_id)
+                    ->where('id', '!=', $memberUser->id)
+                    ->update(['status' => false]);
+                $transactionPayment = $this->getRepository('transactionPayment')->insertOne([
+                    'user_id' => $userId,
+                    'type' => TransactionPaymentType::RECHANGE_POINT->value,
+                    'description' => 'PAY BY POINTS',
+                    'money' => $dataTransfer['points'],
+                    'status' => TransactionPaymentStatus::ACTIVE->value,
+                ]);
+
+                $this->getRepository('transactionPoint')->insertOne([
+                    'user_id' => $userId,
+                    'status' => TransactionPaymentStatus::ACTIVE->value,
+                    'point' => -$dataTransfer['points'],
+                    'transaction_payment_id' => $transactionPayment->id,
+                ]);
+
+                $this->getRepository('user')
+                    ->query()
+                    ->where('id', $userId)
+                    ->update([
+                        'current_balance' => DB::raw("current_balance - {$dataTransfer['points']}")
+                    ]);
+            } else {
+                $this->getRepository('membershipTransaction')->insertOne([
+                    'user_id' => $userId,
+                    'membership_user_id' => $memberUser->id,
+                    'money' => $dataTransfer['totalPrice'],
+                    'status' => MembershipTransactionStatus::WAITING,
+                    'transaction_code' => $dataTransfer['descBank'],
+                ]);
+            }
             DB::commit();
             return true;
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             DB::rollBack();
             return false;
         }
+    }
+
+    public function getMembershipTransactionByUserId($userId)
+    {
+        return $this->getRepository('membershipTransaction')->query()->where('user_id', $userId)->get();
     }
 
     public function reActivateMembershipForUser(MembershipUser $membershipUser): bool
@@ -85,7 +138,7 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                 ->update(['status' => false]);
             DB::commit();
             return true;
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             DB::rollBack();
             return false;
         }
