@@ -17,13 +17,15 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components as Info;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 use App\Services\Orders\OrderService;
 use App\Enums\Permission\RoleConstant;
-
+use Filament\Support\Enums\MaxWidth;
 class OrderResource extends Resource
 {
     protected static ?string $model = OrderDetail::class;
@@ -33,6 +35,17 @@ class OrderResource extends Resource
     protected static ?string $pluralModelLabel = 'Đơn hàng';
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?int $navigationSort = 1;
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+        if (is_callable([$user, 'hasRole'])) {
+            return (bool) call_user_func([$user, 'hasRole'], 'admin');
+        }
+        return (string) ($user->role ?? '') === 'admin';
+    }
 
     protected static ?OrderService $orderServiceInstance = null;
 
@@ -43,7 +56,7 @@ class OrderResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasRole(RoleConstant::ADMIN);
+        return static::currentUserIsAdmin();
     }
 
     public static function canCreate(): bool
@@ -54,11 +67,12 @@ class OrderResource extends Resource
             return false;
         }
 
-        return $user->hasRole(RoleConstant::ADMIN);
+        return static::currentUserIsAdmin();
     }
 
     public static function form(Form $form): Form
     {
+        $isEdit = $form->getOperation() === 'edit';
         return $form
             ->schema([
                 Forms\Components\Group::make()
@@ -68,17 +82,17 @@ class OrderResource extends Resource
                             ->columns(2),
 
                         Forms\Components\Section::make('Sản phẩm trong đơn hàng')
-                            ->headerActions([
-                                Action::make('Xóa toàn bộ')
-                                    ->modalHeading('Bạn có chắc chắn?')
-                                    ->modalDescription('Tất cả sả phấm sẽ bị xóa khỏi đơn hàng.')
-                                    ->requiresConfirmation()
-                                    ->visible(fn() => auth()->user()->hasRole(RoleConstant::ADMIN))
-                                    ->color('danger')
-                                    ->action(fn(Forms\Set $set) => $set('items', [])),
-                            ])
+                            // ->headerActions([
+                            //     Action::make('Xóa toàn bộ')
+                            //         ->modalHeading('Bạn có chắc chắn?')
+                            //         ->modalDescription('Tất cả sả phấm sẽ bị xóa khỏi đơn hàng.')
+                            //         ->requiresConfirmation()
+                            //         ->visible(fn() => !$isEdit && auth()->user()->hasRole(RoleConstant::ADMIN))
+                            //         ->color('danger')
+                            //         ->action(fn(Forms\Set $set) => $set('items', [])),
+                            // ])
                             ->schema([
-                                static::getItemsRepeater(),
+                                static::getItemsRepeater($isEdit),
                                 Forms\Components\Placeholder::make('subtotal_display')
                                     ->label('Tổng tiền sản phẩm')
                                     ->content(function (Forms\Get $get): string {
@@ -198,13 +212,31 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->label('Chỉnh sửa')
-                    ->visible(fn() => auth()->user()->hasRole(RoleConstant::ADMIN)),
+                    ->visible(fn() => static::currentUserIsAdmin()),
                 Tables\Actions\ViewAction::make()
-                    ->label('Xem'),
+                    ->label('Xem')
+                    ->modalWidth(MaxWidth::SixExtraLarge),
+                Tables\Actions\Action::make('payment_status')
+                    ->label('Trạng thái thanh toán')
+                    ->icon('heroicon-o-credit-card')
+                    ->color('info')
+                    ->modalContent(function (OrderDetail $record) {
+                        $payment = $record->payments->first();
+                        $isAdmin = static::currentUserIsAdmin();
+                        
+                        return view('filament.admin.resources.orders.payment-status-modal', [
+                            'order' => $record,
+                            'payment' => $payment,
+                            'isAdmin' => $isAdmin
+                        ]);
+                    })
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Đóng')
+                    ->modalWidth(MaxWidth::SevenExtraLarge),
             ])
             ->groupedBulkActions([
                 Tables\Actions\DeleteBulkAction::make()
-                    ->visible(fn() => auth()->user()->hasRole(RoleConstant::ADMIN))
+                    ->visible(fn() => static::currentUserIsAdmin())
                     ->action(function () {
                         Notification::make()
                             ->title('Now, now, don\'t be cheeky, leave some records for others to play with!')
@@ -218,6 +250,68 @@ class OrderResource extends Resource
                     ->date()
                     ->collapsible(),
             ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist->schema(static::getInfolistSchema());
+    }
+
+    public static function getInfolistSchema(): array
+    {
+        return [
+            Info\Section::make('Thông tin đơn hàng')
+                ->schema([
+                    Info\Grid::make(2)
+                        ->schema([
+                            Info\TextEntry::make('code_orders')->label('Mã đơn hàng'),
+                            Info\TextEntry::make('user.name')->label('Khách hàng'),
+                            Info\TextEntry::make('ship_address')->label('Địa chỉ giao hàng'),
+                            Info\TextEntry::make('email_receiver')->label('Email người nhận'),
+                            Info\TextEntry::make('status')->label('Trạng thái')->badge(),
+                            Info\TextEntry::make('shipping_fee')
+                                ->label('Phí vận chuyển')
+                                ->formatStateUsing(fn($state) => number_format((float) $state, 0, ',', '.') . ' ₫'),
+                            Info\TextEntry::make('subtotal')
+                                ->label('Tổng tiền sản phẩm')
+                                ->formatStateUsing(fn($state) => number_format((float) $state, 0, ',', '.') . ' ₫'),
+                            Info\TextEntry::make('total')
+                                ->label('Tổng tiền đơn hàng')
+                                ->formatStateUsing(fn($state) => number_format((float) $state, 0, ',', '.') . ' ₫'),
+                            Info\TextEntry::make('created_at')->dateTime()->label('Ngày tạo'),
+                            Info\TextEntry::make('updated_at')->dateTime()->label('Cập nhật'),
+                        ]),
+                ]),
+
+            Info\Section::make('Sản phẩm trong đơn hàng')
+                ->schema([
+                    Info\RepeatableEntry::make('items')
+                        ->hiddenLabel()
+                        ->schema([
+                            Info\Grid::make(5)
+                                ->schema([
+                                    Info\TextEntry::make('product.name')
+                                        ->label('Sản phẩm')
+                                        ->columnSpan(2),
+                                    Info\TextEntry::make('quantity')->label('Số lượng'),
+                                    Info\TextEntry::make('price')
+                                        ->label('Đơn giá')
+                                        ->state(fn($record) => (float) static::orderService()->getProductCurrentPrice((int) ($record->product_id ?? 0)))
+                                        ->formatStateUsing(fn($state) => number_format((float) $state, 0, ',', '.') . ' ₫'),
+                                    Info\TextEntry::make('total')
+                                        ->label('Tổng tiền')
+                                        ->state(function ($record) {
+                                            $unit = (float) static::orderService()->getProductCurrentPrice((int) ($record->product_id ?? 0));
+                                            $qty = (float) ($record->quantity ?? 0);
+                                            return $unit * $qty;
+                                        })
+                                        ->formatStateUsing(fn($state) => number_format((float) $state, 0, ',', '.') . ' ₫'),
+                                ])
+                        ])
+                        ->columnSpanFull(),
+                ])
+                ->columnSpanFull(),
+        ];
     }
 
     public static function getRelations(): array
@@ -255,11 +349,11 @@ class OrderResource extends Resource
             return $query->whereRaw('1 = 0');
         }
 
-        if (!$user->hasRole(RoleConstant::ADMIN)) {
+        if (!static::currentUserIsAdmin()) {
             $query->where('user_id', $user->id);
         }
 
-        return $query;
+        return $query->with(['payments', 'user']);
     }
 
 
@@ -287,6 +381,18 @@ class OrderResource extends Resource
     {
 
         return (string) static::getEloquentQuery()->count();
+    }
+
+    protected static function currentUserIsAdmin(): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+        if (is_callable([$user, 'hasRole'])) {
+            return (bool) call_user_func([$user, 'hasRole'], 'admin');
+        }
+        return (string) ($user->role ?? '') === 'admin';
     }
 
     /** @return Forms\Components\Component[] */
@@ -483,25 +589,26 @@ class OrderResource extends Resource
         ];
     }
 
-    public static function getItemsRepeater(): Repeater
+    public static function getItemsRepeater(bool $isEdit = false): Repeater
     {
         return Repeater::make('items')
             ->label('Sản phẩm')
             ->relationship()
+            ->addable(! $isEdit)
+            ->deletable(! $isEdit)
             ->schema([
                 Forms\Components\Select::make('product_id')
                     ->label('Sản phẩm')
                     ->options(Product::query()->pluck('name', 'id'))
                     ->required()
+                    ->disabled($isEdit)
                     ->reactive()
                     ->afterStateUpdated(function ($state, Forms\Set $set) {
                         if ($state) {
-                            $product = Product::find($state);
-                            if ($product) {
-                                $set('price', $product->price);
-                                $set('quantity', 1);
-                                $set('subtotal', $product->price * 1);
-                            }
+                            $price = static::orderService()->getProductCurrentPrice($state);
+                            $set('price', $price);
+                            $set('quantity', 1);
+                            $set('subtotal', $price * 1);
                         }
                     })
                     ->columnSpan([
@@ -513,10 +620,11 @@ class OrderResource extends Resource
                     ->label('Số lượng')
                     ->numeric()
                     ->default(1)
+                    ->disabled($isEdit)
                     ->minValue(1)
-                    ->reactive()
+                    ->live(debounce: 700)
                     ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                        $quantity = $state ?: 1;
+                        $quantity = (float) ($state ?: 1);
                         $price = (float) ($get('price') ?: 0);
                         $line = $quantity * $price;
                         $set('subtotal', $line);
@@ -525,10 +633,12 @@ class OrderResource extends Resource
                         'md' => 2,
                     ])
                     ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
-                        $product = Product::find($get('product_id'));
-                        if ($product) {
-                            $set('price', $product->price);
-                            $set('subtotal', $product->price * $get('quantity'));
+                        $productId = $get('product_id');
+                        if ($productId) {
+                            $price = static::orderService()->getProductCurrentPrice($productId);
+                            $quantity = (float) ($get('quantity') ?: 0);
+                            $set('price', $price);
+                            $set('subtotal', $price * $quantity);
                         }
                     })
                     ->required(),
@@ -559,8 +669,8 @@ class OrderResource extends Resource
                     ->dehydrated()
                     ->default(0)
                     ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                        $subtotal = $get('subtotal') ?: 0;
-                        $shippingFee = $get('shipping_fee') ?: 0;
+                        $subtotal = (float) ($get('subtotal') ?: 0);
+                        $shippingFee = (float) ($get('shipping_fee') ?: 0);
                         $set('total', $subtotal + $shippingFee);
                     })
                     ->columnSpan([

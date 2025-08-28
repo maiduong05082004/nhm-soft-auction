@@ -13,4 +13,5 @@ interface AuctionServiceInterface extends BaseServiceInterface
     public function validateBid($auctionId, $bidPrice, $userId);
     public function getActiveAuctions();
     public function getUserParticipatingAuctions($userId);
+    public function updateStepPriceByProductId(int $productId, float $stepPrice): bool;
 }
