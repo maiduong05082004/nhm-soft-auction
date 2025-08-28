@@ -222,7 +222,7 @@
                     </div>
 
                     <div class="p-3">
-                        <h3 class="font-semibold text-[14px] text-slate-900 mb-1 line-clamp-2 min-h-[38px]">
+                        <h3 class="font-semibold text-[14px] text-slate-900 mb-1 line-clamp-2 max-h-[38px]">
                             <a href="${productUrl}" class="hover:text-blue-600 transition-colors">${escapeHtml(
                         name
                     )}</a>

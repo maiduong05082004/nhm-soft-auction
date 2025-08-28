@@ -12,4 +12,5 @@ interface CheckoutServiceInterface extends BaseServiceInterface
     public function hasCreditCardConfig(): bool;
     public function buildVietQrUrl(object $orderDetail, ?object $payment): string;
     public function processAuctionWinnerPayment(int $userId, int $auctionId): array;
+    public function processAuctionCheckout(int $userId, array $checkoutData): array;
 }

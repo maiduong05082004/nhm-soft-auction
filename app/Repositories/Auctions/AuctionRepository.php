@@ -81,10 +81,10 @@ class AuctionRepository extends BaseRepository implements AuctionRepositoryInter
             })
             ->where('status', 'active')
             ->where('start_time', '<=', now())
-            ->where('end_time', '>=', now())
             ->with(['product.images', 'bids' => function($query) use ($userId) {
                 $query->where('user_id', $userId)->orderBy('bid_time', 'desc');
             }])
+            ->orderBy('end_time', 'desc')
             ->get();
     }
 }

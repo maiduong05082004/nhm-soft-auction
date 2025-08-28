@@ -6,24 +6,36 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('transaction_point', function (Blueprint $table) {
-            $table->integer('status')->default(1);
-            $table->foreignId('transaction_payment_id')->constrained('transaction_payment')->onDelete('cascade');
+            if (!Schema::hasColumn('transaction_point', 'status')) {
+                $table->integer('status')->default(1)->after('id');
+            }
+
+            if (!Schema::hasColumn('transaction_point', 'transaction_payment_id')) {
+                $table->unsignedBigInteger('transaction_payment_id')->nullable()->after('status');
+            }
+        });
+
+        Schema::table('transaction_point', function (Blueprint $table) {
+            $table->foreign('transaction_payment_id', 'tp_transaction_payment_id_fk')
+                ->references('id')
+                ->on('transaction_payment')
+                ->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('transaction_point', function (Blueprint $table) {
-            $table->dropIfExists('transaction_point');
+            if (Schema::hasColumn('transaction_point', 'transaction_payment_id')) {
+                $table->dropForeign('tp_transaction_payment_id_fk');
+                $table->dropColumn('transaction_payment_id');
+            }
+            if (Schema::hasColumn('transaction_point', 'status')) {
+                $table->dropColumn('status');
+            }
         });
     }
 };
