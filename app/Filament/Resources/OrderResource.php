@@ -43,7 +43,7 @@ class OrderResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasRole(RoleConstant::ADMIN);
+        return static::currentUserIsAdmin();
     }
 
     public static function canCreate(): bool
@@ -54,11 +54,12 @@ class OrderResource extends Resource
             return false;
         }
 
-        return $user->hasRole(RoleConstant::ADMIN);
+        return static::currentUserIsAdmin();
     }
 
     public static function form(Form $form): Form
     {
+        $isEdit = $form->getOperation() === 'edit';
         return $form
             ->schema([
                 Forms\Components\Group::make()
@@ -68,17 +69,17 @@ class OrderResource extends Resource
                             ->columns(2),
 
                         Forms\Components\Section::make('Sản phẩm trong đơn hàng')
-                            ->headerActions([
-                                Action::make('Xóa toàn bộ')
-                                    ->modalHeading('Bạn có chắc chắn?')
-                                    ->modalDescription('Tất cả sả phấm sẽ bị xóa khỏi đơn hàng.')
-                                    ->requiresConfirmation()
-                                    ->visible(fn() => auth()->user()->hasRole(RoleConstant::ADMIN))
-                                    ->color('danger')
-                                    ->action(fn(Forms\Set $set) => $set('items', [])),
-                            ])
+                            // ->headerActions([
+                            //     Action::make('Xóa toàn bộ')
+                            //         ->modalHeading('Bạn có chắc chắn?')
+                            //         ->modalDescription('Tất cả sả phấm sẽ bị xóa khỏi đơn hàng.')
+                            //         ->requiresConfirmation()
+                            //         ->visible(fn() => !$isEdit && auth()->user()->hasRole(RoleConstant::ADMIN))
+                            //         ->color('danger')
+                            //         ->action(fn(Forms\Set $set) => $set('items', [])),
+                            // ])
                             ->schema([
-                                static::getItemsRepeater(),
+                                static::getItemsRepeater($isEdit),
                                 Forms\Components\Placeholder::make('subtotal_display')
                                     ->label('Tổng tiền sản phẩm')
                                     ->content(function (Forms\Get $get): string {
@@ -198,13 +199,14 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->label('Chỉnh sửa')
-                    ->visible(fn() => auth()->user()->hasRole(RoleConstant::ADMIN)),
+                    ->visible(fn() => static::currentUserIsAdmin()),
                 Tables\Actions\ViewAction::make()
-                    ->label('Xem'),
+                    ->label('Xem')
+                    ,
             ])
             ->groupedBulkActions([
                 Tables\Actions\DeleteBulkAction::make()
-                    ->visible(fn() => auth()->user()->hasRole(RoleConstant::ADMIN))
+                    ->visible(fn() => static::currentUserIsAdmin())
                     ->action(function () {
                         Notification::make()
                             ->title('Now, now, don\'t be cheeky, leave some records for others to play with!')
@@ -255,7 +257,7 @@ class OrderResource extends Resource
             return $query->whereRaw('1 = 0');
         }
 
-        if (!$user->hasRole(RoleConstant::ADMIN)) {
+        if (!static::currentUserIsAdmin()) {
             $query->where('user_id', $user->id);
         }
 
@@ -287,6 +289,18 @@ class OrderResource extends Resource
     {
 
         return (string) static::getEloquentQuery()->count();
+    }
+
+    protected static function currentUserIsAdmin(): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+        if (is_callable([$user, 'hasRole'])) {
+            return (bool) call_user_func([$user, 'hasRole'], 'admin');
+        }
+        return (string) ($user->role ?? '') === 'admin';
     }
 
     /** @return Forms\Components\Component[] */
@@ -483,25 +497,26 @@ class OrderResource extends Resource
         ];
     }
 
-    public static function getItemsRepeater(): Repeater
+    public static function getItemsRepeater(bool $isEdit = false): Repeater
     {
         return Repeater::make('items')
             ->label('Sản phẩm')
             ->relationship()
+            ->addable(! $isEdit)
+            ->deletable(! $isEdit)
             ->schema([
                 Forms\Components\Select::make('product_id')
                     ->label('Sản phẩm')
                     ->options(Product::query()->pluck('name', 'id'))
                     ->required()
+                    ->disabled($isEdit)
                     ->reactive()
                     ->afterStateUpdated(function ($state, Forms\Set $set) {
                         if ($state) {
-                            $product = Product::find($state);
-                            if ($product) {
-                                $set('price', $product->price);
-                                $set('quantity', 1);
-                                $set('subtotal', $product->price * 1);
-                            }
+                            $price = static::orderService()->getProductCurrentPrice($state);
+                            $set('price', $price);
+                            $set('quantity', 1);
+                            $set('subtotal', $price * 1);
                         }
                     })
                     ->columnSpan([
@@ -513,10 +528,11 @@ class OrderResource extends Resource
                     ->label('Số lượng')
                     ->numeric()
                     ->default(1)
+                    ->disabled($isEdit)
                     ->minValue(1)
-                    ->reactive()
+                    ->live(debounce: 700)
                     ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                        $quantity = $state ?: 1;
+                        $quantity = (float) ($state ?: 1);
                         $price = (float) ($get('price') ?: 0);
                         $line = $quantity * $price;
                         $set('subtotal', $line);
@@ -525,10 +541,12 @@ class OrderResource extends Resource
                         'md' => 2,
                     ])
                     ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
-                        $product = Product::find($get('product_id'));
-                        if ($product) {
-                            $set('price', $product->price);
-                            $set('subtotal', $product->price * $get('quantity'));
+                        $productId = $get('product_id');
+                        if ($productId) {
+                            $price = static::orderService()->getProductCurrentPrice($productId);
+                            $quantity = (float) ($get('quantity') ?: 0);
+                            $set('price', $price);
+                            $set('subtotal', $price * $quantity);
                         }
                     })
                     ->required(),
@@ -559,8 +577,8 @@ class OrderResource extends Resource
                     ->dehydrated()
                     ->default(0)
                     ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                        $subtotal = $get('subtotal') ?: 0;
-                        $shippingFee = $get('shipping_fee') ?: 0;
+                        $subtotal = (float) ($get('subtotal') ?: 0);
+                        $shippingFee = (float) ($get('shipping_fee') ?: 0);
                         $set('total', $subtotal + $shippingFee);
                     })
                     ->columnSpan([

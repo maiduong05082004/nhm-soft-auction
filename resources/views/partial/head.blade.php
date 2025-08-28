@@ -1,6 +1,4 @@
-<meta charset="utf-8">
 <title>@yield('title', 'Auctions')</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="@yield('meta_description', 'Mô tả mặc định cho trang đấu giá của bạn')">
 <meta name="keywords" content="@yield('meta_keywords', 'đấu giá, mua bán, auctions')">
 <meta name="author" content="Tên của bạn">

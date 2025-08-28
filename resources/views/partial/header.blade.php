@@ -244,8 +244,8 @@
             <nav class="flex-1 p-4" aria-label="Mobile navigation">
                 <div class="grid grid-cols-3 md:grid-cols-5 lg:hidden gap-3 mb-4" id="mobile-categories">
 
-                    @if (isset($categories))
-                        @foreach ($categories as $category)
+                    @if (isset($categories_header))
+                        @foreach ($categories_header as $category)
                             <div class="text-center">
                                 <a href="{{ route('products.list', ['category_id' => $category->id]) }}"
                                     class="block hover:opacity-80 transition-opacity">

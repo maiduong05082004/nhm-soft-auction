@@ -52,15 +52,25 @@ class CreateProduct extends CreateRecord
         }
 
         $plansUsers = array_filter($user['membershipUsers']->all(), fn($item) => $item['status'] == CommonConstant::ACTIVE);
-        if (!empty($plansUsers) && !empty($plansUsers[1]['membershipPlan']['config']) && $plansUsers[1]['membershipPlan']['config']['free_product_listing']) {
-            $config = $plansUsers[1]['membershipPlan']['config'];
+        if (!empty($plansUsers)) {
+            $planKey = array_key_first($plansUsers);
+            $planActive = $plansUsers[$planKey];
+            $config = $planActive['membershipPlan']['config'];
+            if (!$config['free_product_listing']) {
+                if ($productsCount >= $config['max_products_per_month'] || $config['max_products_per_month'] == 0) {
+                    Notification::make()
+                        ->title('Không đủ quyền')
+                        ->warning()
+                        ->body('Bạn đã đạt giới hạn tháng cần mua gói thành viên để tạo sản phẩm. Vui lòng chọn gói để tiếp tục.')
+                        ->send();
 
-            if (!empty($config['free_product_listing'])) {
-            } elseif ($productsCount >= ($config['max_products_per_month'] ?? 0)) {
+                    redirect()->to(BuyMembershipResource::getUrl());
+                }
+            } else {
                 Notification::make()
                     ->title('Không đủ quyền')
                     ->warning()
-                    ->body('Bạn đã đạt giới hạn tháng cần mua gói thành viên để tạo sản phẩm. Vui lòng chọn gói để tiếp tục.')
+                    ->body('Bạn cần nâng cấp hoặc kích hoạt gói thành viên khác. Vui lòng chọn gói để tiếp tục.')
                     ->send();
 
                 redirect()->to(BuyMembershipResource::getUrl());
@@ -117,7 +127,6 @@ class CreateProduct extends CreateRecord
         /** @var ProductServiceInterface $productService */
         $productService = app(ProductServiceInterface::class);
         $data['images'] = $data['images'] ?? [];
-        // dd($data);
         return $productService->createProductWithSideEffects($data, auth()->id());
     }
 }

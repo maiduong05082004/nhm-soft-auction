@@ -3,7 +3,9 @@
 namespace App\Livewire\Filament;
 
 use App\Enums\Config\ConfigName;
+use App\Enums\PayTypes;
 use App\Filament\Resources\BuyMembershipResource;
+use App\Services\Auth\AuthServiceInterface;
 use App\Services\Config\ConfigServiceInterface;
 use App\Services\Membership\MembershipServiceInterface;
 use App\Utils\HelperFunc;
@@ -12,6 +14,8 @@ use Livewire\Component;
 
 class BuyMembership extends Component
 {
+    private AuthServiceInterface $authService;
+
     private MembershipServiceInterface $membershipService;
 
     private ConfigServiceInterface $configService;
@@ -27,14 +31,18 @@ class BuyMembership extends Component
 
     public $dataTransfer = [];
 
-    public function boot(MembershipServiceInterface $membershipService, ConfigServiceInterface $configService)
+    public $user = null;
+
+    public function boot(MembershipServiceInterface $membershipService, ConfigServiceInterface $configService, AuthServiceInterface $authService)
     {
         $this->membershipService = $membershipService;
         $this->configService = $configService;
+        $this->authService = $authService;
     }
 
     public function mount()
     {
+        $this->user = $this->authService->getInfoAuth();
         $this->list = $this->membershipService->getAllMembershipPlan();
     }
 
@@ -63,6 +71,7 @@ class BuyMembership extends Component
                 'urlBankQrcode' => $urlBankQrcode,
                 'totalPrice' => $totalPrice,
                 'descBank' => $descBank,
+                'points' => $membership->price
             ];
             return;
         }
@@ -75,20 +84,21 @@ class BuyMembership extends Component
         $this->membership = null;
     }
 
-    public function submit()
-    {
+    public function submit($payType)
+    {   
         $result = $this->membershipService->createMembershipForUser(
             userId: auth()->id(),
             membershipPlan: $this->membership,
-            dataTransfer: $this->dataTransfer
+            dataTransfer: $this->dataTransfer,
+            payType: $payType
         );
-        if ($result){
+        if ($result) {
             Notification::make()
                 ->title('Thành công')
                 ->body('Thanh toán thành công, vui lòng chờ duyệt.')
                 ->success()
                 ->send();
-        }else{
+        } else {
             Notification::make()
                 ->title('Lỗi')
                 ->body('Có lỗi xảy ra, vui lòng thử lại sau.')
