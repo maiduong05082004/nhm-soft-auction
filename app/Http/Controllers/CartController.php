@@ -4,18 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Services\Cart\CartServiceInterface;
 use App\Services\Checkout\CheckoutServiceInterface;
+use App\Repositories\Products\ProductRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 class CartController extends Controller
 {
 	protected $cartService;
 	protected $checkoutService;
+	protected $productRepo;
 	protected $userId;
 
-	public function __construct(CartServiceInterface $cartService, CheckoutServiceInterface $checkoutService)
+	public function __construct(CartServiceInterface $cartService, CheckoutServiceInterface $checkoutService, ProductRepository $productRepo)
 	{
 		$this->cartService = $cartService;
 		$this->checkoutService = $checkoutService;
+		$this->productRepo = $productRepo;
 		$this->middleware(function ($request, $next) {
 			$this->userId = Auth::id();
 			return $next($request);
@@ -51,6 +54,36 @@ class CartController extends Controller
 
 	public function checkout()
 	{
+		$auctionCheckoutData = session('auction_checkout_data');
+		
+		if ($auctionCheckoutData) {
+			$product = $this->productRepo->find($auctionCheckoutData['product_id']);
+			
+			$cartItems = collect([
+				(object) [
+					'product_id' => $auctionCheckoutData['product_id'],
+					'quantity' => $auctionCheckoutData['quantity'],
+					'price' => $auctionCheckoutData['amount'],
+					'total' => $auctionCheckoutData['amount'],
+					'product' => (object) [
+						'name' => $product->name ?? 'Sản phẩm đấu giá',
+						'price' => $auctionCheckoutData['amount'],
+						'images' => $product->images ?? collect(),
+					]
+				]
+			]);
+			
+			$user = auth()->user();
+			$auctionCheckoutData['name'] = $user->name ?? '';
+			$auctionCheckoutData['phone'] = $user->phone ?? '';
+			$auctionCheckoutData['product_slug'] = $product->slug ?? '';
+			
+			$total = $auctionCheckoutData['amount'];
+			$hasCreditCard = $this->checkoutService->hasCreditCardConfig();
+			
+			return view('pages.checkout.checkout', compact('cartItems', 'total', 'hasCreditCard', 'auctionCheckoutData'));
+		}
+		
 		$result = $this->cartService->getUserCart($this->userId);
 
 		if ($result['success']) {
@@ -83,8 +116,42 @@ class CartController extends Controller
 			'phone' => 'required|string|max:20',
 			'address' => 'required|string|max:500',
 			'payment_method' => 'required|in:0,1',
-			'selected' => 'nullable|string'
+			'selected' => 'nullable|string',
+			'auction_id' => 'nullable|integer',
+			'note' => 'nullable|string|max:1000'
 		]);
+		
+		if ($request->filled('auction_id')) {
+			$checkoutData = [
+				'auction_id' => $request->auction_id,
+				'name' => $request->name,
+				'email' => $request->email,
+				'phone' => $request->phone,
+				'address' => $request->address,
+				'payment_method' => $request->payment_method,
+				'note' => $request->note ?? '',
+			];
+
+			if ($checkoutData['payment_method'] == '1' && !$this->checkoutService->hasCreditCardConfig()) {
+				return redirect()->back()->with('error', 'Chưa cấu hình thẻ ngân hàng để tạo QR.');
+			}
+
+			$result = $this->checkoutService->processAuctionCheckout($this->userId, $checkoutData);
+			
+			if ($result['success']) {
+				$orderId = $result['data']['order_detail_id'];
+				$paymentStatus = $result['data']['payment_status'];
+				
+				if ($paymentStatus === 'success') {
+					return redirect()->route('order.success', ['order' => $orderId]);
+				} else {
+					return redirect()->route('payment.qr', ['order' => $orderId]);
+				}
+			} else {
+				return redirect()->back()->with('error', $result['message']);
+			}
+		}
+		
 		$checkoutData = [
 			'name' => $request->name,
 			'phone' => $request->phone,
@@ -157,8 +224,9 @@ class CartController extends Controller
 		$auctionId = (int) $request->auction_id;
 		$init = $this->checkoutService->processAuctionWinnerPayment($this->userId, $auctionId);
 		if ($init['success']) {
-			$orderId = $init['data']['order_detail_id'];
-			return redirect()->route('payment.qr', ['order' => $orderId]);
+			$checkoutData = $init['data']['checkout_data'];
+			return redirect()->route('cart.checkout')
+				->with('auction_checkout_data', $checkoutData);
 		}
 		return redirect()->back()->with('error', $init['message'] ?? 'Không khởi tạo được thanh toán.');
 	}
@@ -214,4 +282,7 @@ class CartController extends Controller
 			return response()->json($result, 400);
 		}
 	}
+
+
+
 }

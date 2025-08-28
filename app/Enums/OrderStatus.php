@@ -22,8 +22,8 @@ enum OrderStatus: int implements HasColor, HasIcon, HasLabel
     {
         return match ($this) {
             self::New => 'Đang chở xử lý',
-            self::Processing => 'Đang xử lý',
-            self::Shipped => 'Đang vận chuyển',
+            self::Processing => 'Đã xác nhận',
+            self::Shipped => 'Đang giao',
             self::Delivered => 'Đã giao',
             self::Cancelled => 'Đã hủy',
         };
@@ -32,8 +32,8 @@ enum OrderStatus: int implements HasColor, HasIcon, HasLabel
     public function getColor(): string | array | null
     {
         return match ($this) {
-            self::New => 'info',
-            self::Processing => 'warning',
+            self::New => 'warning',
+            self::Processing => 'info',
             self::Shipped, self::Delivered => 'success',
             self::Cancelled => 'danger',
         };
