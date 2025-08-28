@@ -396,7 +396,7 @@
                                                         Đấu giá ngay
                                                     </button>
                                                 @else
-                                                    <a href="{{ url('/admin/buy-memberships/buy') }}" 
+                                                    <a href="{{ url('/admin/buy-memberships') }}" 
                                                         class="w-full btn btn-outline font-semibold rounded-lg text-center"
                                                        >
                                                         Mua gói thành viên
@@ -1006,7 +1006,7 @@
             </div>
         @endif
 
-        <div class="text-lg font-bold text-gray-600 pt-4 mb-4">Sản phẩm này cùng loại</div>
+        <div class="text-lg font-bold text-gray-600 pt-4 mb-4">Sản phẩm cùng loại</div>
         <div class="swiper popularProductsSwiper !p-3">
             <div class="swiper-wrapper">
                 @foreach ($product_category as $item)
