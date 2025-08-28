@@ -17,13 +17,15 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components as Info;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 use App\Services\Orders\OrderService;
 use App\Enums\Permission\RoleConstant;
-
+use Filament\Support\Enums\MaxWidth;
 class OrderResource extends Resource
 {
     protected static ?string $model = OrderDetail::class;
@@ -33,6 +35,17 @@ class OrderResource extends Resource
     protected static ?string $pluralModelLabel = 'Đơn hàng';
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?int $navigationSort = 1;
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+        if (is_callable([$user, 'hasRole'])) {
+            return (bool) call_user_func([$user, 'hasRole'], 'admin');
+        }
+        return (string) ($user->role ?? '') === 'admin';
+    }
 
     protected static ?OrderService $orderServiceInstance = null;
 
@@ -202,7 +215,24 @@ class OrderResource extends Resource
                     ->visible(fn() => static::currentUserIsAdmin()),
                 Tables\Actions\ViewAction::make()
                     ->label('Xem')
-                    ,
+                    ->modalWidth(MaxWidth::SixExtraLarge),
+                Tables\Actions\Action::make('payment_status')
+                    ->label('Trạng thái thanh toán')
+                    ->icon('heroicon-o-credit-card')
+                    ->color('info')
+                    ->modalContent(function (OrderDetail $record) {
+                        $payment = $record->payments->first();
+                        $isAdmin = static::currentUserIsAdmin();
+                        
+                        return view('filament.admin.resources.orders.payment-status-modal', [
+                            'order' => $record,
+                            'payment' => $payment,
+                            'isAdmin' => $isAdmin
+                        ]);
+                    })
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Đóng')
+                    ->modalWidth(MaxWidth::SevenExtraLarge),
             ])
             ->groupedBulkActions([
                 Tables\Actions\DeleteBulkAction::make()
@@ -220,6 +250,68 @@ class OrderResource extends Resource
                     ->date()
                     ->collapsible(),
             ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist->schema(static::getInfolistSchema());
+    }
+
+    public static function getInfolistSchema(): array
+    {
+        return [
+            Info\Section::make('Thông tin đơn hàng')
+                ->schema([
+                    Info\Grid::make(2)
+                        ->schema([
+                            Info\TextEntry::make('code_orders')->label('Mã đơn hàng'),
+                            Info\TextEntry::make('user.name')->label('Khách hàng'),
+                            Info\TextEntry::make('ship_address')->label('Địa chỉ giao hàng'),
+                            Info\TextEntry::make('email_receiver')->label('Email người nhận'),
+                            Info\TextEntry::make('status')->label('Trạng thái')->badge(),
+                            Info\TextEntry::make('shipping_fee')
+                                ->label('Phí vận chuyển')
+                                ->formatStateUsing(fn($state) => number_format((float) $state, 0, ',', '.') . ' ₫'),
+                            Info\TextEntry::make('subtotal')
+                                ->label('Tổng tiền sản phẩm')
+                                ->formatStateUsing(fn($state) => number_format((float) $state, 0, ',', '.') . ' ₫'),
+                            Info\TextEntry::make('total')
+                                ->label('Tổng tiền đơn hàng')
+                                ->formatStateUsing(fn($state) => number_format((float) $state, 0, ',', '.') . ' ₫'),
+                            Info\TextEntry::make('created_at')->dateTime()->label('Ngày tạo'),
+                            Info\TextEntry::make('updated_at')->dateTime()->label('Cập nhật'),
+                        ]),
+                ]),
+
+            Info\Section::make('Sản phẩm trong đơn hàng')
+                ->schema([
+                    Info\RepeatableEntry::make('items')
+                        ->hiddenLabel()
+                        ->schema([
+                            Info\Grid::make(5)
+                                ->schema([
+                                    Info\TextEntry::make('product.name')
+                                        ->label('Sản phẩm')
+                                        ->columnSpan(2),
+                                    Info\TextEntry::make('quantity')->label('Số lượng'),
+                                    Info\TextEntry::make('price')
+                                        ->label('Đơn giá')
+                                        ->state(fn($record) => (float) static::orderService()->getProductCurrentPrice((int) ($record->product_id ?? 0)))
+                                        ->formatStateUsing(fn($state) => number_format((float) $state, 0, ',', '.') . ' ₫'),
+                                    Info\TextEntry::make('total')
+                                        ->label('Tổng tiền')
+                                        ->state(function ($record) {
+                                            $unit = (float) static::orderService()->getProductCurrentPrice((int) ($record->product_id ?? 0));
+                                            $qty = (float) ($record->quantity ?? 0);
+                                            return $unit * $qty;
+                                        })
+                                        ->formatStateUsing(fn($state) => number_format((float) $state, 0, ',', '.') . ' ₫'),
+                                ])
+                        ])
+                        ->columnSpanFull(),
+                ])
+                ->columnSpanFull(),
+        ];
     }
 
     public static function getRelations(): array
@@ -261,7 +353,7 @@ class OrderResource extends Resource
             $query->where('user_id', $user->id);
         }
 
-        return $query;
+        return $query->with(['payments', 'user']);
     }
 
 

@@ -14,6 +14,7 @@ use App\Models\Product;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use App\Models\Category;
+use App\Services\Products\ProductServiceInterface;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -49,7 +50,7 @@ class ProductResource extends Resource
                 ->label('Tên')
                 ->required()
                 ->maxLength(255)
-                ->live(debounce: 500)
+                ->live(debounce: 2000)
                 ->afterStateUpdated(function ($state, callable $set) {
                     if (!$state) {
                         $set('slug', '');
@@ -127,16 +128,24 @@ class ProductResource extends Resource
             Forms\Components\TextInput::make('step_price')
                 ->label('Bước giá')
                 ->numeric()
-                ->default(10000)
                 ->requiredIf('type_sale', ProductTypeSale::AUCTION->value)
                 ->visible(function ($get) {
                     $t = $get('type_sale');
                     $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
                     return $v === ProductTypeSale::AUCTION->value;
                 })
-                ->dehydrated(false)
-                ->default(function (?\App\Models\Product $record) {
-                    return $record?->auction?->step_price;
+                ->afterStateHydrated(function (\Filament\Forms\Set $set, \Filament\Forms\Get $get) {
+                    $productId = (int) ($get('id') ?? 0);
+                    if ($productId > 0) {
+                        $step = app(ProductServiceInterface::class)->getAuctionStepPriceByProductId($productId);
+                        if ($step !== null) {
+                            $set('step_price', $step);
+                            return;
+                        }
+                    }
+                    if ($get('step_price') === null) {
+                        $set('step_price', 10000);
+                    }
                 }),
             Forms\Components\DateTimePicker::make('start_time')
                 ->label('Thời gian bắt đầu')

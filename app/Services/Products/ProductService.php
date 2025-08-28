@@ -293,6 +293,15 @@ class ProductService extends BaseService implements ProductServiceInterface
         return $prefix . '_' . $serialized;
     }
 
+    public function getAuctionStepPriceByProductId(int $productId): ?float
+    {
+        $auction = $this->getRepository('auction')->getAuctionByProductId($productId);
+        if (!$auction) {
+            return null;
+        }
+        return isset($auction->step_price) ? (float) $auction->step_price : null;
+    }
+
     public function createProductWithSideEffects(array $data, int $userId): Product
     {
         $typeRaw = $data['type_sale'] ?? ProductTypeSale::SALE->value;

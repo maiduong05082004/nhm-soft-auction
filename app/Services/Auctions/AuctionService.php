@@ -205,6 +205,22 @@ class AuctionService extends BaseService implements AuctionServiceInterface
         }
     }
 
+    public function updateStepPriceByProductId(int $productId, float $stepPrice): bool
+    {
+        try {
+            $auction = $this->auctionRepo->getAuctionByProductId($productId);
+            if (!$auction) {
+                throw new ServiceException('Không tìm thấy phiên đấu giá cho sản phẩm này!');
+            }
+            $auction->step_price = $stepPrice;
+            return (bool) $auction->save();
+        } catch (ServiceException $e) {
+            return false;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
     public function validateBid($productId, $bidPrice, $userId)
     {
         try {
