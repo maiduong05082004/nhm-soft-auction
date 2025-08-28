@@ -17,6 +17,7 @@ use App\Repositories\CreditCards\CreditCardRepository;
 use App\Utils\HelperFunc;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Services\Products\ProductService;
 
 class CheckoutService extends BaseService implements CheckoutServiceInterface
 {
@@ -27,6 +28,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
     protected $creditCardRepo;
     protected $auctionRepo;
     protected $auctionBidRepo;
+    protected $productService;
 
     public function __construct(
         OrderRepository $orderRepo,
@@ -37,7 +39,8 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
         ProductRepository $productRepo,
         CreditCardRepository $creditCardRepo,
         AuctionRepository $auctionRepo,
-        AuctionBidRepository $auctionBidRepo
+        AuctionBidRepository $auctionBidRepo,
+        ProductService $productService
     ) {
         parent::__construct([
             'order' => $orderRepo,
@@ -58,6 +61,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
         $this->creditCardRepo = $creditCardRepo;
         $this->auctionRepo = $auctionRepo;
         $this->auctionBidRepo = $auctionBidRepo;
+        $this->productService = $productService;
     }
 
     public function processCheckout(int $userId, array $checkoutData): array
@@ -81,6 +85,11 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             }
 
             $total = $cartResult->sum(function ($item) {
+                $product = $this->repositories['product']->find($item->product_id);
+                if ($product) {
+                    $currentPrice = $this->productService->getCurrentProductPrice($product);
+                    return $currentPrice * $item->quantity;
+                }
                 return $item->price * $item->quantity;
             });
             $orderDetailStatus = $checkoutData['payment_method'] == '1' ? 1 : 2;
@@ -104,11 +113,15 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             $orderDetail = $this->getRepository('orderDetail')->insertOne($orderDetailData);
             
             foreach ($cartResult as $cartItem) {
+                $product = $this->repositories['product']->find($cartItem->product_id);
+                $currentPrice = $product ? $this->productService->getCurrentProductPrice($product) : $cartItem->price;
+                
                 $orderData = [
                     'product_id' => $cartItem->product_id,
                     'order_detail_id' => $orderDetail->id,
                     'quantity' => $cartItem->quantity,
-                    'total' => $cartItem->price * $cartItem->quantity,
+                    'price' => $currentPrice,
+                    'total' => $currentPrice * $cartItem->quantity,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -120,7 +133,6 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 );
             }
 
-            if ($checkoutData['payment_method'] == '1') {
                 $paymentData = [
                     'user_id' => $userId,
                     'order_detail_id' => $orderDetail->id,
@@ -136,8 +148,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                     'status' => $checkoutData['payment_method'] === '1' ? 'pending' : 'success',
                 ];
                 
-                $this->getRepository('payment')->insertOne($paymentData);
-            }
+                $this->getRepository('payment')->insertOne($paymentData);            
 
             $cartResult->each(function ($item) {
                 $item->delete();
@@ -228,8 +239,6 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
     public function processAuctionWinnerPayment(int $userId, int $auctionId): array
     {
         try {
-            DB::beginTransaction();
-
             $auction = $this->auctionRepo->getAll(['id' => $auctionId])->first();
             if (!$auction) {
                 throw new ServiceException('Không tìm thấy phiên đấu giá!');
@@ -251,28 +260,85 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 throw new ServiceException('Bạn không phải người thắng phiên đấu giá này!');
             }
 
-            $hasCredit = (bool) $this->creditCardRepo->getAll([])->first();
-            if (!$hasCredit) {
-                throw new ServiceException('Chưa cấu hình tài khoản nhận thanh toán (VietQR)!');
-            }
-
             $user = $this->userRepo->getAll(['id' => $userId])->first();
             if (!$user) {
                 throw new ServiceException('Không tìm thấy người dùng!');
             }
 
+            return [
+                'success' => true,
+                'message' => 'Chuyển đến trang thanh toán!',
+                'data' => [
+                    'auction_id' => $auctionId,
+                    'product_id' => $auction->product_id,
+                    'amount' => $winnerBid->bid_price,
+                    'redirect_to' => 'checkout',
+                    'checkout_data' => [
+                        'auction_id' => $auctionId,
+                        'product_id' => $auction->product_id,
+                        'quantity' => 1,
+                        'amount' => $winnerBid->bid_price,
+                        'name' => $user->name ?? '',
+                        'email' => $user->email ?? '',
+                        'phone' => $user->phone ?? '',
+                        'address' => $user->address ?? '',
+                        'note' => 'Thanh toán sản phẩm đấu giá #' . $auction->id,
+                    ]
+                ],
+            ];
+
+        } catch (ServiceException $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data' => null,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi khởi tạo thanh toán!',
+                'data' => null,
+            ];
+        }
+    }
+
+    public function processAuctionCheckout(int $userId, array $checkoutData): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $auction = $this->auctionRepo->getAll(['id' => $checkoutData['auction_id']])->first();
+            if (!$auction) {
+                throw new ServiceException('Không tìm thấy phiên đấu giá!');
+            }
+
+            $winnerBid = $this->auctionBidRepo->query()
+                ->where('auction_id', $checkoutData['auction_id'])
+                ->orderBy('bid_price', 'desc')
+                ->first();
+            if (!$winnerBid || (int)$winnerBid->user_id !== (int)$userId) {
+                throw new ServiceException('Bạn không phải người thắng phiên đấu giá này!');
+            }
+
+            $user = $this->userRepo->getAll(['id' => $userId])->first();
+            if (!$user) {
+                throw new ServiceException('Không tìm thấy thông tin người dùng!');
+            }
+
             $amount = $winnerBid->bid_price;
+            $orderDetailStatus = $checkoutData['payment_method'] == '1' ? 1 : 2; // 1=pending, 2=processing
+            
             $orderDetailData = [
                 'code_orders' => 'ORD' . HelperFunc::getTimestampAsId(),
                 'user_id' => $userId,
-                'email_receiver' => $user->email ?? '',
-                'ship_address' => $user->address ?? '',
-                'payment_method' => '1',
+                'email_receiver' => $checkoutData['email'] ?? $user->email,
+                'ship_address' => $checkoutData['address'] ?? $user->address,
+                'payment_method' => $checkoutData['payment_method'],
                 'shipping_fee' => 0,
                 'subtotal' => $amount,
                 'total' => $amount,
-                'note' => 'Thanh toán sản phẩm đấu giá #' . $auction->id,
-                'status' => 1,
+                'note' => $checkoutData['note'] ?? 'Thanh toán sản phẩm đấu giá #' . $auction->id,
+                'status' => $orderDetailStatus,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -283,6 +349,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 'product_id' => $auction->product_id,
                 'order_detail_id' => $orderDetail->id,
                 'quantity' => 1,
+                'price' => $amount,
                 'total' => $amount,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -294,17 +361,18 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 ['stock' => DB::raw('GREATEST(stock - 1, 0)')]
             );
 
+            $paymentStatus = $checkoutData['payment_method'] === '1' ? 'pending' : 'success';
             $paymentData = [
                 'user_id' => $userId,
                 'order_detail_id' => $orderDetail->id,
                 'amount' => $amount,
-                'payment_method' => '1',
-                'status' => 'pending',
+                'payment_method' => $checkoutData['payment_method'],
+                'status' => $paymentStatus,
                 'transaction_id' => 'TXN-' . HelperFunc::getTimestampAsId(),
                 'payer_id' => HelperFunc::getTimestampAsId(),
                 'pay_date' => now(),
                 'currency_code' => 'VND',
-                'payer_email' => $user->email ?? '',
+                'payer_email' => $checkoutData['email'] ?? $user->email,
                 'transaction_fee' => 0,
             ];
             $this->getRepository('payment')->insertOne($paymentData);
@@ -312,25 +380,27 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             DB::commit();
             return [
                 'success' => true,
-                'message' => 'Khởi tạo thanh toán thành công!',
+                'message' => 'Đặt hàng thành công!',
                 'data' => [
                     'order_detail_id' => $orderDetail->id,
                     'code_orders' => $orderDetail->code_orders,
-                ],
+                    'payment_status' => $paymentStatus,
+                ]
             ];
+
         } catch (ServiceException $e) {
             DB::rollBack();
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
-                'data' => null,
+                'data' => null
             ];
         } catch (\Exception $e) {
             DB::rollBack();
             return [
                 'success' => false,
-                'message' => 'Có lỗi xảy ra khi khởi tạo thanh toán!',
-                'data' => null,
+                'message' => 'Có lỗi xảy ra khi xử lý đơn hàng!',
+                'data' => $e->getMessage()
             ];
         }
     }

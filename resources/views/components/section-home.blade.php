@@ -5,7 +5,7 @@
         </h1>
     </header>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    <div class="grid sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         @foreach ($products->take(10) as $product)
             <x-product-card :product="$product" />
         @endforeach

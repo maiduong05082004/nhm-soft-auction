@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\CommonConstant;
 use App\Enums\Permission\RoleConstant;
 use App\Enums\Product\ProductPaymentMethod;
 use App\Enums\Product\ProductState;
@@ -13,6 +14,7 @@ use App\Models\Product;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use App\Models\Category;
+use App\Services\Products\ProductServiceInterface;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -48,7 +50,7 @@ class ProductResource extends Resource
                 ->label('Tên')
                 ->required()
                 ->maxLength(255)
-                ->live(debounce: 500)
+                ->live(debounce: 2000)
                 ->afterStateUpdated(function ($state, callable $set) {
                     if (!$state) {
                         $set('slug', '');
@@ -126,16 +128,24 @@ class ProductResource extends Resource
             Forms\Components\TextInput::make('step_price')
                 ->label('Bước giá')
                 ->numeric()
-                ->default(10000)
                 ->requiredIf('type_sale', ProductTypeSale::AUCTION->value)
                 ->visible(function ($get) {
                     $t = $get('type_sale');
                     $v = $t instanceof \App\Enums\Product\ProductTypeSale ? $t->value : (int) $t;
                     return $v === ProductTypeSale::AUCTION->value;
                 })
-                ->dehydrated(false)
-                ->default(function (?\App\Models\Product $record) {
-                    return $record?->auction?->step_price;
+                ->afterStateHydrated(function (\Filament\Forms\Set $set, \Filament\Forms\Get $get) {
+                    $productId = (int) ($get('id') ?? 0);
+                    if ($productId > 0) {
+                        $step = app(ProductServiceInterface::class)->getAuctionStepPriceByProductId($productId);
+                        if ($step !== null) {
+                            $set('step_price', $step);
+                            return;
+                        }
+                    }
+                    if ($get('step_price') === null) {
+                        $set('step_price', 10000);
+                    }
                 }),
             Forms\Components\DateTimePicker::make('start_time')
                 ->label('Thời gian bắt đầu')
@@ -203,7 +213,8 @@ class ProductResource extends Resource
                 ->reactive()
                 ->afterStateUpdated(function (bool $state, callable $set) {
                     if (!auth()->user()->hasRole(RoleConstant::ADMIN)) {
-                        $can = !auth()->user()['activeMemberships'][0]['config']['featured_listing'];
+                        $plansUsers = array_filter(auth()->user()['membershipUsers']->all(), fn($item) => $item['status'] == CommonConstant::ACTIVE);
+                        $can = ! $plansUsers[array_key_first($plansUsers)]['membershipPlan']['config']['featured_listing'];
 
                         if ($can) {
                             $set('is_hot', false);
@@ -237,7 +248,7 @@ class ProductResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->modifyQueryUsing(fn(Builder $query) => $query->with('firstImage', 'category'),)
+        return $table->modifyQueryUsing(fn(Builder $query) => $query->with('firstImage', 'category')->orderBy('created_at','desc'),)
             ->recordUrl(fn($record): string => static::getUrl('edit', ['record' => $record]))
             ->columns([
                 Tables\Columns\TextColumn::make('name')

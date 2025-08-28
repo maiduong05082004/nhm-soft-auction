@@ -24,6 +24,7 @@ class Payment extends Model
         'payer_email',
         'transaction_fee',
         'status',
+        'confirmation_at',
     ];
 
     protected static function boot()

@@ -9,6 +9,7 @@ use App\Services\BaseService;
 use App\Repositories\Orders\OrderRepository;
 use App\Repositories\Products\ProductRepository;
 use App\Services\Orders\OrderServiceInterface;
+use App\Services\Products\ProductService;
 use App\Utils\HelperFunc;
 use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
@@ -17,12 +18,15 @@ use App\Models\Order;
 
 class OrderService extends BaseService implements OrderServiceInterface
 {
-    public function __construct(OrderRepository $orderDetailRepo, ProductRepository $productRepo)
+    protected ProductService $productService;
+
+    public function __construct(OrderRepository $orderDetailRepo, ProductRepository $productRepo, ProductService $productService)
     {
         parent::__construct([
             'orderDetail' => $orderDetailRepo,
             'product' => $productRepo,
         ]);
+        $this->productService = $productService;
     }
 
     public function calculateSubtotal(array $items): float
@@ -31,10 +35,19 @@ class OrderService extends BaseService implements OrderServiceInterface
         foreach ($items as $item) {
             $quantity = (float)($item['quantity'] ?? 0);
             $productId = $item['product_id'] ?? null;
-            $price = $productId ? (float)(Product::find($productId)?->price ?? 0) : (float)($item['price'] ?? 0);
+            $price = $productId ? $this->getProductCurrentPrice($productId) : (float)($item['price'] ?? 0);
             $subtotal += $quantity * $price;
         }
         return $subtotal;
+    }
+
+    public function getProductCurrentPrice(int $productId): float
+    {
+        $product = $this->repositories['product']->find($productId);
+        if (!$product) {
+            return 0.0;
+        }
+        return $this->productService->getCurrentProductPrice($product);
     }
 
     public function calculateTotal(array $items, float $shippingFee = 0): float
@@ -114,6 +127,30 @@ class OrderService extends BaseService implements OrderServiceInterface
             'transaction_fee' => 0,
             'status' => $paymentMethod === '1' ? 'pending' : 'success',
         ]);
+    }
+
+    public function syncOrderTotals(OrderDetail $orderDetail): void
+    {
+        $orderDetail->loadMissing('items');
+
+        $subtotal = 0.0;
+        foreach ($orderDetail->items as $item) {
+            $price = (float) (Product::find($item->product_id)?->price ?? 0);
+            $quantity = (float) ($item->quantity ?? 0);
+            $lineTotal = $quantity * $price;
+
+            if ((float) $item->total !== $lineTotal) {
+                $item->forceFill(['total' => $lineTotal])->save();
+            }
+
+            $subtotal += $lineTotal;
+        }
+
+        $shippingFee = (float) ($orderDetail->shipping_fee ?? 0);
+        $orderDetail->forceFill([
+            'subtotal' => $subtotal,
+            'total' => $subtotal + $shippingFee,
+        ])->save();
     }
     
     public function processCheckout(int $userId, array $checkoutData): array

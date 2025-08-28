@@ -5,6 +5,7 @@ namespace App\Services\Products;
 use App\Enums\Product\ProductPaymentMethod;
 use App\Enums\Product\ProductState;
 use App\Enums\Product\ProductTypeSale;
+use App\Enums\ConfigMembership;
 use App\Services\BaseService;
 use App\Repositories\Products\ProductRepository;
 use App\Repositories\ProductImages\ProductImageRepository;
@@ -16,6 +17,7 @@ use App\Repositories\TransactionPoint\TransactionPointRepository;
 use App\Repositories\OrderDetails\OrderDetailRepository;
 use App\Repositories\Payments\PaymentRepository;
 use App\Repositories\Orders\OrderRepository;
+use App\Repositories\MembershipUser\MembershipUserRepository;
 use App\Services\Evaluates\EvaluateService;
 use App\Services\Config\ConfigService;
 use App\Services\Products\ProductServiceInterface;
@@ -40,7 +42,8 @@ class ProductService extends BaseService implements ProductServiceInterface
         ConfigService $configService,
         TransactionPointRepository $transactionPointRepo,
         OrderDetailRepository $orderDetailRepo,
-        PaymentRepository $paymentRepo
+        PaymentRepository $paymentRepo,
+        MembershipUserRepository $membershipUserRepo
     ) {
         parent::__construct([
             'product' => $productRepo,
@@ -53,6 +56,7 @@ class ProductService extends BaseService implements ProductServiceInterface
             'order' => app(OrderRepository::class),
             'orderDetail' => $orderDetailRepo,
             'payment' => $paymentRepo,
+            'membershipUser' => $membershipUserRepo,
         ]);
         $this->productRepository = $productRepo;
         $this->evaluateService = $evaluateService;
@@ -107,7 +111,27 @@ class ProductService extends BaseService implements ProductServiceInterface
                     }
                 }
             }
-            $payment = $orderDetail ? $this->repositories['payment']->getAll(['order_detail_id' => $orderDetail->id])->first() : null;
+            $currentUserOrderDetail = null;
+            $currentUserPayment = null;
+            $isCurrentUserPaid = false;
+            
+            if (auth()->check()) {
+                $currentUserId = auth()->id();
+                $currentUserOrderDetail = $this->repositories['orderDetail']->getAll([
+                    'user_id' => $currentUserId,
+                ])->first(function ($od) use ($product) {
+                    $order = $this->repositories['order']->getAll(['order_detail_id' => $od->id, 'product_id' => $product->id])->first();
+                    return $order !== null;
+                });
+                
+                if ($currentUserOrderDetail) {
+                    $currentUserPayment = $this->repositories['payment']->getAll(['order_detail_id' => $currentUserOrderDetail->id])->first();
+                    
+                    $isCurrentUserPaid = $currentUserPayment && ($currentUserPayment->status === 'success');
+                }
+            }
+            
+            $payment = $currentUserPayment ?: ($orderDetail ? $this->repositories['payment']->getAll(['order_detail_id' => $orderDetail->id])->first() : null);
 
             $auctionData = [
                 'auction' => $auction,
@@ -119,6 +143,8 @@ class ProductService extends BaseService implements ProductServiceInterface
                 'order' => $order,
                 'orderDetail' => $orderDetail,
                 'payment' => $payment,
+                'currentUserOrderDetail' => $currentUserOrderDetail,
+                'isCurrentUserPaid' => $isCurrentUserPaid,
             ];
         }
 
@@ -159,7 +185,31 @@ class ProductService extends BaseService implements ProductServiceInterface
         $totalCoinCost = $coinBindProductAuction * $priceOneCoin;
         $categories = $this->getTreeListCategory();
 
-        return compact('product', 'product_images', 'auction', 'user', 'userPresent', 'product_category','categories' ,'typeSale', 'totalBids', 'currentPrice', 'auctionData', 'followersCount', 'productStateLabel', 'productPaymentMethodLabel', 'coinBindProductAuction', 'priceOneCoin', 'totalCoinCost') + $evaluateStats + $sellerStats;
+        $userMembership = null;
+        $canParticipateAuctions = false;
+        
+        if (auth()->check()) {
+            $currentUserId = auth()->id();
+            
+            $activeMembership = $this->repositories['membershipUser']->getAll([
+                'user_id' => $currentUserId,
+                'status' => 1,
+            ])->where('end_date', '>=', now())->first();
+            
+            if ($activeMembership) {
+                $activeMembership->load('membershipPlan');
+            }
+            
+            if ($activeMembership) {
+                $membershipPlan = $activeMembership->membershipPlan;
+                if ($membershipPlan) {
+                    $userMembership = $membershipPlan;
+                    $canParticipateAuctions = $membershipPlan->canParticipateAuctionsFree();
+                }
+            }
+        }
+
+        return compact('product', 'product_images', 'auction', 'user', 'userPresent', 'product_category', 'typeSale', 'totalBids', 'currentPrice', 'auctionData', 'followersCount', 'productStateLabel', 'productPaymentMethodLabel', 'coinBindProductAuction', 'priceOneCoin', 'totalCoinCost', 'userMembership', 'canParticipateAuctions') + $evaluateStats + $sellerStats;
     }
 
     public function filterProductList($query = [], $page = 1, $perPage = 12)
@@ -206,6 +256,22 @@ class ProductService extends BaseService implements ProductServiceInterface
         return number_format((float)$price, 0, ',', '.') . ' ₫';
     }
 
+    public function getCurrentProductPrice(Product $product): float
+    {
+        if ((int)($product->type_sale ?? 0) === ProductTypeSale::AUCTION->value) {
+            $auction = $product->relationLoaded('auction') 
+                ? $product->auction 
+                : $this->repositories['auction']->getAuctionByProductId($product->id);
+            
+            if ($auction) {
+                $highestBid = $this->repositories['auction']->getHighestBid($auction->id);
+                return $highestBid ? (float) $highestBid->bid_price : (float) ($auction->start_price ?? 0);
+            }
+        }
+        
+        return (float) ($product->price ?? 0);
+    }
+
     public function getTreeListCategory()
     {
         $cacheKey = $this->buildCacheKey('product_category');
@@ -226,6 +292,15 @@ class ProductService extends BaseService implements ProductServiceInterface
     {
         $serialized = serialize($params);
         return $prefix . '_' . $serialized;
+    }
+
+    public function getAuctionStepPriceByProductId(int $productId): ?float
+    {
+        $auction = $this->getRepository('auction')->getAuctionByProductId($productId);
+        if (!$auction) {
+            return null;
+        }
+        return isset($auction->step_price) ? (float) $auction->step_price : null;
     }
 
     public function createProductWithSideEffects(array $data, int $userId): Product

@@ -29,6 +29,10 @@ class EditProduct extends EditRecord
         } else if ($typeSale === 'auction' || $typeSale === '2') {
             $data['price'] = $data['max_bid_amount'] ?? 0;
         }
+        if (!empty($data['step_price'])) {
+            $auctionService = app(AuctionServiceInterface::class);
+            $auctionService->updateStepPriceByProductId((int) $this->record->id, (float) $data['step_price']);
+        }
         return $data;
     }
 

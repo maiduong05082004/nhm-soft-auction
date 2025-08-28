@@ -2,13 +2,11 @@
 
 namespace App\Filament\Resources\OrderResource\RelationManagers;
 
-use Akaunting\Money\Currency;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
 
 class PaymentsRelationManager extends RelationManager
 {
@@ -20,8 +18,8 @@ class PaymentsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('order_id')
-                    ->label('Mã thanh toán')
+                Forms\Components\TextInput::make('order_detail_id')
+                    ->label('Mã đơn hàng')
                     ->disabled()
                     ->columnSpan('full')
                     ->required(),
@@ -29,7 +27,6 @@ class PaymentsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('amount')
                     ->label('Số tiền thanh toán')
                     ->numeric()
-                    ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
                     ->required(),
 
                 Forms\Components\Select::make('payment_method')
@@ -46,45 +43,43 @@ class PaymentsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->heading('Thanh toán')
             ->columns([
-                Tables\Columns\ColumnGroup::make('Details')
-                    ->columns([
-                        Tables\Columns\TextColumn::make('order_id')
-                            ->label('Mã đơn hàng')
-                            ->searchable(),
+                Tables\Columns\TextColumn::make('orderDetail.code_orders')
+                    ->label('Mã đơn hàng')
+                    ->sortable(),
 
-                        Tables\Columns\TextColumn::make('amount')
-                            ->label('Số tiền thanh toán')
-                            ->sortable()
-                            ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫'),
-                    ]),
+                Tables\Columns\TextColumn::make('amount')
+                    ->label('Số tiền thanh toán')
+                    ->sortable()
+                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫'),
 
-                Tables\Columns\ColumnGroup::make('Context')
-                    ->columns([
-                        Tables\Columns\TextColumn::make('payment_method')
-                            ->label('Phương thức thanh toán')
-                            ->formatStateUsing(function ($state) {
-                                if ($state == '1') {
-                                    return 'Chuyển khoản ngân hàng';
-                                } else {
-                                    return 'Giao dịch trực tiếp';
-                                }
-                            })
-                            ->sortable(),
-                    ]),
+                Tables\Columns\TextColumn::make('payment_method')
+                    ->label('Phương thức thanh toán')
+                    ->formatStateUsing(function ($state) {
+                        if ($state == '1') {
+                            return 'Chuyển khoản ngân hàng';
+                        } else {
+                            return 'Giao dịch trực tiếp';
+                        }
+                    })
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Trạng thái')
+                    ->badge()
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($record->payment_method == '0') {
+                            return $state == 'success' ? 'Giao dịch trực tiếp' : 'Chưa nhận tiền';
+                        }
+                        if ($record->payment_method == '1') {
+                            return $state == 'success' ? 'Đã thanh toán' : 'Chưa thanh toán';
+                        }
+                        return 'Không xác định';
+                    })
+                    ->sortable(),
             ])
             ->filters([
                 //
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->groupedBulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 }

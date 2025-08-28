@@ -124,14 +124,17 @@
                                     <div class="rating w-20">
                                         @for ($i = 1; $i <= 5; $i++)
                                             @if ($i <= ($averageRating ?? 0))
-                                                <div class="mask mask-star-2 bg-[#ffda45]" aria-label="{{ $i }} star"></div>
+                                                <div class="mask mask-star-2 bg-[#ffda45]"
+                                                    aria-label="{{ $i }} star"></div>
                                             @else
-                                                <div class="mask mask-star-2 bg-slate-300" aria-label="{{ $i }} star"></div>
+                                                <div class="mask mask-star-2 bg-slate-300"
+                                                    aria-label="{{ $i }} star"></div>
                                             @endif
                                         @endfor
                                     </div>
                                     <span class="ml-2 text-slate-600">
-                                        <span class="font-bold text-black">{{ number_format($averageRating ?? 0, 1) }}</span> 
+                                        <span
+                                            class="font-bold text-black">{{ number_format($averageRating ?? 0, 1) }}</span>
                                         ({{ $totalReviews ?? 0 }} đánh giá)
                                     </span>
                                 @else
@@ -287,27 +290,35 @@
                                         @endif
                                         @if ($isCurrentUserWinner)
                                             @php
-                                                $pm = $auctionData['payment'] ?? null;
-                                                $paid = $pm && ($pm->status === 'success');
+                                                $paid = $auctionData['isCurrentUserPaid'] ?? false;
                                             @endphp
-                                            <div class="rounded-lg p-3 border {{ $paid ? 'bg-green-50 border-green-200' : 'bg-yellow-100 border-yellow-200' }}">
+                                            <div
+                                                class="rounded-lg p-3 border {{ $paid ? 'bg-green-50 border-green-200' : 'bg-yellow-100 border-yellow-200' }}">
                                                 <div class="text-sm text-gray-800 mb-3">
                                                     Trạng thái thanh toán:
                                                     @if ($paid)
-                                                        <span class="badge badge-success ml-2">Đã thanh toán</span>
+                                                        <span class="badge badge-success ml-2 mb-3">Đã thanh toán</span>
+                                                        <a href="{{ url('admin/orders') }}"
+                                                            class="btn btn-neutral w-full">Quản lý đơn hàng</a>
                                                     @else
                                                         <span class="badge badge-warning ml-2">Chờ thanh toán</span>
                                                     @endif
                                                 </div>
+
                                                 @unless ($paid)
-                                                    <form method="POST" action="{{ route('auction.pay-now') }}" class="flex flex-col sm:flex-row gap-2">
+                                                    <form method="POST" action="{{ route('auction.pay-now') }}"
+                                                        class="flex flex-col sm:flex-row gap-2">
                                                         @csrf
-                                                        <input type="hidden" name="auction_id" value="{{ $auctionData['auction']->id ?? '' }}" />
-                                                        <button type="submit" class="btn btn-neutral flex-1">Thanh toán ngay</button>
+                                                        <input type="hidden" name="auction_id"
+                                                            value="{{ $auctionData['auction']->id ?? '' }}" />
+                                                        <button type="submit" class="btn btn-neutral flex-1">Thanh toán
+                                                            ngay</button>
                                                         @if (!empty($user->email))
-                                                            <a href="mailto:{{ $user->email }}" class="btn btn-outline">Liên hệ người bán</a>
+                                                            <a href="mailto:{{ $user->email }}" class="btn btn-outline">Liên
+                                                                hệ người bán</a>
                                                         @elseif (!empty($user->phone))
-                                                            <a href="tel:{{ $user->phone }}" class="btn btn-outline">Liên hệ người bán</a>
+                                                            <a href="tel:{{ $user->phone }}" class="btn btn-outline">Liên hệ
+                                                                người bán</a>
                                                         @else
                                                             <a href="#" class="btn btn-outline">Liên hệ người bán</a>
                                                         @endif
@@ -377,11 +388,27 @@
                                                     value="{{ $auctionData['min_next_bid'] }}"
                                                     class="input input-bordered w-full text-sm rounded-lg">
                                             </div>
-                                            <button type="button"
-                                                class="w-full btn btn-neutral text-white font-semibold rounded-lg"
-                                                onclick="showBidConfirmation(event)">
-                                                Đấu giá ngay
-                                            </button>
+                                            @if(auth()->check())
+                                                @if($canParticipateAuctions)
+                                                    <button type="button"
+                                                        class="w-full btn btn-neutral text-white font-semibold rounded-lg"
+                                                        onclick="showBidConfirmation(event)">
+                                                        Đấu giá ngay
+                                                    </button>
+                                                @else
+                                                    <a href="{{ url('/admin/buy-memberships') }}" 
+                                                        class="w-full btn btn-outline font-semibold rounded-lg text-center"
+                                                       >
+                                                        Mua gói thành viên
+                                                    </a>
+                                                @endif
+                                            @else
+                                                <button type="button"
+                                                    class="w-full btn btn-outline font-semibold rounded-lg"
+                                                    onclick="window.location.href='{{ url('/admin/login') }}'">
+                                                    Đăng nhập để đấu giá
+                                                </button>
+                                            @endif
                                         </form>
                                     </div>
 
@@ -401,7 +428,8 @@
                                                 data-increment="500000">+500.000</button>
                                         </div>
                                         <div class="">
-                                            <button type="button" class="btn btn-outline !border-[#6c6a69] rounded-lg w-full"
+                                            <button type="button"
+                                                class="btn btn-outline !border-[#6c6a69] rounded-lg w-full"
                                                 onclick="shareProduct()">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
@@ -457,7 +485,8 @@
                                 </div>
                             @endif
                         @else
-                            <form id="add-to-cart-form" action="{{ route('cart.add', $product->id) }}" method="POST" class="mt-4">
+                            <form id="add-to-cart-form" action="{{ route('cart.add', $product->id) }}" method="POST"
+                                class="mt-4">
                                 @csrf
                                 <div class="flex items-center space-x-4">
                                     <div class="flex flex-col">
@@ -495,10 +524,12 @@
                                     Thêm vào giỏ hàng
                                 </button>
                                 <div class="grid grid-cols-2 gap-2 mt-4">
-                                    <button type="button" class="btn btn-outline wishlist-btn !border-[#6c6a69] rounded-lg" id="btn-add-wishlist" data-id="{{ $product->id }}" aria-label="Đã thêm vào danh sách yêu thích">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                            viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
-                                            class="size-[1.2em]">
+                                    <button type="button"
+                                        class="btn btn-outline wishlist-btn !border-[#6c6a69] rounded-lg"
+                                        id="btn-add-wishlist" data-id="{{ $product->id }}"
+                                        aria-label="Đã thêm vào danh sách yêu thích">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="2.5" stroke="currentColor" class="size-[1.2em]">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
                                         </svg>
@@ -506,9 +537,8 @@
                                     </button>
                                     <button type="button" class="btn btn-outline !border-[#6c6a69] rounded-lg"
                                         onclick="shareProduct()">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                            class="size-6">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
                                         </svg>
@@ -738,71 +768,71 @@
             </div>
         </div>
         @if ($product->type_sale === ($typeSale['AUCTION'] ?? 2))
-        <div class="bg-white rounded-lg shadow-sm p-6 mt-6 lg:hidden block m-4">
-            <div class="w-full">
-                <div class="grid w-full grid-cols-3">
-                    <button onclick="showTabMobile('description-mobile')"
-                        class="p-2 text-center border-b-2 border-blue-500 hover:text-slate-500">Mô
-                        tả</button>
-                    <button onclick="showTabMobile('shipping-mobile')"
-                        class="p-2 text-center border-b-2 border-transparent hover:text-slate-500">Vận
-                        chuyển</button>
-                    <button onclick="showTabMobile('seller-mobile')"
-                        class="p-2 text-center border-b-2 border-transparent hover:text-slate-500">Người
-                        bán</button>
-                </div>
-
-                <div id="description-mobile" class="tab-content-mobile mt-6">
-                    <div class="max-w-none">
-                        <pre class="whitespace-pre-wrap font-sans text-base">{!! $product->description ?? 'Chưa có mô tả sản phẩm' !!}</pre>
+            <div class="bg-white rounded-lg shadow-sm p-6 mt-6 lg:hidden block m-4">
+                <div class="w-full">
+                    <div class="grid w-full grid-cols-3">
+                        <button onclick="showTabMobile('description-mobile')"
+                            class="p-2 text-center border-b-2 border-blue-500 hover:text-slate-500">Mô
+                            tả</button>
+                        <button onclick="showTabMobile('shipping-mobile')"
+                            class="p-2 text-center border-b-2 border-transparent hover:text-slate-500">Vận
+                            chuyển</button>
+                        <button onclick="showTabMobile('seller-mobile')"
+                            class="p-2 text-center border-b-2 border-transparent hover:text-slate-500">Người
+                            bán</button>
                     </div>
-                </div>
 
-                <div id="shipping-mobile" class="tab-content-mobile mt-6" style="display: none;">
-                    <div class="space-y-4">
-                        <div class="flex justify-between">
-                            <span>Phí vận chuyển:</span>
-                            <span class="font-semibold">Miễn phí</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Thời gian giao hàng:</span>
-                            <span class="font-semibold">2-3 ngày làm việc</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Đóng gói:</span>
-                            <span class="font-semibold">Cẩn thận, an toàn</span>
+                    <div id="description-mobile" class="tab-content-mobile mt-6">
+                        <div class="max-w-none">
+                            <pre class="whitespace-pre-wrap font-sans text-base">{!! $product->description ?? 'Chưa có mô tả sản phẩm' !!}</pre>
                         </div>
                     </div>
-                </div>
 
-                <div id="seller-mobile" class="tab-content-mobile mt-6" style="display: none;">
-                    <div class="flex items-start space-x-4">
-                        <div class="h-16 w-16 bg-gray-300 rounded-full overflow-hidden">
-                            @if ($user->avatar)
-                                <img src="{{ $user->avatar }}" alt="{{ $user->name }}"
-                                    class="object-cover w-full h-full">
-                            @else
-                                <img src="{{ asset('/images/default-user-icon.png') }}"
-                                    alt="{{ $user->name }}" class="object-cover w-full h-full">
-                            @endif
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="font-semibold text-lg">{{ $user->name ?? 'Người bán' }}</h3>
-                            <div class="flex items-center space-x-2 mt-1">
-                                <div class="flex items-center">
-                                    <span class="text-yellow-500">★</span>
-                                    <span
-                                        class="ml-1 font-semibold">{{ number_format($sellerAverageRating ?? 0, 1) }}</span>
-                                </div>
-                                <span class="text-gray-500">({{ $sellerTotalReviews ?? 0 }} đánh giá)</span>
+                    <div id="shipping-mobile" class="tab-content-mobile mt-6" style="display: none;">
+                        <div class="space-y-4">
+                            <div class="flex justify-between">
+                                <span>Phí vận chuyển:</span>
+                                <span class="font-semibold">Miễn phí</span>
                             </div>
-                            <p class="text-gray-600 mt-2">{{ $user->introduce ?? 'Chưa có giới thiệu' }}</p>
+                            <div class="flex justify-between">
+                                <span>Thời gian giao hàng:</span>
+                                <span class="font-semibold">2-3 ngày làm việc</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Đóng gói:</span>
+                                <span class="font-semibold">Cẩn thận, an toàn</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="seller-mobile" class="tab-content-mobile mt-6" style="display: none;">
+                        <div class="flex items-start space-x-4">
+                            <div class="h-16 w-16 bg-gray-300 rounded-full overflow-hidden">
+                                @if ($user->avatar)
+                                    <img src="{{ $user->avatar }}" alt="{{ $user->name }}"
+                                        class="object-cover w-full h-full">
+                                @else
+                                    <img src="{{ asset('/images/default-user-icon.png') }}" alt="{{ $user->name }}"
+                                        class="object-cover w-full h-full">
+                                @endif
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-lg">{{ $user->name ?? 'Người bán' }}</h3>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <div class="flex items-center">
+                                        <span class="text-yellow-500">★</span>
+                                        <span
+                                            class="ml-1 font-semibold">{{ number_format($sellerAverageRating ?? 0, 1) }}</span>
+                                    </div>
+                                    <span class="text-gray-500">({{ $sellerTotalReviews ?? 0 }} đánh giá)</span>
+                                </div>
+                                <p class="text-gray-600 mt-2">{{ $user->introduce ?? 'Chưa có giới thiệu' }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    @endif
+        @endif
         @if ($product->type_sale === ($typeSale['SALE'] ?? 1))
             <div class="bg-white rounded-lg shadow-sm p-6 mt-6">
                 <div class="w-full">
@@ -976,18 +1006,17 @@
             </div>
         @endif
 
-        <div class="text-lg font-bold text-gray-600 pt-4 mb-4">Sản phẩm này cùng loại</div>
+        <div class="text-lg font-bold text-gray-600 pt-4 mb-4">Sản phẩm cùng loại</div>
         <div class="swiper popularProductsSwiper !p-3">
             <div class="swiper-wrapper">
                 @foreach ($product_category as $item)
-                   
                     <div class="swiper-slide">
                         <x-product-card :product="$item" />
                     </div>
                 @endforeach
             </div>
-            <div class="swiper-button-next !text-gray-600 !w-8 !h-8 !bg-white !rounded-full !shadow-md"></div>
-            <div class="swiper-button-prev !text-gray-600 !w-8 !h-8 !bg-white !rounded-full !shadow-md"></div>
+            <div class="swiper-button-next !text-gray-600 !w-8 !h-8 !bg-white !rounded-full !shadow-md mr-3"></div>
+            <div class="swiper-button-prev !text-gray-600 !w-8 !h-8 !bg-white !rounded-full !shadow-md ml-3"></div>
             <div class="swiper-pagination !bottom-0 !relative !mt-4"></div>
         </div>
     </div>
@@ -1006,20 +1035,8 @@
             <div class="modal-box">
                 <h3 class="font-bold text-lg mb-4">Xác nhận đấu giá</h3>
                 <div class="space-y-4">
-                    @unless ($userHasBidded)
-                        <div role="alert" class="alert alert-warning alert-outline">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-yellow-700 font-medium">Phí tham gia đấu giá</span>
-                            </div>
-                        </div>
-                    @endunless
 
-                    @unless ($userHasBidded)
+                    {{-- @unless ($userHasBidded)
                         <div class="space-y-2">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Số coin cần trừ:</span>
@@ -1047,13 +1064,10 @@
                                 </div>
                             </div>
                         </div>
-                    @endunless
+                    @endunless --}}
 
                     <div class="text-sm text-gray-600">
                         <p>Bạn có chắc chắn muốn tham gia đấu giá sản phẩm này?</p>
-                        @unless ($userHasBidded)
-                            <p class="mt-1">Phí sẽ được trừ từ tài khoản của bạn ngay lập tức.</p>
-                        @endunless
                     </div>
                 </div>
 

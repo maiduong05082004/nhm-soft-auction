@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Takaoa Ooku - Nền tảng mua bán, trả giá trực tuyến ')
-@section('meta_description', 'Xem danh sách các sản phẩm đấu giá mới nhất.')
-@section('meta_keywords', 'đấu giá, mua bán, auctions, sản phẩm')
-@section('og_title', 'Danh sách đấu giá')
-@section('og_description', 'Xem danh sách các sản phẩm đấu giá mới nhất.')
+@section('title', 'Đấu giá trực tuyến uy tín - Sản phẩm HOT, giá tốt nhất | Takaoa Ooku')
+@section('meta_description', 'Khám phá ngay hàng trăm sản phẩm đấu giá trực tuyến trên Takaoa Ooku. Cập nhật mới nhất mỗi ngày, giá khởi điểm hấp dẫn, trả giá linh hoạt và cơ hội sở hữu món đồ bạn yêu thích.')
+@section('meta_keywords', 'đấu giá trực tuyến, mua bán đấu giá, sản phẩm giá rẻ, đấu giá online, Takaoa Ooku')
+@section('og_title', 'Đấu giá trực tuyến uy tín - Cập nhật sản phẩm HOT nhất')
+@section('og_description', 'Tham gia ngay các phiên đấu giá online trên Takaoa Ooku. Giá khởi điểm thấp, sản phẩm đa dạng, cạnh tranh minh bạch. Cơ hội mua được hàng chất lượng với giá tốt nhất!')
 @section('og_image', asset('images/auctions-og.jpg'))
 @section('schema_type', 'CollectionPage')
-@section('schema_name', 'Danh sách đấu giá')
+@section('schema_name', 'Danh sách sản phẩm đấu giá trực tuyến - Takaoa Ooku')
 
 
 @section('content')

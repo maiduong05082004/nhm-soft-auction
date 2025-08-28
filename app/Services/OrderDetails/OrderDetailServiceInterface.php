@@ -6,4 +6,6 @@ use App\Services\BaseServiceInterface;
 
 interface OrderDetailServiceInterface extends BaseServiceInterface
 {
+
+    public function getPaymentByUserId($userId);
 }

@@ -2,20 +2,33 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <a href="{{ route('cart.index') }}" class="btn btn-neutral inline-flex items-center gap-2 text-sm hover:underline mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 19.5L3 12l7.5-7.5M3 12h18"/>
-        </svg>
-        Quay lại giỏ hàng
-    </a>
-
-    <h1 class="text-3xl font-bold mb-3">Thanh toán</h1>
+    @if(isset($auctionCheckoutData))
+        <a href="{{ route('products.show', $auctionCheckoutData['product_slug']) }}" class="btn btn-neutral inline-flex items-center gap-2 text-sm hover:underline mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 19.5L3 12l7.5-7.5M3 12h18"/>
+            </svg>
+            Quay lại sản phẩm
+        </a>
+        <h1 class="text-3xl font-bold mb-3">Thanh toán đấu giá</h1>
+    @else
+        <a href="{{ route('cart.index') }}" class="btn btn-neutral inline-flex items-center gap-2 text-sm hover:underline mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 19.5L3 12l7.5-7.5M3 12h18"/>
+            </svg>
+            Quay lại giỏ hàng
+        </a>
+        <h1 class="text-3xl font-bold mb-3">Thanh toán</h1>
+    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
             <form id="checkout-form" action="{{ route('cart.process') }}" method="POST" class="space-y-6">
                 @csrf
-                <input type="hidden" name="selected" value="{{ $cartItems->pluck('product_id')->implode(',') }}">
+                @if(isset($auctionCheckoutData))
+                    <input type="hidden" name="auction_id" value="{{ $auctionCheckoutData['auction_id'] }}">
+                @else
+                    <input type="hidden" name="selected" value="{{ $cartItems->pluck('product_id')->implode(',') }}">
+                @endif
 
                 <div class="card bg-base-100 shadow">
                     <div class="card-body">
@@ -27,27 +40,31 @@
                         <div class="grid grid-cols-1 gap-4">
                             <div class="form-control">
                                 <div class="text-zinc-600"><span class="label-text">Họ và tên</span></div>
-                                <input type="text" name="name" class="input input-bordered w-full" value="{{ old('name', auth()->user()->name ?? '') }}" required>
+                                <input type="text" name="name" class="input input-bordered w-full" 
+                                    value="{{ old('name', $auctionCheckoutData['name'] ?? auth()->user()->name ?? '') }}" required>
                             </div>
 
                             <div class="form-control">
                                 <div class="text-zinc-600"><span class="label-text">Email</span></div>
-                                <input type="email" name="email" class="input input-bordered w-full" value="{{ old('email', auth()->user()->email ?? '') }}" required>
+                                <input type="email" name="email" class="input input-bordered w-full" 
+                                    value="{{ old('email', $auctionCheckoutData['email'] ?? auth()->user()->email ?? '') }}" required>
                             </div>
 
                             <div class="form-control">
                                 <div class="text-zinc-600"><span class="label-text">Số điện thoại</span></div>
-                                <input type="text" name="phone" class="input input-bordered w-full" value="{{ old('phone', auth()->user()->phone ?? '') }}" required>
+                                <input type="text" name="phone" class="input input-bordered w-full" 
+                                    value="{{ old('phone', $auctionCheckoutData['phone'] ?? auth()->user()->phone ?? '') }}" required>
                             </div>
 
                             <div>
                                 <div class="text-zinc-600">Địa chỉ</div>
-                                <input type="text" name="address" class="input input-bordered w-full" placeholder="Số nhà, đường" value="{{ old('address', auth()->user()->address ?? '') }}" required>
+                                <input type="text" name="address" class="input input-bordered w-full" placeholder="Số nhà, đường" 
+                                    value="{{ old('address', $auctionCheckoutData['address'] ?? auth()->user()->address ?? '') }}" required>
                             </div>
 
                             <div>
                                 <div><span class="text-zinc-600">Ghi chú đơn hàng</span></div>
-                                <textarea name="note" class="textarea textarea-bordered w-full" rows="3" placeholder="Ghi chú về thời gian giao hàng, địa điểm, ...">{{ old('note') }}</textarea>
+                                <textarea name="note" class="textarea textarea-bordered w-full" rows="3" placeholder="Ghi chú về thời gian giao hàng, địa điểm, ...">{{ old('note', $auctionCheckoutData['note'] ?? '') }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -91,23 +108,45 @@
                     <h3 class="card-title text-base font-bold text-[#6c6a69]">Đơn hàng của bạn</h3>
 
                     <div class="divide-y">
-                        @foreach ($cartItems as $item)
+                        @if(isset($auctionCheckoutData))
                             <div class="py-3 flex items-center gap-3">
                                 <div class="avatar">
                                     <div class="w-12 h-12 rounded-md overflow-hidden">
-                                        @php $img = $item->product?->images?->first()?->image_url; @endphp
-                                        <img src="{{ $img ? \App\Utils\HelperFunc::generateURLFilePath($img) : asset('images/product_default.jpg') }}" alt="{{ $item->product->name ?? 'Sản phẩm' }}">
+                                        @php 
+                                            $product = $cartItems->first();
+                                            $img = $product->product->images->first()->image_url ?? null;
+                                        @endphp
+                                        <img src="{{ $img ? \App\Utils\HelperFunc::generateURLFilePath($img) : asset('images/product_default.jpg') }}" 
+                                            alt="{{ $product->product->name ?? 'Sản phẩm đấu giá' }}" class="w-full h-full object-cover">
                                     </div>
                                 </div>
                                 <div class="flex-1">
-                                    <div class="text-sm font-medium line-clamp-1">{{ $item->product->name ?? 'Sản phẩm' }}</div>
-                                    <div class="text-xs text-[#6c6a69]">x{{ $item->quantity }}</div>
+                                    <div class="text-sm font-medium line-clamp-1">{{ $cartItems->first()->product->name ?? 'Sản phẩm đấu giá' }}</div>
+                                    <div class="text-xs text-[#6c6a69]">x{{ $auctionCheckoutData['quantity'] }}</div>
                                 </div>
                                 <div class="text-sm font-semibold">
-                                    {{ number_format($item->total ?? ($item->price*$item->quantity), 0, ',', '.') }} ₫
+                                    {{ number_format($auctionCheckoutData['amount'], 0, ',', '.') }} ₫
                                 </div>
                             </div>
-                        @endforeach
+                        @else
+                            @foreach ($cartItems as $item)
+                                <div class="py-3 flex items-center gap-3">
+                                    <div class="avatar">
+                                        <div class="w-12 h-12 rounded-md overflow-hidden">
+                                            @php $img = $item->product?->images?->first()?->image_url; @endphp
+                                            <img src="{{ $img ? \App\Utils\HelperFunc::generateURLFilePath($img) : asset('images/product_default.jpg') }}" alt="{{ $item->product->name ?? 'Sản phẩm' }}">
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium line-clamp-1">{{ $item->product->name ?? 'Sản phẩm' }}</div>
+                                        <div class="text-xs text-[#6c6a69]">x{{ $item->quantity }}</div>
+                                    </div>
+                                    <div class="text-sm font-semibold">
+                                        {{ number_format($item->total ?? ($item->price*$item->quantity), 0, ',', '.') }} ₫
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
 
                     <div class="mt-4 space-y-2 text-sm">
@@ -134,7 +173,11 @@
                     </div>
 
                     <button type="submit" form="checkout-form" class="btn btn-neutral btn-block mt-4">
-                        Đặt hàng
+                        @if(isset($auctionCheckoutData))
+                            Xác nhận đặt hàng
+                        @else
+                            Đặt hàng
+                        @endif
                     </button>
                 </div>
             </div>

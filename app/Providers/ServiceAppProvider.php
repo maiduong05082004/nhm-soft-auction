@@ -32,6 +32,10 @@ use App\Services\Wishlist\WishlistService;
 use App\Services\Wishlist\WishlistServiceInterface;
 use App\Services\Evaluates\EvaluateService;
 use App\Services\Evaluates\EvaluateServiceInterface;
+use App\Services\OrderDetails\OrderDetailService;
+use App\Services\OrderDetails\OrderDetailServiceInterface;
+use App\Services\Payments\PaymentService;
+use App\Services\Payments\PaymentServiceInterface;
 use App\Services\PointPackages\PointPackageService;
 use App\Services\PointPackages\PointPackageServiceInterface;
 use Illuminate\Support\ServiceProvider;
@@ -59,6 +63,8 @@ class ServiceAppProvider extends ServiceProvider
         $this->app->bind(EvaluateServiceInterface::class, EvaluateService::class);
         $this->app->bind(PointPackageServiceInterface::class, PointPackageService::class);
         $this->app->bind(BannerServiceInterface::class, BannersBannerService::class);
+        $this->app->bind(OrderDetailServiceInterface::class, OrderDetailService::class);
+        $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
     }
 
     /**

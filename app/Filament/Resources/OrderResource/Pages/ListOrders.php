@@ -39,14 +39,11 @@ class ListOrders extends ListRecords
     public function getTabs(): array
     {
         $user = auth()->user();
-        if ($user->hasRole(RoleConstant::CUSTOMER)) {
-            return [];
-        }
         return [
             null => Tab::make('Tất cả'),
-            'Đơn mới' => Tab::make()->query(fn($query) => $query->where('status', '1')),
-            'Đang xử lý' => Tab::make()->query(fn($query) => $query->where('status', '2')),
-            'Đã giao' => Tab::make()->query(fn($query) => $query->where('status', '3')),
+            'Đang chờ xử lý' => Tab::make()->query(fn($query) => $query->where('status', '1')),
+            'Đã xác nhận' => Tab::make()->query(fn($query) => $query->where('status', '2')),
+            'Đang giao' => Tab::make()->query(fn($query) => $query->where('status', '3')),
             'Đã giao' => Tab::make()->query(fn($query) => $query->where('status', '4')),
             'Đã hủy' => Tab::make()->query(fn($query) => $query->where('status', '5')),
         ];
