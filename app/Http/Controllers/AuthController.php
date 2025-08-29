@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\Auth\AuthServiceInterface;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -17,6 +18,11 @@ class AuthController extends Controller
 
     public function verify($id, $hash)
     {
+        $check = Auth::check();
+        if(!$check) {
+            Auth::logout();
+            session()->flush();
+        }
         $result = $this->authService->verifyEmailUser($id, $hash);
         if ($result) {
             Notification::make()

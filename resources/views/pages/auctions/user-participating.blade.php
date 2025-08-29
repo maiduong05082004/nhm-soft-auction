@@ -41,7 +41,7 @@
             <h3 class="text-lg font-medium text-gray-900 mb-2">Bạn chưa tham gia đấu giá sản phẩm nào</h3>
             <p class="text-gray-600 mb-6">Hãy khám phá các sản phẩm đang đấu giá và tham gia đấu giá ngay!</p>
             <a href="{{ route('auctions.index') }}" 
-               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white btn btn-neutral">
                 Xem tất cả sản phẩm đấu giá
             </a>
         </div>

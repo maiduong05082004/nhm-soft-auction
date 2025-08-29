@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Enums\Permission\RoleConstant;
 use Filament\Pages\Page;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -23,12 +24,7 @@ class MyOrdersPage extends Page implements HasTable
 
     public static function shouldRegisterNavigation(): bool
     {
-        $user = auth()->user();
-        if (!$user) return false;
-        if (is_callable([$user, 'hasRole'])) {
-            return ! (bool) call_user_func([$user, 'hasRole'], 'admin');
-        }
-        return (string) ($user->role ?? '') !== 'admin';
+               return auth()->user()->hasRole(RoleConstant::CUSTOMER);
     }
 
     public function table(Table $table): Table

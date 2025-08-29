@@ -20,6 +20,7 @@ class OrderDetail extends Model
         'ship_address',
         'payment_method',
         'shipping_fee',
+        'discount_percentage',
         'subtotal',
         'total',
         'note',

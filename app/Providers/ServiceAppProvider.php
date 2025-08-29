@@ -39,6 +39,8 @@ use App\Services\Payments\PaymentServiceInterface;
 use App\Services\PointPackages\PointPackageService;
 use App\Services\PointPackages\PointPackageServiceInterface;
 use Illuminate\Support\ServiceProvider;
+use App\Repositories\Users\UserRepository;
+use App\Services\Checkout\MembershipDiscountService;
 
 class ServiceAppProvider extends ServiceProvider
 {

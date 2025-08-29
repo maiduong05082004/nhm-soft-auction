@@ -36,7 +36,7 @@ class QrPayment extends Page
 
     public function getVietQRUrl(): string
     {
-        $vietqrUrl = 'https://img.vietqr.io/image/'.$this->creditCard->bank.'-'.$this->creditCard->card_number.'-compact2.jpg';
+        $vietqrUrl = 'https://img.vietqr.io/image/'.$this->creditCard->bin_bank.'-'.$this->creditCard->card_number.'-compact2.jpg';
         $vietqrUrl .= "?amount=" . $this->payment->amount;
         $vietqrUrl .= "&addInfo=" . urlencode("Thanh toan don hang " . $this->record->code_orders);
         $vietqrUrl .= "&accountName=" . urlencode($this->creditCard->name);

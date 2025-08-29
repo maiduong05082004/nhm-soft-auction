@@ -7,37 +7,24 @@
 	@if(empty($auctions) || count($auctions) === 0)
 		<div class="alert alert-info">Hiện chưa có phiên đấu giá nào.</div>
 	@else
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+		<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6">
 			@foreach ($auctions as $auction)
 				@php
 					$product = $auction->product;
-					$image = $product?->images?->first()?->image_url ?? null;
+					$firstImage = $product?->images?->first();
+					$currentPrice = optional($auction->bids)->max('bid_price') ?? $auction->start_price;
+					$cardProduct = [
+						'id' => $product->id ?? null,
+						'slug' => $product->slug ?? null,
+						'name' => $product->name ?? 'Sản phẩm',
+						'firstImage' => $firstImage ? ['image_url' => $firstImage->image_url] : null,
+						'type_sale' => \App\Enums\Product\ProductTypeSale::AUCTION->value,
+						'price_display' => number_format((float) $currentPrice, 0, ',', '.') . ' ₫',
+						'views' => $product->views ?? null,
+						'created_at' => $product->created_at ?? null,
+					];
 				@endphp
-				<div class="card bg-base-100 shadow">
-					<figure class="h-44 bg-white">
-						@if($image)
-							<img src="{{ asset('storage/' . $image) }}" alt="{{ $product->name ?? 'Sản phẩm' }}" class="object-contain h-44" />
-						@else
-							<img src="{{ asset('images/default-avatar.png') }}" alt="No image" class="object-contain h-44" />
-						@endif
-					</figure>
-					<div class="card-body">
-						<h2 class="card-title text-base">{{ $product->name ?? 'Sản phẩm' }}</h2>
-						<div class="text-sm text-[#6c6a69]">Bắt đầu: {{ optional($auction->start_time)->format('d/m/Y H:i') }}</div>
-						<div class="text-sm text-[#6c6a69]">Kết thúc: {{ optional($auction->end_time)->format('d/m/Y H:i') }}</div>
-						<div class="mt-2">
-							<span class="badge badge-warning badge-outline">Đấu giá</span>
-							@if($auction->bids && $auction->bids->count())
-								<span class="badge badge-ghost">{{ $auction->bids->count() }} lượt đấu giá</span>
-							@else
-								<span class="badge badge-ghost">0 lượt đấu giá</span>
-							@endif
-						</div>
-						<div class="card-actions justify-end mt-4">
-							<a href="{{ route('products.show', $product->slug) }}" class="btn btn-neutral">Xem chi tiết</a>
-						</div>
-					</div>
-				</div>
+				<x-product-card :product="$cardProduct" />
 			@endforeach
 		</div>
 	@endif

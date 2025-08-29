@@ -172,29 +172,4 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(CreditCard::class);
     }
 
-    public function getDynamicCurrentBalanceAttribute()
-    {
-        $balance = $this->transactions()->sum('point_change');
-        return $balance < 0 ? 0 : $balance;
-    }
-
-    public function getTransactionCountAttribute()
-    {
-        return $this->transactions()->count();
-    }
-
-    public function getTotalRechargeAttribute()
-    {
-        return $this->transactions()->where('type_transaction', 'recharge_point')->sum('point_change');
-    }
-
-    public function getTotalBidAttribute()
-    {
-        return $this->transactions()->where('type_transaction', 'bid')->sum('point_change');
-    }
-
-    public function getTotalBuyProductAttribute()
-    {
-        return $this->transactions()->where('type_transaction', 'buy_product')->sum('point_change');
-    }
 }
