@@ -1,20 +1,19 @@
 <footer class=" bg-white gap-y-2 px-3 pt-4 flex flex-col items-center ">
-    <h3 class="mt-2 font-bold">Giới Thiệu Về Takada Ooku</h3>
+    <h3 class="mt-2 font-bold">Giới Thiệu Về Takara Ooku</h3>
     <div class="flex flex-col text-left w-full items-start">
-        <nav class="flex sm:flex-row flex-col gap-4 mt-1 sm:justify-center w-full">
-            <a class="link link-hover block">Đấu giá Takada Ooku</a>
-            <a class="link link-hover block">Chợ Trời Takada Ooku</a>
-            <a class="link link-hover block">Mua Sắm Takada Ooku</a>
-            <a class="link link-hover  block">Takada Ooku Việt Name</a>
-        </nav>
+        @php
+            $chunks = $pages->chunk(4);
+        @endphp
 
-        <nav class="flex sm:flex-row flex-col gap-4 mt-3 flex-wrap sm:justify-center w-full">
-            <a class="link link-hover">Chính Sách Bảo Mật</a>
-            <a class="link link-hover">Trung Tâm Bảo Mật</a>
-            <a class="link link-hover">Hướng Dẫn Sử Dụng Tài Khoản Hội Viên</a>
-            <a class="link link-hover">Hướng Dẫn Mua Hàng</a>
-            <a class="link link-hover">Trợ Giúp Và Yêu Cầu</a>
-        </nav>
+        @foreach ($chunks as $chunk)
+            <nav class="flex sm:flex-row flex-col gap-4 mt-1 sm:justify-center w-full">
+                @foreach ($chunk as $page)
+                    <a class="link link-hover" href="{{ route('page.static', $page->slug) }}">
+                        {{ $page->title }}
+                    </a>
+                @endforeach
+            </nav>
+        @endforeach
     </div>
     <nav>
         <div class="grid grid-flow-col gap-4">

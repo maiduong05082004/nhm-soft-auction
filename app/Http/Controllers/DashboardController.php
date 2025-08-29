@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BannerType;
+use App\Models\PageStatic;
 use App\Services\Articles\ArticleService;
 use App\Services\Banners\BannerServiceInterface;
 use App\Services\Category\CategoryServiceInterface;
 use App\Services\Products\ProductServiceInterface;
 use App\Services\Cart\CartServiceInterface;
+use App\Services\PageStatic\PageStaticServiceInterface;
 use App\Services\Wishlist\WishlistServiceInterface;
 use Illuminate\Http\Request;
 
@@ -20,21 +22,23 @@ class DashboardController extends Controller
     protected CartServiceInterface $cartService;
     protected WishlistServiceInterface $wishlistService;
     protected BannerServiceInterface $bannerService;
+    protected PageStaticServiceInterface $pageStaticService;
     public function __construct(
         ProductServiceInterface $productService,
         CategoryServiceInterface $categoryService,
         ArticleService $articleService,
         CartServiceInterface $cartService,
         WishlistServiceInterface $wishlistService,
-        BannerServiceInterface $bannerService
-    )
-    {
+        BannerServiceInterface $bannerService,
+        PageStaticServiceInterface $pageStaticService,
+    ) {
         $this->productService = $productService;
         $this->categoryService = $categoryService;
         $this->articleService = $articleService;
         $this->cartService = $cartService;
         $this->wishlistService = $wishlistService;
         $this->bannerService = $bannerService;
+        $this->pageStaticService = $pageStaticService;
     }
 
     public function index()
@@ -69,8 +73,27 @@ class DashboardController extends Controller
         }
 
         return view('pages.dashboard', compact(
-            'products1', 'products2', 'products3', 'products4', 'categories', 'articles',
-            'headerCartCount', 'headerWishlistCount', 'banner_primary','list_know', 'advertise'
+            'products1',
+            'products2',
+            'products3',
+            'products4',
+            'categories',
+            'articles',
+            'headerCartCount',
+            'headerWishlistCount',
+            'banner_primary',
+            'list_know',
+            'advertise'
         ));
+    }
+
+    public function page_static(string $slug)
+    {
+        $page = $this->pageStaticService->getBySlug($slug)->first();
+
+        $news = $this->articleService->getArticlesList([], 1, 12);
+        $query['is_hot'] = 'true';
+        $products = $this->productService->filterProductList($query, 1, 12);
+        return view('pages.common-page', compact('page', 'news', 'products'));
     }
 }

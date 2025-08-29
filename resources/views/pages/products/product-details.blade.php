@@ -1,5 +1,171 @@
 @extends('layouts.app')
 
+@php
+    use Illuminate\Support\Str;
+    use Illuminate\Support\Carbon;
+
+    $siteName = config('app.name', 'Takara-ooku');
+    // Main SEO fields (fallbacks an toàn)
+    $productName = $product->name ?? ($product->title ?? $siteName);
+    $shortDesc = $product->seo['description'] ?? Str::limit(strip_tags($product->description ?? ''), 160);
+    $metaTitle = ($product->seo['title'] ?? $productName) . ' | ' . 'Takara-ooku';
+    $metaDescription = $product->seo['description'] ?? $shortDesc;
+    $metaKeywords = $product->seo['keywords'] ?? ($product->tags?->pluck('name')->join(', ') ?? '');
+
+    // Images
+    // Nếu trong view bạn đã set $images/$mainImage, vẫn an toàn khi tái lấy:
+    $images = [];
+    if (isset($product->images) && method_exists($product->images, 'pluck')) {
+        $images = $product->images
+            ->pluck('image')
+            ->filter()
+            ->map(fn($i) => \App\Utils\HelperFunc::generateURLFilePath($i))
+            ->values()
+            ->all();
+    }
+    // fallback single image fields
+    if (empty($images) && !empty($product->image)) {
+        $images[] = \App\Utils\HelperFunc::generateURLFilePath($product->image);
+    }
+    $ogImage = $images[0] ?? asset('images/product-default-og.jpg');
+
+    // Price / Offer
+    $price = isset($product->price) ? (float) $product->price : null;
+    $currency = $product->price ?? config('app.currency', 'VND');
+    // availability: check stock or boolean
+    if (isset($product->stock)) {
+        $availability = $product->in_stock ? 'http://schema.org/InStock' : 'http://schema.org/OutOfStock';
+    } elseif (isset($product->stock)) {
+        $availability = $product->stock > 0 ? 'http://schema.org/InStock' : 'http://schema.org/OutOfStock';
+    } else {
+        // default assume InStock
+        $availability = 'http://schema.org/InStock';
+    }
+
+    // SKU and brand/category
+    $sku = $product->sku ?? ($product->id ?? null);
+    $brand = $product->brand ?? ($product->brand_name ?? null);
+    $category = $product->category?->name ?? ($product->category_name ?? null);
+
+    // rating (if any)
+    $ratingValue = $product->rating_value ?? ($product->average_rating ?? null);
+    $ratingCount = $product->rating_count ?? ($product->review_count ?? null);
+
+    // canonical
+    $canonical = request()->url();
+
+    // publisher / seller (site)
+    $publisherName = $siteName;
+    $publisherLogo = file_exists(public_path('images/logo.png'))
+        ? asset('images/logo.png')
+        : asset('images/product-default-og.jpg');
+
+@endphp
+
+@section('title', $metaTitle)
+@section('meta_description', $metaDescription)
+@section('meta_keywords', $metaKeywords)
+@section('og_title', $metaTitle)
+@section('og_description', $metaDescription)
+@section('og_image', $ogImage)
+
+@push('head')
+    {{-- Standard SEO --}}
+    <link rel="canonical" href="{{ $canonical }}" />
+    <meta name="description" content="{{ $metaDescription }}" />
+    @if (!empty($metaKeywords))
+        <meta name="keywords" content="{{ $metaKeywords }}" />
+    @endif
+
+    {{-- Open Graph --}}
+    <meta property="og:type" content="product" />
+    <meta property="og:title" content="{{ $metaTitle }}" />
+    <meta property="og:description" content="{{ $metaDescription }}" />
+    <meta property="og:url" content="{{ $canonical }}" />
+    <meta property="og:site_name" content="{{ $siteName }}" />
+    <meta property="og:image" content="{{ $ogImage }}" />
+    @foreach (array_slice($images, 0, 4) as $img)
+        <meta property="og:image" content="{{ $img }}" />
+    @endforeach
+
+    {{-- Twitter --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $metaTitle }}">
+    <meta name="twitter:description" content="{{ $metaDescription }}">
+    <meta name="twitter:image" content="{{ $ogImage }}">
+
+    {{-- Structured data: Product --}}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": {!! json_encode($productName) !!},
+      "image": {!! json_encode($images ?: [$ogImage]) !!},
+      "description": {!! json_encode(strip_tags($product->description ?? $metaDescription)) !!},
+      @if($sku)
+      "sku": {!! json_encode($sku) !!},
+      @endif
+      @if($brand)
+      "brand": {
+        "@type": "Brand",
+        "name": {!! json_encode($brand) !!}
+      },
+      @endif
+      @if($category)
+      "category": {!! json_encode($category) !!},
+      @endif
+      @if($ratingValue && $ratingCount)
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": {!! json_encode($ratingValue) !!},
+        "reviewCount": {!! json_encode($ratingCount) !!}
+      },
+      @endif
+      @if($price !== null)
+      "offers": {
+        "@type": "Offer",
+        "url": {!! json_encode($canonical) !!},
+        "priceCurrency": {!! json_encode($currency) !!},
+        "price": {!! json_encode($price) !!},
+        "availability": {!! json_encode($availability) !!},
+        "seller": {
+          "@type": "Organization",
+          "name": {!! json_encode($publisherName) !!}
+        }
+      }
+      @endif
+    }
+    </script>
+
+    {{-- BreadcrumbList --}}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Trang chủ",
+          "item": {!! json_encode(url('/')) !!}
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Sản phẩm",
+          "item": {!! json_encode(route('products.list')) !!}
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": {!! json_encode($productName) !!},
+          "item": {!! json_encode($canonical) !!}
+        }
+      ]
+    }
+    </script>
+@endpush
+
 @section('content')
     @php
         $images = $product->images->pluck('image')->toArray();
@@ -388,17 +554,16 @@
                                                     value="{{ $auctionData['min_next_bid'] }}"
                                                     class="input input-bordered w-full text-sm rounded-lg">
                                             </div>
-                                            @if(auth()->check())
-                                                @if($canParticipateAuctions)
+                                            @if (auth()->check())
+                                                @if ($canParticipateAuctions)
                                                     <button type="button"
                                                         class="w-full btn btn-neutral text-white font-semibold rounded-lg"
                                                         onclick="showBidConfirmation(event)">
                                                         Đấu giá ngay
                                                     </button>
                                                 @else
-                                                    <a href="{{ url('/admin/buy-memberships') }}" 
-                                                        class="w-full btn btn-outline font-semibold rounded-lg text-center"
-                                                       >
+                                                    <a href="{{ url('/admin/buy-memberships') }}"
+                                                        class="w-full btn btn-outline font-semibold rounded-lg text-center">
                                                         Mua gói thành viên
                                                     </a>
                                                 @endif
@@ -942,7 +1107,8 @@
                                                     <div class="avatar placeholder">
                                                         <div class="bg-gray-300 text-slate-600 rounded-full w-12">
                                                             @if ($user->avatar)
-                                                                <img src="{{ $user->avatar }}" alt="{{ $user->name }}"
+                                                                <img src="{{ $user->avatar }}"
+                                                                    alt="{{ $user->name }}"
                                                                     class="object-cover w-full h-full">
                                                             @else
                                                                 <img src="{{ asset('/images/default-user-icon.png') }}"
