@@ -81,7 +81,9 @@ class CartController extends Controller
 			$total = $auctionCheckoutData['amount'];
 			$hasCreditCard = $this->checkoutService->hasCreditCardConfig();
 			
-			return view('pages.checkout.checkout', compact('cartItems', 'total', 'hasCreditCard', 'auctionCheckoutData'));
+			$discountInfo = $this->checkoutService->getCheckoutDiscountInfo($this->userId, $total);
+			
+			return view('pages.checkout.checkout', compact('cartItems', 'total', 'hasCreditCard', 'auctionCheckoutData', 'discountInfo'));
 		}
 		
 		$result = $this->cartService->getUserCart($this->userId);
@@ -102,7 +104,10 @@ class CartController extends Controller
 			}
 
 			$hasCreditCard = $this->checkoutService->hasCreditCardConfig();
-			return view('pages.checkout.checkout', compact('cartItems', 'total', 'hasCreditCard'));
+			
+			$discountInfo = $this->checkoutService->getCheckoutDiscountInfo($this->userId, $total);
+			
+			return view('pages.checkout.checkout', compact('cartItems', 'total', 'hasCreditCard', 'discountInfo'));
 		} else {
 			return redirect()->back()->with('error', $result['message']);
 		}

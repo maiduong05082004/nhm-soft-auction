@@ -16,7 +16,6 @@ use App\Exceptions\ServiceException;
 use App\Repositories\CreditCards\CreditCardRepository;
 use App\Utils\HelperFunc;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use App\Services\Products\ProductService;
 
 class CheckoutService extends BaseService implements CheckoutServiceInterface
@@ -94,7 +93,10 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             });
             $orderDetailStatus = $checkoutData['payment_method'] == '1' ? 1 : 2;
             $shippingFee = 0;
-            $subtotal = $total+$shippingFee;
+            $subtotal = $total + $shippingFee;
+            
+            $discountInfo = $this->getCheckoutDiscountInfo($userId, $subtotal);
+            $finalTotal = $discountInfo['final_total'];
             $orderDetailData = [
                 'code_orders' => 'ORD' . HelperFunc::getTimestampAsId(),
                 'user_id' => $userId,
@@ -102,8 +104,9 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 'ship_address' => $checkoutData['address'],
                 'payment_method' => $checkoutData['payment_method'],
                 'shipping_fee' => $shippingFee,
+                'discount_percentage' => $discountInfo['discount_percentage'],
                 'subtotal' => $subtotal,
-                'total' => $total,
+                'total' => $finalTotal,
                 'note' => $checkoutData['note'] ?? '',
                 'status' => $orderDetailStatus,
                 'created_at' => now(),
@@ -136,7 +139,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 $paymentData = [
                     'user_id' => $userId,
                     'order_detail_id' => $orderDetail->id,
-                    'amount' => $total,
+                    'amount' => $finalTotal,
                     'payment_method' => $checkoutData['payment_method'],
                     'status' => 'pending',
                     'transaction_id' => 'TXN-' . HelperFunc::getTimestampAsId(),
@@ -328,6 +331,9 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             $amount = $winnerBid->bid_price;
             $orderDetailStatus = $checkoutData['payment_method'] == '1' ? 1 : 2; // 1=pending, 2=processing
             
+            $discountInfo = $this->getCheckoutDiscountInfo($userId, $amount);
+            $finalAmount = $discountInfo['final_total'];
+            
             $orderDetailData = [
                 'code_orders' => 'ORD' . HelperFunc::getTimestampAsId(),
                 'user_id' => $userId,
@@ -335,8 +341,9 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 'ship_address' => $checkoutData['address'] ?? $user->address,
                 'payment_method' => $checkoutData['payment_method'],
                 'shipping_fee' => 0,
+                'discount_percentage' => $discountInfo['discount_percentage'],
                 'subtotal' => $amount,
-                'total' => $amount,
+                'total' => $finalAmount,
                 'note' => $checkoutData['note'] ?? 'Thanh toán sản phẩm đấu giá #' . $auction->id,
                 'status' => $orderDetailStatus,
                 'created_at' => now(),
@@ -350,7 +357,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 'order_detail_id' => $orderDetail->id,
                 'quantity' => 1,
                 'price' => $amount,
-                'total' => $amount,
+                'total' => $finalAmount,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -365,7 +372,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             $paymentData = [
                 'user_id' => $userId,
                 'order_detail_id' => $orderDetail->id,
-                'amount' => $amount,
+                'amount' => $finalAmount,
                 'payment_method' => $checkoutData['payment_method'],
                 'status' => $paymentStatus,
                 'transaction_id' => 'TXN-' . HelperFunc::getTimestampAsId(),
@@ -450,5 +457,61 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 'data' => null
             ];
         }
+    }
+
+    public function getUserMembershipDiscount(object $user): array
+    {
+        $activeMembership = $user->activeMemberships()
+            ->where('end_date', '>', now())
+            ->first();
+
+        if (!$activeMembership) {
+            return [
+                'has_discount' => false,
+                'discount_percentage' => 0,
+                'membership_name' => null
+            ];
+        }
+
+        $discountPercentage = $activeMembership->getDiscountPercentage();
+        
+        return [
+            'has_discount' => $discountPercentage > 0,
+            'discount_percentage' => $discountPercentage,
+            'membership_name' => $activeMembership->name,
+            'membership_plan' => $activeMembership
+        ];
+    }
+
+
+    public function getCheckoutDiscountInfo(int $userId, float $subtotal): array
+    {
+        $user = $this->userRepo->find($userId);
+        if (!$user) {
+            return [
+                'has_discount' => false,
+                'discount_percentage' => 0,
+                'discount_amount' => 0,
+                'final_total' => $subtotal,
+                'membership_name' => null
+            ];
+        }
+
+        $discountInfo = $this->getUserMembershipDiscount($user);
+        
+        if ($discountInfo['has_discount']) {
+            $discountAmount = ($subtotal * $discountInfo['discount_percentage']) / 100;
+            $finalTotal = $subtotal - $discountAmount;
+            
+            return array_merge($discountInfo, [
+                'discount_amount' => round($discountAmount, 0),
+                'final_total' => round($finalTotal, 0)
+            ]);
+        }
+        
+        return array_merge($discountInfo, [
+            'discount_amount' => 0,
+            'final_total' => $subtotal
+        ]);
     }
 }

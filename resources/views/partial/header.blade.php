@@ -126,6 +126,20 @@
                             @endauth
                             <span class="text-xs font-medium">Giỏ hàng</span>
                         </a>
+                        
+                        <div class="relative group">
+                            <a href="{{ route('home') . '/admin' }}"
+                                class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
+                                   transition-all duration-300 cursor-pointer hover:-translate-y-0.5"
+                                aria-expanded="false" aria-haspopup="true">
+                                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                    </path>
+                                </svg>
+                                <span class="text-xs font-medium">Tài khoản</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
