@@ -52,7 +52,7 @@
                                 <div class="text-center">
                                     <a href="{{ route('products.list', ['product_type' => 'auction']) }}"
                                         class="block hover:opacity-80 transition-opacity">
-                                        <x-heroicon-o-ticket class="w-8 h-8 mx-auto mb-2 rounded-lg"></x-heroicon-o-ticket>
+                                        <img src="{{ asset('images/svg/auction-bid-svg.svg') }}" class="w-8 h-8 mx-auto mb-2 rounded-lg" alt="Đấu giá">
                                         <h3 class="text-xs font-medium text-gray-700 leading-tight">
                                             Trả giá trực tuyến
                                         </h3>
@@ -78,8 +78,7 @@
                                 </div>
                                 <div class="text-center">
                                     <a href="{{ route('page.static', 'gioi-thieu') }}" class="block hover:opacity-80 transition-opacity">
-                                        <x-heroicon-o-shopping-bag
-                                            class="w-8 h-8 mx-auto mb-2 rounded-lg"></x-heroicon-o-shopping-bag>
+                                        <img src="{{ asset('images/svg/introduce-svg.svg') }}" class="w-8 h-8 mx-auto mb-2 rounded-lg" alt="Giới thiệu">
                                         <h3 class="text-xs font-medium text-gray-700 leading-tight">
                                             Giới thiệu
                                         </h3>
