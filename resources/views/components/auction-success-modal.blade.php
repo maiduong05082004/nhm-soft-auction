@@ -3,7 +3,7 @@
         <div class="flex items-start space-x-3">
             <div class="flex-shrink-0">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center">
-                    <img src="{{ asset('js/circle-check-big.svg') }}" alt="Thành công" class="w-6 h-6">
+                    <img src="{{ asset('images/svg/circle-check-big.svg') }}" alt="Thành công" class="w-6 h-6">
                 </div>
             </div>
             

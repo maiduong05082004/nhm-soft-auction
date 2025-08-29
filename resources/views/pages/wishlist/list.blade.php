@@ -3,9 +3,9 @@
 @section('content')
 
     <div class="max-w-6xl my-4 mx-auto px-2 sm:px-4 py-4 sm:py-8 bg-white">
-        <div class="flex max-w-5xl mx-auto justify-between">
+        <div class="flex max-w-5xl mx-auto justify-between mb-5">
             <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Danh sách yêu thích</h2>
-            <div class="w-auto" >
+            <div class="w-auto">
                 <button class="flex items-center justify-center gap-2 text-red-600 border-red-600 hover:bg-red-50 bg-transparent border rounded-lg px-3 py-2 text-sm sm:text-base transition-all duration-200 hover:scale-105 active:scale-95" id="btn-clear-wishlist">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-4 h-4 sm:size-6">

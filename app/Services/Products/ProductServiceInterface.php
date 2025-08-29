@@ -15,4 +15,5 @@ interface ProductServiceInterface extends BaseServiceInterface
     public function createProductWithSideEffects(array $data, int $userId): Product;
     public function getCountProductByCreatedByAndNearMonthly($userId) ;
     public function getAuctionStepPriceByProductId(int $productId): ?float;
+    public function closeExpiredListings(): int;
 }
