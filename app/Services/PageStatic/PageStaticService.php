@@ -2,6 +2,7 @@
 
 namespace App\Services\PageStatic;
 
+use App\Enums\CommonConstant;
 use App\Exceptions\ServiceException;
 use App\Repositories\PageStatic\PageStaticRepository;
 use App\Services\BaseService;
@@ -19,5 +20,8 @@ class PageStaticService extends BaseService implements PageStaticServiceInterfac
 
     public function getBySlug($slug) {
         return $this->getRepository('pageStatic')->getBySlug($slug);
+    }
+    public function getAllByStatusAndPublishedAt() {
+        return $this->getRepository('pageStatic')->getAllByStatusAndPublishedAt();
     }
 }
