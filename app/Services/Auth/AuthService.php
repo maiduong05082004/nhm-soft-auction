@@ -3,6 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Enums\ImageStoragePath;
+use App\Enums\Permission\RoleConstant;
 use App\Enums\Transactions\TransactionPaymentType;
 use App\Models\User;
 use App\Repositories\MembershipUser\MembershipUserRepositoryInterface;
@@ -50,11 +51,12 @@ class AuthService extends BaseService implements AuthServiceInterface
             }
 
             $user->markEmailAsVerified();
-
+            $user->assignRole(RoleConstant::CUSTOMER);
             return true;
         } catch (\Exception $exception) {
             return false;
         }
+
     }
 
     public function getInfoAuth()

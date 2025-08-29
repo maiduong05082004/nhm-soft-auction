@@ -61,8 +61,6 @@ class Register extends BaseRegister
          * @var User $user
          */
         $user = $this->getUserModel()::create($data);
-        // gán quyền
-        $user->assignRole(RoleConstant::CUSTOMER);
         return $user;
     }
 

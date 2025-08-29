@@ -58,6 +58,10 @@ class ConfigSeeder extends Seeder
         //     'config_value' => '🔥 Khuyến mãi lớn trong tuần, mua ngay kẻo lỡ! 🔥',
         //     'description' => 'Nội dung văn bản chạy ở thanh thông báo marquee trên đầu trang',
         // ]);
-        
+        Config::query()->create([
+            'config_key' => ConfigName::DISPLAY_TIME_AFTER_AUCTION,
+            'config_value' => 7,
+            'description' => 'Thời gian hiển thị sau khi đấu giá sản phẩm (đơn vị là ngày)',
+        ]);
     }
 }

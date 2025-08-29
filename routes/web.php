@@ -72,3 +72,5 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('auctions')->group(funct
     Route::post('/{productId}/bid', [AuctionController::class, 'bid'])->name('auctions.bid');
     Route::get('/{auctionId}/user-history', [AuctionController::class, 'getUserBidHistory'])->name('auctions.user-history');
 });
+
+Route::get('/{slug}', [DashboardController::class, 'page_static'])->name('page.static');

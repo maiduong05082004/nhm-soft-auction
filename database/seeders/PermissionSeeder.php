@@ -16,7 +16,7 @@ class PermissionSeeder extends Seeder
     {
         Role::create(['name' => RoleConstant::ADMIN]);
         Role::create(['name' => RoleConstant::CUSTOMER]);
-        $user = User::query()->find(250820160243549267);
+        $user = User::query()->find(250829102925964929);
         $user->assignRole(RoleConstant::ADMIN);
     }
 }

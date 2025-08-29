@@ -4,7 +4,7 @@
     'Danh sách sản phẩm' .
     (isset($category) && $category ? ' - ' . $category['name'] : '') .
     ' -
-    AuctionsClone')
+    Takara-ooku')
 @section('meta_description', 'Xem danh sách sản phẩm' . (isset($category) && $category ? ' trong danh mục ' .
     $category['name'] : '') . ' với các bộ lọc giá, loại sản phẩm và sắp xếp.')
 @section('meta_keywords', 'đấu giá, mua bán, auctions, sản phẩm' . (isset($category) && $category ? ', ' .

@@ -5,6 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
+    <link rel="apple-touch-icon" href="{{ asset('images/favicon.ico') }}">
+
     @include('partial.head')
     @vite(['resources/css/app.css'])
 </head>
@@ -14,8 +17,8 @@
         <div class="whitespace-nowrap animate-marquee text-sm font-medium text-gray-800">
             {{ $marquee ??
                 '🎉 Khuyến mãi đặc biệt! Miễn phí vận chuyển cho đơn hàng từ 500k 🎉  |
-                            🚚 Giao hàng toàn quốc nhanh chóng 🚚  |
-                            💳 Thanh toán linh hoạt, an toàn 💳' }}
+                                        🚚 Giao hàng toàn quốc nhanh chóng 🚚  |
+                                        💳 Thanh toán linh hoạt, an toàn 💳' }}
         </div>
 
     </div>

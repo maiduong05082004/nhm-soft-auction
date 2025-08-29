@@ -154,6 +154,18 @@
                             <span class="text-[#6c6a69] font-bold">Tạm tính</span>
                             <span class="font-semibold">{{ number_format($total, 0, ',', '.') }} ₫</span>
                         </div>
+                        
+                        @if(isset($discountInfo) && $discountInfo['has_discount'])
+                            <div class="flex justify-between">
+                                <span class="text-[#6c6a69] font-bold">Giảm giá ({{ $discountInfo['membership_name'] }})</span>
+                                <span class="text-green-600 font-semibold">-{{ number_format($discountInfo['discount_amount'], 0, ',', '.') }} ₫</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-green-600">
+                                <span>Tiết kiệm {{ $discountInfo['discount_percentage'] }}%</span>
+                            </div>
+                            <input type="hidden" name="discount_percentage" value="{{ $discountInfo['discount_percentage'] }}">
+                        @endif
+                        
                         <div class="flex justify-between">
                             <span class="text-[#6c6a69] font-bold">Phí vận chuyển</span>
                             <span class="badge badge-success badge-outline">Miễn phí</span>
@@ -161,7 +173,7 @@
                         <div class="divider my-2"></div>
                         <div class="flex justify-between text-lg font-bold">
                             <span>Tổng cộng</span>
-                            <span>{{ number_format($total, 0, ',', '.') }} ₫</span>
+                            <span>{{ number_format(isset($discountInfo) && $discountInfo['has_discount'] ? $discountInfo['final_total'] : $total, 0, ',', '.') }} ₫</span>
                         </div>
                     </div>
 

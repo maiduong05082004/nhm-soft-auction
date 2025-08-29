@@ -53,8 +53,8 @@
                         class="logo-gradient uppercase text-2xl sm:text-3xl lg:text-4xl xl:text-5xl
                           tracking-wider sm:tracking-widest lg:tracking-[0.2em] xl:tracking-[0.3em]
                           font-bold transition-transform duration-300 hover:scale-[1.02]"
-                        aria-label="Takada Ooku - Trang chủ">
-                        Takada Ooku
+                        aria-label="Takara Ooku - Trang chủ">
+                        Takara Ooku
                     </a>
                 </div>
 
@@ -126,6 +126,20 @@
                             @endauth
                             <span class="text-xs font-medium">Giỏ hàng</span>
                         </a>
+                        
+                        <div class="relative group">
+                            <a href="{{ route('home') . '/admin' }}"
+                                class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
+                                   transition-all duration-300 cursor-pointer hover:-translate-y-0.5"
+                                aria-expanded="false" aria-haspopup="true">
+                                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                    </path>
+                                </svg>
+                                <span class="text-xs font-medium">Tài khoản</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -225,7 +239,7 @@
                 <form id="mobile-search-form" action="{{ route('products.list') }}" method="GET"
                     class="space-y-3">
                     <div class="relative">
-                        <input type="search" name="name" id="mobile-search-input"
+                        <input type="search" name="product_name" id="mobile-search-input"
                             placeholder="Tìm kiếm sản phẩm..."
                             class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
                             aria-label="Tìm kiếm sản phẩm">
@@ -294,7 +308,7 @@
                 <div class="p-6">
                     <form id="search-form" action="{{ route('products.list') }}" method="GET" class="space-y-4">
                         <div class="relative">
-                            <input type="search" name="name" id="search-input"
+                            <input type="search" name="product_name" id="search-input"
                                 placeholder="Nhập từ khóa tìm kiếm..."
                                 class="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 rounded-lg active:border-slate-400"
                                 aria-label="Từ khóa tìm kiếm" autocomplete="off">

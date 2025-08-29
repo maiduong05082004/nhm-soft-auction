@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Services\Cart\CartServiceInterface;
 use App\Services\Wishlist\WishlistServiceInterface;
 use App\Services\Config\ConfigService;
+use App\Services\PageStatic\PageStaticServiceInterface;
 
 class ViewServiceProvider extends ServiceProvider
 {
@@ -49,6 +50,10 @@ class ViewServiceProvider extends ServiceProvider
             }
 
             $view->with(compact('categories_header', 'headerCartCount', 'headerWishlistCount'));
+        });
+        View::composer('partial.footer', function ($view) { 
+            $pages = app(PageStaticServiceInterface::class)->getAll('pageStatic');
+            $view->with(compact('pages'));
         });
     }
 }

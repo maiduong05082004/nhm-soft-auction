@@ -35,16 +35,10 @@ class OrderResource extends Resource
     protected static ?string $pluralModelLabel = 'Đơn hàng';
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?int $navigationSort = 1;
+    
     public static function shouldRegisterNavigation(): bool
     {
-        $user = auth()->user();
-        if (!$user) {
-            return false;
-        }
-        if (is_callable([$user, 'hasRole'])) {
-            return (bool) call_user_func([$user, 'hasRole'], 'admin');
-        }
-        return (string) ($user->role ?? '') === 'admin';
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
     }
 
     protected static ?OrderService $orderServiceInstance = null;

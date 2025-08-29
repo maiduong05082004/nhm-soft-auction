@@ -5,7 +5,7 @@
     @if($memberships->count() > 0)
         <div class="flex flex-col gap-4 w-full">
             @foreach($memberships as $membership)
-                <div class="flex space-x-4 w-full  h-fit">
+                <div class="flex md:flex-row flex-col md:space-x-4 w-full  h-fit">
                     <div class="max-w-sm">
                         @if($membership->status === \App\Enums\CommonConstant::ACTIVE)
                             <x-filament::badge size="xs" color="success">
@@ -127,12 +127,12 @@
                             </div>
                         </div>
                             @if($this->shouldShowButtonActive($membership))
-                                <x-filament::button wire:click="activeMembership('{{$membership->id}}}')" class="w-full">
+                                <x-filament::button wire:click="activeMembership('{{$membership->id}}}')" class="w-full md:mb-0 mb-2">
                                     Kích hoạt lại gói thành viên
                                 </x-filament::button>
                             @endif
                     </div>
-                    <div class="space-y-3 flex-1">
+                    <div class="md:space-y-3 flex-1">
                         @foreach($membership->membershipTransaction as $transaction)
                             <div
                                 class="p-2 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">

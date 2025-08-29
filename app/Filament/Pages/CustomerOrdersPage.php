@@ -12,6 +12,7 @@ use App\Services\Payments\PaymentServiceInterface;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use App\Filament\Resources\OrderResource;
+use App\Enums\Permission\RoleConstant;
 
 class CustomerOrdersPage extends Page implements HasTable
 {
@@ -25,12 +26,7 @@ class CustomerOrdersPage extends Page implements HasTable
 
     public static function shouldRegisterNavigation(): bool
     {
-        $user = auth()->user();
-        if (!$user) return false;
-        if (is_callable([$user, 'hasRole'])) {
-            return ! (bool) call_user_func([$user, 'hasRole'], 'admin');
-        }
-        return (string) ($user->role ?? '') !== 'admin';
+        return auth()->user()->hasRole(RoleConstant::CUSTOMER);
     }
 
     public function table(Table $table): Table
