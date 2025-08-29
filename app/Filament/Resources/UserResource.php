@@ -14,6 +14,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
@@ -25,7 +26,7 @@ class UserResource extends Resource
 
     public static function canAccess(): bool
     {
-       return auth()->user()->hasRole(RoleConstant::ADMIN);
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
     }
 
     public static function form(Form $form): Form
@@ -100,7 +101,7 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->modifyQueryUsing(fn(Builder $query) => $query->with('author', 'category'))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên')
@@ -128,9 +129,9 @@ class UserResource extends Resource
                     ->default(0),
                 Tables\Columns\TextColumn::make('membership')
                     ->searchable()
-                    ->formatStateUsing(fn(bool $state): string => $state ? 'Membership' : 'Chưa đăng ký')
+                    ->formatStateUsing(fn($record): string => $record->membershipUsers->count() > 0 ? 'Membership' : 'Chưa đăng ký')
                     ->badge()
-                    ->color(fn(bool $state): string => $state ? 'success' : 'danger'),
+                    ->color(fn($record): string => $record->membershipUsers->count() > 0 ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('reputation')
                     ->label('Danh tiếng')
                     ->sortable(),
@@ -214,7 +215,7 @@ class UserResource extends Resource
                 Components\Section::make('Lịch sử giao dịch')
                     ->schema([
                         Components\RepeatableEntry::make('transactions')
-                        ->hiddenLabel()
+                            ->hiddenLabel()
                             ->schema([
                                 Components\Grid::make(5)
                                     ->schema([
