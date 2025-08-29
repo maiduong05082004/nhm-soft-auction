@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
+use App\Enums\CommonConstant;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Category;
 use App\Services\Cart\CartServiceInterface;
 use App\Services\Wishlist\WishlistServiceInterface;
 use App\Services\Config\ConfigService;
+use App\Services\PageStatic\PageStaticService;
 use App\Services\PageStatic\PageStaticServiceInterface;
 
 class ViewServiceProvider extends ServiceProvider
@@ -51,8 +53,8 @@ class ViewServiceProvider extends ServiceProvider
 
             $view->with(compact('categories_header', 'headerCartCount', 'headerWishlistCount'));
         });
-        View::composer('partial.footer', function ($view) { 
-            $pages = app(PageStaticServiceInterface::class)->getAll('pageStatic');
+        View::composer('partial.footer', function ($view) {
+            $pages = app(PageStaticService::class)->getAllByStatusAndPublishedAt();
             $view->with(compact('pages'));
         });
     }

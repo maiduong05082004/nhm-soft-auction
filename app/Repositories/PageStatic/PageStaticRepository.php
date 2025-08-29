@@ -21,5 +21,8 @@ class PageStaticRepository extends BaseRepository implements PageStaticRepositor
             ->where('status', CommonConstant::ACTIVE)
             ->get();
     }
-
+    public function getAllByStatusAndPublishedAt()
+    {
+        return $this->model->where('status', CommonConstant::ACTIVE)->where('published_at', '<=', now())->get();
+    }
 }

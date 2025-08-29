@@ -22,10 +22,10 @@
         <nav class="bg-white rounded-lg shadow-sm p-3 sm:p-4 mb-4 sm:mb-6" aria-label="Breadcrumb">
             <ol class="flex flex-wrap items-center space-x-1 sm:space-x-2 text-xs sm:text-sm">
                 <li class="flex items-center">
-                    <a href="{{ route('home') }}" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center">
+                    <a href="{{ route('home') }}" class="hover:text-slate-600 hover:underline flex items-center">
                         <x-heroicon-o-home class="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                         <span class="hidden xs:inline">Trang chủ</span>
-                        <span class="xs:hidden">Home</span>
+                        <span class="xs:hidden">Trang chủ</span>
                     </a>
                 </li>
             </ol>

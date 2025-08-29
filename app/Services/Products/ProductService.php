@@ -24,6 +24,9 @@ use App\Services\Products\ProductServiceInterface;
 use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
 use App\Models\Product;
+use App\Enums\Product\ProductStatus;
+use App\Enums\Config\ConfigName;
+use Carbon\Carbon;
 
 class ProductService extends BaseService implements ProductServiceInterface
 {
@@ -301,6 +304,28 @@ class ProductService extends BaseService implements ProductServiceInterface
             return null;
         }
         return isset($auction->step_price) ? (float) $auction->step_price : null;
+    }
+
+    public function closeExpiredListings(): int
+    {
+        $now = Carbon::now();
+        $defaultDays = (int) $this->configService->getConfigValue(ConfigName::DISPLAY_TIME_AFTER_AUCTION->value, 0);
+
+        $activeProducts = $this->productRepository->query()
+            ->where('status', ProductStatus::ACTIVE)
+            ->get();
+
+        $closed = 0;
+        foreach ($activeProducts as $product) {
+            $expireTime = Carbon::parse($product->end_time)->addDays($defaultDays);
+            if ($now->greaterThanOrEqualTo($expireTime)) {
+                $product->status = ProductStatus::INACTIVE;
+                $product->save();
+                $closed++;
+            }
+        }
+
+        return $closed;
     }
 
     public function createProductWithSideEffects(array $data, int $userId): Product
