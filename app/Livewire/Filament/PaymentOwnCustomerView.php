@@ -136,19 +136,19 @@ class PaymentOwnCustomerView extends Component implements HasTable, HasForms
                 $this->createdAtColumn(),
             ],
 
-            '3' => [
-                Tables\Columns\TextColumn::make('transaction_id')->label('Mã GD')->sortable(),
-                Tables\Columns\TextColumn::make('payment_method')
-                    ->label('Phương thức thanh toán')
-                    ->toggleable()
-                    ->formatStateUsing(fn($state) => ProductPaymentMethod::getLabel(ProductPaymentMethod::from((int)$state))),
-                $this->moneyColumn('amount'),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Trạng thái')
-                    ->formatStateUsing(fn($state) => PaymentStatus::getLabel(PaymentStatus::from($state)))
-                    ->color(fn($state) => PaymentStatus::getColor(PaymentStatus::from($state))),
-                $this->createdAtColumn(),
-            ],
+            // '3' => [
+            //     Tables\Columns\TextColumn::make('transaction_id')->label('Mã GD')->sortable(),
+            //     Tables\Columns\TextColumn::make('payment_method')
+            //         ->label('Phương thức thanh toán')
+            //         ->toggleable()
+            //         ->formatStateUsing(fn($state) => ProductPaymentMethod::getLabel(ProductPaymentMethod::from((int)$state))),
+            //     $this->moneyColumn('amount'),
+            //     Tables\Columns\TextColumn::make('status')
+            //         ->label('Trạng thái')
+            //         ->formatStateUsing(fn($state) => PaymentStatus::getLabel(PaymentStatus::from($state)))
+            //         ->color(fn($state) => PaymentStatus::getColor(PaymentStatus::from($state))),
+            //     $this->createdAtColumn(),
+            // ],
 
             default => [],
         };
