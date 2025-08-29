@@ -12,6 +12,10 @@ class Article extends Model
     use HasFactory;
     use SoftDeletes;
 
+    protected $casts = [
+        'seo' => 'array'
+    ];
+
     protected $fillable = [
         'id',
         'title',
@@ -23,7 +27,8 @@ class Article extends Model
         'sort',
         'status',
         'category_article_id',
-        'publish_time'
+        'publish_time',
+        'seo'
     ];
 
     protected static function boot()

@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Đấu giá trực tuyến uy tín - Sản phẩm HOT, giá tốt nhất | Takaoa Ooku')
-@section('meta_description', 'Khám phá ngay hàng trăm sản phẩm đấu giá trực tuyến trên Takaoa Ooku. Cập nhật mới nhất mỗi ngày, giá khởi điểm hấp dẫn, trả giá linh hoạt và cơ hội sở hữu món đồ bạn yêu thích.')
-@section('meta_keywords', 'đấu giá trực tuyến, mua bán đấu giá, sản phẩm giá rẻ, đấu giá online, Takaoa Ooku')
-@section('og_title', 'Đấu giá trực tuyến uy tín - Cập nhật sản phẩm HOT nhất')
-@section('og_description', 'Tham gia ngay các phiên đấu giá online trên Takaoa Ooku. Giá khởi điểm thấp, sản phẩm đa dạng, cạnh tranh minh bạch. Cơ hội mua được hàng chất lượng với giá tốt nhất!')
+@section('title', 'Trả giá trực tuyến trực tuyến uy tín - Sản phẩm HOT, giá tốt nhất | Takara Ooku')
+@section('meta_description', 'Khám phá ngay hàng trăm sản phẩm trả giá trực tuyến trực tuyến trên Takara Ooku. Cập nhật mới nhất mỗi ngày, giá khởi điểm hấp dẫn, trả giá linh hoạt và cơ hội sở hữu món đồ bạn yêu thích.')
+@section('meta_keywords', 'trả giá trực tuyến trực tuyến, mua bán trả giá trực tuyến, sản phẩm giá rẻ, trả giá trực tuyến online, Takara Ooku')
+@section('og_title', 'Trả giá trực tuyến trực tuyến uy tín - Cập nhật sản phẩm HOT nhất')
+@section('og_description', 'Tham gia ngay các phiên trả giá trực tuyến online trên Takara Ooku. Giá khởi điểm thấp, sản phẩm đa dạng, cạnh tranh minh bạch. Cơ hội mua được hàng chất lượng với giá tốt nhất!')
 @section('og_image', asset('images/auctions-og.jpg'))
 @section('schema_type', 'CollectionPage')
-@section('schema_name', 'Danh sách sản phẩm đấu giá trực tuyến - Takaoa Ooku')
+@section('schema_name', 'Danh sách sản phẩm trả giá trực tuyến trực tuyến - Takara Ooku')
 
 
 @section('content')
@@ -15,10 +15,10 @@
     <section class="site-banner overflow-hidden" aria-label="Promotional Banner">
         @if ($banner_primary)
             <img src="{{ \App\Utils\HelperFunc::generateURLFilePath($banner_primary['url_image'] ) }}" class="w-full max-h-[585px] object-cover"
-                alt="Auctions promotional banner" loading="lazy">
+                alt="Takara-ooku promotional banner" loading="lazy">
         @else
             <img src="{{ asset('images/banner_buyeeEnSp.png') }}" class="w-full max-h-[585px] object-cover"
-                alt="AuctionsClone promotional banner" loading="lazy">
+                alt="Takara-ooku promotional banner" loading="lazy">
         @endif
     </section>
 
@@ -54,7 +54,7 @@
                                         class="block hover:opacity-80 transition-opacity">
                                         <x-heroicon-o-ticket class="w-8 h-8 mx-auto mb-2 rounded-lg"></x-heroicon-o-ticket>
                                         <h3 class="text-xs font-medium text-gray-700 leading-tight">
-                                            Đấu giá
+                                            Trả giá trực tuyến
                                         </h3>
                                     </a>
                                 </div>
@@ -77,7 +77,7 @@
                                     </a>
                                 </div>
                                 <div class="text-center">
-                                    <a href="" class="block hover:opacity-80 transition-opacity">
+                                    <a href="{{ route('page.static', 'gioi-thieu') }}" class="block hover:opacity-80 transition-opacity">
                                         <x-heroicon-o-shopping-bag
                                             class="w-8 h-8 mx-auto mb-2 rounded-lg"></x-heroicon-o-shopping-bag>
                                         <h3 class="text-xs font-medium text-gray-700 leading-tight">
@@ -217,7 +217,7 @@
                     @endif
 
                     <x-section-home :section="[
-                        'title' => 'Sản phẩm đấu giá',
+                        'title' => 'Sản phẩm trả giá trực tuyến',
                         'target' => route('products.list', ['product_type' => 'auction']),
                     ]" :products="$products4" />
                 </section>

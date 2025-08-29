@@ -34,6 +34,8 @@ use App\Services\Evaluates\EvaluateService;
 use App\Services\Evaluates\EvaluateServiceInterface;
 use App\Services\OrderDetails\OrderDetailService;
 use App\Services\OrderDetails\OrderDetailServiceInterface;
+use App\Services\PageStatic\PageStaticService;
+use App\Services\PageStatic\PageStaticServiceInterface;
 use App\Services\Payments\PaymentService;
 use App\Services\Payments\PaymentServiceInterface;
 use App\Services\PointPackages\PointPackageService;
@@ -67,6 +69,7 @@ class ServiceAppProvider extends ServiceProvider
         $this->app->bind(BannerServiceInterface::class, BannersBannerService::class);
         $this->app->bind(OrderDetailServiceInterface::class, OrderDetailService::class);
         $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
+        $this->app->bind(PageStaticServiceInterface::class, PageStaticService::class);
     }
 
     /**

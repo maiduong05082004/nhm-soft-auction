@@ -72,7 +72,7 @@ class PaymentOwnCustomerView extends Component implements HasTable, HasForms
         return match ($this->viewType) {
             '1'     => TransactionPayment::where('user_id', $userId)->where('description', '!=', 'PAY BY POINTS')->latest(),
             '2'     => MembershipTransaction::where('user_id', $userId)->latest(),
-            '3'     => Payment::where('user_id', $userId)->latest(),
+            // '3'     => Payment::where('user_id', $userId)->latest(),
             default => TransactionPayment::where('user_id', $userId)->latest(),
         };
     }

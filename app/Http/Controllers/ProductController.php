@@ -29,6 +29,7 @@ class ProductController extends Controller
     public function list(Request $req)
     {
         $page = $req->input('page', 1);
+        $category = null;
         $filters = [
             'name'       => $req->input('product_name'),
             'type'       => $req->input('product_type'),
@@ -39,11 +40,15 @@ class ProductController extends Controller
             'state'      => $req->input('state'),
         ];
 
+        if (!empty($req->input('category_id'))) {
+            $category = $this->categoryService->getById('category', $req->input('category_id'));
+        }
+
         $filters = array_filter($filters, fn($value) => $value !== null && $value !== '');
 
         $products = $this->productService->filterProductList($filters, $page, 16);
         $products->appends($req->query());
         $categories = $this->productService->getTreeListCategory();
-        return view('pages.products.list', compact('products', 'categories'));
+        return view('pages.products.list', compact('products', 'categories', 'category'));
     }
 }

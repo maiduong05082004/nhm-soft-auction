@@ -55,9 +55,9 @@ class CustomerInfoView extends Component implements HasForms, HasInfolists
                                     ]),
                                     Components\Group::make([
                                         Components\TextEntry::make('membership')->label('Membership')
-                                            ->formatStateUsing(fn(bool $state): string => $state ? 'Membership' : 'Chưa đăng ký')
+                                            ->formatStateUsing(fn($record): string => $record->membershipUsers->count() > 0 ? 'Membership' : 'Chưa đăng ký')
                                             ->badge()
-                                            ->color(fn(bool $state): string => $state ? 'success' : 'danger'),
+                                             ->color(fn($record): string => $record->membershipUsers->count() > 0 ? 'success' : 'danger'),
                                         Components\TextEntry::make('address')
                                             ->label('Địa chỉ')
                                             ->default("Chưa cập nhật"),
@@ -70,7 +70,7 @@ class CustomerInfoView extends Component implements HasForms, HasInfolists
                             Components\ImageEntry::make('profile_photo_path')
                                 ->label('Ảnh')
                                 ->hiddenLabel()
-                                ->getStateUsing(fn ($record) => HelperFunc::generateURLFilePath($record->profile_photo_path))
+                                ->getStateUsing(fn($record) => HelperFunc::generateURLFilePath($record->profile_photo_path))
                                 ->grow(false),
                         ])->from('lg'),
                     ]),

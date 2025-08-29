@@ -5,17 +5,19 @@ namespace App\Utils;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class HelperFunc
 {
     public static function getTimestampAsId(): int
     {
-       // Get microtime float
-       $microFloat = microtime(true);
-       $microTime = Carbon::createFromTimestamp($microFloat);
-       $formatted = $microTime->format('ymdHisu');
-       usleep(100);
-       return (int)$formatted;
+        // Get microtime float
+        $microFloat = microtime(true);
+        $microTime = Carbon::createFromTimestamp($microFloat);
+        $formatted = $microTime->format('ymdHisu');
+        usleep(100);
+        return (int)$formatted;
     }
 
     public static function getListBankOptions(): array
@@ -35,30 +37,30 @@ class HelperFunc
     public static function removeVietnameseTones($str): array|string|null
     {
         $unicode = [
-            'a'=>'á|à|ả|ã|ạ|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ',
-            'd'=>'đ',
-            'e'=>'é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ',
-            'i'=>'í|ì|ỉ|ĩ|ị',
-            'o'=>'ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ',
-            'u'=>'ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự',
-            'y'=>'ý|ỳ|ỷ|ỹ|ỵ',
-            'A'=>'Á|À|Ả|Ã|Ạ|Ă|Ắ|Ằ|Ẳ|Ẵ|Ặ|Â|Ấ|Ầ|Ẩ|Ẫ|Ậ',
-            'D'=>'Đ',
-            'E'=>'É|È|Ẻ|Ẽ|Ẹ|Ê|Ế|Ề|Ể|Ễ|Ệ',
-            'I'=>'Í|Ì|Ỉ|Ĩ|Ị',
-            'O'=>'Ó|Ò|Ỏ|Õ|Ọ|Ô|Ố|Ồ|Ổ|Ỗ|Ộ|Ơ|Ớ|Ờ|Ở|Ỡ|Ợ',
-            'U'=>'Ú|Ù|Ủ|Ũ|Ụ|Ư|Ứ|Ừ|Ử|Ữ|Ự',
-            'Y'=>'Ý|Ỳ|Ỷ|Ỹ|Ỵ'
+            'a' => 'á|à|ả|ã|ạ|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ',
+            'd' => 'đ',
+            'e' => 'é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ',
+            'i' => 'í|ì|ỉ|ĩ|ị',
+            'o' => 'ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ',
+            'u' => 'ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự',
+            'y' => 'ý|ỳ|ỷ|ỹ|ỵ',
+            'A' => 'Á|À|Ả|Ã|Ạ|Ă|Ắ|Ằ|Ẳ|Ẵ|Ặ|Â|Ấ|Ầ|Ẩ|Ẫ|Ậ',
+            'D' => 'Đ',
+            'E' => 'É|È|Ẻ|Ẽ|Ẹ|Ê|Ế|Ề|Ể|Ễ|Ệ',
+            'I' => 'Í|Ì|Ỉ|Ĩ|Ị',
+            'O' => 'Ó|Ò|Ỏ|Õ|Ọ|Ô|Ố|Ồ|Ổ|Ỗ|Ộ|Ơ|Ớ|Ờ|Ở|Ỡ|Ợ',
+            'U' => 'Ú|Ù|Ủ|Ũ|Ụ|Ư|Ứ|Ừ|Ử|Ữ|Ự',
+            'Y' => 'Ý|Ỳ|Ỷ|Ỹ|Ỵ'
         ];
-        foreach($unicode as $nonUnicode=>$uni){
-            $str = preg_replace("/($uni)/i",$nonUnicode,$str);
+        foreach ($unicode as $nonUnicode => $uni) {
+            $str = preg_replace("/($uni)/i", $nonUnicode, $str);
         }
         return $str;
     }
 
     public static function generateURLFilePath(?string $filePath): ?string
     {
-        if (!empty($filePath)){
+        if (!empty($filePath)) {
             return route('loadfile', ['file_path' => $filePath]);
         }
         return null;
@@ -84,4 +86,18 @@ class HelperFunc
         $right = mb_substr($value, max(0, $length - $rightKeep));
         return $left . '***' . $right;
     }
+
+    // public static function getPageLayouts(): array
+    // {
+    //     $path = resource_path('views/page-layouts');
+    //     $files = File::files($path);
+
+    //     $layouts = [];
+    //     foreach ($files as $file) {
+    //         $name = $file->getFilenameWithoutExtension();
+    //         $layouts[$name] = Str::headline($name); 
+    //     }
+
+    //     return $layouts;
+    // }
 }

@@ -116,6 +116,21 @@ class ArticleResource extends Resource
                             ->disabled(),
                     ])
                     ->columns(3),
+                Forms\Components\Section::make()
+                    ->schema([
+                        Forms\Components\TextInput::make('seo.title')
+                            ->label('SEO Title')
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('seo.description')
+                            ->label('SEO Description')
+                            ->rows(3),
+                        Forms\Components\TextInput::make('seo.keywords')
+                            ->label('SEO Keywords')
+                            ->placeholder('Từ khóa, cách nhau bởi dấu phẩy')
+                            ->maxLength(255),
+                    ])
+                    ->columns(1)
+                    ->columnSpanFull()
             ]);
     }
 
