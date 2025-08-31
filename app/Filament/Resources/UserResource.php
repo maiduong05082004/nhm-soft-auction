@@ -101,7 +101,7 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->modifyQueryUsing(fn(Builder $query) => $query->with('author', 'category'))
+        return $table->modifyQueryUsing(fn(Builder $query) => $query->with( 'category'))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên')
