@@ -7,7 +7,7 @@
     Takara-ooku')
 @section('meta_description', 'Xem danh sách sản phẩm' . (isset($category) && $category ? ' trong danh mục ' .
     $category['name'] : '') . ' với các bộ lọc giá, loại sản phẩm và sắp xếp.')
-@section('meta_keywords', 'đấu giá, mua bán, auctions, sản phẩm' . (isset($category) && $category ? ', ' .
+@section('meta_keywords', 'Trả giá, mua bán, auctions, sản phẩm' . (isset($category) && $category ? ', ' .
     $category['name'] : ''))
 @section('og_title', 'Danh sách sản phẩm' . (isset($category) && $category ? ' - ' . $category['name'] : ''))
 @section('og_description', 'Xem danh sách sản phẩm' . (isset($category) && $category ? ' trong danh mục ' .
@@ -124,7 +124,7 @@
                                     <input type="radio" name="product_type" value="auction"
                                         class="border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
                                         {{ request('product_type') === 'auction' ? 'checked' : '' }}>
-                                    <span class="ml-2 text-xs sm:text-sm text-gray-600">Sản phẩm đấu giá</span>
+                                    <span class="ml-2 text-xs sm:text-sm text-gray-600">Sản phẩm trả giá</span>
                                 </label>
                                 <label class="flex items-center hover:bg-gray-50 p-2 rounded cursor-pointer">
                                     <input type="radio" name="product_type" value="sale"
@@ -366,7 +366,7 @@
                                     @if (request('product_type') === 'auction')
                                         <span
                                             class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            Sản phẩm đấu giá
+                                            Sản phẩm trả giá
                                         </span>
                                     @elseif(request('product_type') === 'sale')
                                         <span

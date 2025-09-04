@@ -9,7 +9,7 @@
             </svg>
             Quay lại sản phẩm
         </a>
-        <h1 class="text-3xl font-bold mb-3">Thanh toán đấu giá</h1>
+        <h1 class="text-3xl font-bold mb-3">Thanh toán trả giá</h1>
     @else
         <a href="{{ route('cart.index') }}" class="btn btn-neutral inline-flex items-center gap-2 text-sm hover:underline mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -117,11 +117,11 @@
                                             $img = $product->product->images->first()->image_url ?? null;
                                         @endphp
                                         <img src="{{ $img ? \App\Utils\HelperFunc::generateURLFilePath($img) : asset('images/product_default.jpg') }}" 
-                                            alt="{{ $product->product->name ?? 'Sản phẩm đấu giá' }}" class="w-full h-full object-cover">
+                                            alt="{{ $product->product->name ?? 'Sản phẩm trả giá' }}" class="w-full h-full object-cover">
                                     </div>
                                 </div>
                                 <div class="flex-1">
-                                    <div class="text-sm font-medium line-clamp-1">{{ $cartItems->first()->product->name ?? 'Sản phẩm đấu giá' }}</div>
+                                    <div class="text-sm font-medium line-clamp-1">{{ $cartItems->first()->product->name ?? 'Sản phẩm trả giá' }}</div>
                                     <div class="text-xs text-[#6c6a69]">x{{ $auctionCheckoutData['quantity'] }}</div>
                                 </div>
                                 <div class="text-sm font-semibold">

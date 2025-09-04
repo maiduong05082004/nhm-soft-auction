@@ -32,7 +32,7 @@ class CartService extends BaseService implements CartServiceInterface
             }
 
             if ($product->type_sale != 1) {
-                throw new ServiceException('Sản phẩm đấu giá không thể thêm vào giỏ hàng!');
+                throw new ServiceException('Sản phẩm trả giá không thể thêm vào giỏ hàng!');
             }
 
             if ($product->stock < $quantity) {

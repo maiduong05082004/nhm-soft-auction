@@ -30,6 +30,7 @@ class BuyMembershipResource extends Resource
         return [
             'index' => Pages\ViewMembership::route('/'),
             'buy' => Pages\BuyMemberships::route('/buy'),
+            'upgrade' => Pages\UpgradeMembership::route('/upgrade')
         ];
     }
 }

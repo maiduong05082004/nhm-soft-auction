@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Services\Cart\CartServiceInterface;
 use App\Services\Wishlist\WishlistServiceInterface;
 use App\Services\Config\ConfigService;
+use App\Services\Membership\MembershipService;
 use App\Services\PageStatic\PageStaticService;
 use App\Services\PageStatic\PageStaticServiceInterface;
 
@@ -56,6 +57,11 @@ class ViewServiceProvider extends ServiceProvider
         View::composer('partial.footer', function ($view) {
             $pages = app(PageStaticService::class)->getAllByStatusAndPublishedAt();
             $view->with(compact('pages'));
+        });
+
+        View::composer('livewire.filament.view-membership', function ($view) {
+            $allMemberships = app(MembershipService::class)->getAllMembershipPlan();
+            $view->with(compact('allMemberships'));
         });
     }
 }

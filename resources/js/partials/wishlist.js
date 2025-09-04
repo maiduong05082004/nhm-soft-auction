@@ -208,7 +208,7 @@
 
                         ${
                             typeSale === 2
-                                ? `<span class="absolute top-2 left-2 badge badge-warning gap-1 text-[10px]">Đấu giá</span>`
+                                ? `<span class="absolute top-2 left-2 badge badge-warning gap-1 text-[10px]">Trả giá</span>`
                                 : `<span class="absolute top-2 left-2 badge badge-accent gap-1 text-[10px]">Bán hàng</span>`
                         }
 
