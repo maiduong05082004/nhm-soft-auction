@@ -118,11 +118,11 @@ class CreateProduct extends CreateRecord
             return;
         }
 
-        if (is_null($maxPerMonth) || $maxPerMonth == 0 ) {
+        if (is_null($maxPerMonth) || $maxPerMonth == 0) {
             return;
         }
 
-        if ( ($maxPerMonth > 0 && $productsCount >= $maxPerMonth)) {
+        if (($maxPerMonth > 0 && $productsCount >= $maxPerMonth)) {
             Notification::make()
                 ->title('Không đủ quyền')
                 ->warning()
@@ -149,6 +149,34 @@ class CreateProduct extends CreateRecord
         }
         $data['created_by'] = auth()->user()->id;
         return $data;
+    }
+
+    protected function beforeCreate(): void
+    {
+        $user = auth()->user();
+        $userId = $user->id;
+
+        $productsCount = app(ProductServiceInterface::class)
+            ->getCountProductByCreatedByAndNearMonthly($userId);
+
+        $membershipUsers = $user->membershipUsers ?? collect();
+        $planActive = $membershipUsers->first(fn($item) => $item->status == CommonConstant::ACTIVE);
+
+        $config = $planActive?->membershipPlan?->config ?? null;
+        $cfg = is_array($config) ? $config : (array) $config;
+
+        $freeListing = $cfg['free_product_listing'] ?? false;
+        $maxPerMonth = $cfg['max_products_per_month'] ?? null;
+
+        if (!$freeListing && $maxPerMonth > 0 && $productsCount >= $maxPerMonth) {
+            Notification::make()
+                ->title('Không đủ quyền')
+                ->warning()
+                ->body('Bạn đã đạt giới hạn tháng, cần mua gói thành viên để tạo thêm sản phẩm.')
+                ->send();
+
+            $this->halt(); // chặn quá trình tạo
+        }
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
