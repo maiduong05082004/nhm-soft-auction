@@ -132,10 +132,10 @@
                             );
                         @endphp
 
-                        @if ($membership->status == \App\Enums\CommonConstant::ACTIVE)
+                        @if ($membership->status == \App\Enums\CommonConstant::ACTIVE || $membership->end_date < now())
                             <div class="fi-ta-actions flex shrink-0 items-center gap-3 flex-wrap justify-center">
-                                <x-filament::button icon="heroicon-m-arrow-up-circle" wire:click="goToUpgradeMembership()"
-                                    class="mt-4">
+                                <x-filament::button icon="heroicon-m-arrow-up-circle"
+                                    wire:click="goToUpgradeMembership()" class="my-4">
                                     Nâng cấp hoặc gia hạn gói thành viên
                                 </x-filament::button>
                             </div>
@@ -147,8 +147,8 @@
                                 </x-filament::button>
                             @endif --}}
                     </div>
-                    <div class="md:space-y-3 flex-1">
-                        @foreach ($membership->membershipTransaction as $transaction)
+                    <div class="space-y-3 flex-1">
+                        @foreach ($membership->membershipTransaction->sortByDesc('created_at') as $transaction)
                             <div
                                 class="p-2 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                                 <h5 class="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
@@ -160,7 +160,14 @@
                                     {{ \Illuminate\Support\Carbon::make($transaction->created_at)->format('d/m/Y H:i') }}
                                 </p>
                                 <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
-                                    Số tiền: {{ number_format($transaction->money, 0, ',', '.') }} VND
+
+                                    @if ($transaction->transaction_code == 'PAY BY POINTS')
+                                        Số điểm: {{ number_format($transaction->money, 0, ',', '.') }}
+                                        Đ
+                                    @else
+                                        Số tiền: {{ number_format($transaction->money, 0, ',', '.') }}
+                                        VND
+                                    @endif
                                 </p>
                                 <p class="font-normal text-gray-500 dark:text-gray-400">
                                     Trạng

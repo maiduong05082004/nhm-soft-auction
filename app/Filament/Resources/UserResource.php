@@ -128,9 +128,9 @@ class UserResource extends Resource
                     ->default(0),
                 Tables\Columns\TextColumn::make('membership')
                     ->searchable()
-                    ->formatStateUsing(fn($record): string => $record->membershipUsers->count() > 0 ? 'Membership' : 'Chưa đăng ký')
+                    ->formatStateUsing(fn($record): string => $record->activeMemberships->count() > 0 ? 'Membership' : 'Chưa đăng ký')
                     ->badge()
-                    ->color(fn($record): string => $record->membershipUsers->count() > 0 ? 'success' : 'danger'),
+                    ->color(fn($record): string => $record->activeMemberships->count() > 0 ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('reputation')
                     ->label('Danh tiếng')
                     ->sortable(),

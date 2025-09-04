@@ -18,4 +18,6 @@ interface MembershipServiceInterface extends BaseServiceInterface
     public function validateActiveMembership(MembershipUser $item): bool;
 
     public function getMembershipTransactionByUserId($userId);
+
+    public function updateMembershipForUser($userId, $membershipPlan, $dataTransfer, $payType, $isUpgrade);
 }

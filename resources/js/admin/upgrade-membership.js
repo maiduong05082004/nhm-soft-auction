@@ -5,19 +5,10 @@ import Swiper from 'swiper/bundle';
 import 'swiper/css/bundle';
 
 var swiper = new Swiper("#membership_list", {
-    effect: "coverflow",
-    grabCursor: false,
-    centeredSlides: true,
-    slidesPerView: "auto",
-    coverflowEffect: {
-        rotate: 50,
-        stretch: 0,
-        modifier: 1,
-        slideShadows: false,
-
-    },
+    slidesPerView: 3,
+    spaceBetween: 30,
     pagination: {
         el: ".swiper-pagination",
+        clickable: true,
     },
-
 });

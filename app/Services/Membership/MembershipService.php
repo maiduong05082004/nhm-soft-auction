@@ -120,6 +120,88 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
         }
     }
 
+    public function updateMembershipForUser($userId, $membershipPlan, $dataTransfer, $payType, $isUpgrade): bool
+    {
+        $now = now();
+
+        try {
+            DB::beginTransaction();
+            $memberUser = $this->getRepository('membershipUser')
+                ->query()
+                ->where('user_id', $userId)
+                ->first();
+
+            if ($memberUser->end_date < now()) {
+                $newEndDate = $now->copy()->addMonths($membershipPlan->duration);
+            } else {
+                $newEndDate = \Carbon\Carbon::parse($memberUser->end_date)->addMonths($membershipPlan->duration);
+            }
+
+            $this->getRepository('membershipUser')->query()
+                ->where('user_id', $userId)
+                ->update([
+                    'end_date' => $newEndDate,
+                    'status' => CommonConstant::INACTIVE
+                ]);
+            if ($isUpgrade) {
+                $this->getRepository('membershipUser')->query()
+                    ->where('user_id', $userId)
+                    ->update([
+                        'membership_plan_id' => $membershipPlan->id,
+                    ]);
+            }
+            if ($payType == PayTypes::POINTS->value) {
+                $this->getRepository('membershipTransaction')->insertOne([
+                    'user_id' => $userId,
+                    'membership_user_id' => $memberUser->id,
+                    'money' => $dataTransfer['points'],
+                    'status' => MembershipTransactionStatus::ACTIVE,
+                    'transaction_code' => 'PAY BY POINTS',
+                ]);
+                $memberUser->update(['status' => CommonConstant::ACTIVE]);
+                $this->getRepository('membershipUser')->query()
+                    ->where('user_id', $memberUser->user_id)
+                    ->where('id', '!=', $memberUser->id)
+                    ->update(['status' => false]);
+                $transactionPayment = $this->getRepository('transactionPayment')->insertOne([
+                    'user_id' => $userId,
+                    'type' => TransactionPaymentType::RECHANGE_POINT->value,
+                    'description' => 'PAY BY POINTS',
+                    'money' => $dataTransfer['points'],
+                    'status' => TransactionPaymentStatus::ACTIVE->value,
+                ]);
+
+                $this->getRepository('transactionPoint')->insertOne([
+                    'user_id' => $userId,
+                    'status' => TransactionPaymentStatus::ACTIVE->value,
+                    'point' => -$dataTransfer['points'],
+                    'transaction_payment_id' => $transactionPayment->id,
+                ]);
+
+                $this->getRepository('user')
+                    ->query()
+                    ->where('id', $userId)
+                    ->update([
+                        'current_balance' => DB::raw("current_balance - {$dataTransfer['points']}")
+                    ]);
+            } else {
+                $this->getRepository('membershipTransaction')->insertOne([
+                    'user_id' => $userId,
+                    'membership_user_id' => $memberUser->id,
+                    'money' => $dataTransfer['totalPrice'],
+                    'status' => MembershipTransactionStatus::WAITING,
+                    'transaction_code' => $dataTransfer['descBank'],
+                ]);
+            }
+            DB::commit();
+            return true;
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            dd($exception->getMessage());
+            return false;
+        }
+    }
+
     public function getMembershipTransactionByUserId($userId)
     {
         return $this->getRepository('membershipTransaction')->query()->where('user_id', $userId)->get();

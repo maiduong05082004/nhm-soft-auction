@@ -26,7 +26,7 @@ class UpgradeMembership extends Component
     public $list;
 
 
-    public $nextStepBuy = false;
+    public $nextStepUpgrade = false;
 
     public $currentplan = null;
 
@@ -47,12 +47,17 @@ class UpgradeMembership extends Component
     {
         $this->user = $this->authService->getInfoAuth();
         $this->currentplan = $this->user['activeMemberships']->firstWhere('status', CommonConstant::ACTIVE);
-        $this->list = $this->membershipService->getAllMembershipPlan()->filter(fn($item) => $item->id != $this->currentplan->id);
+        if ($this->currentplan) {
+            $this->list = $this->membershipService->getAllMembershipPlan()->filter(fn($item) => $item->id != $this->currentplan->id && $item->price > $this->currentplan->price || $item->duration > $this->currentplan->duration);
+        } else {
+            $this->currentplan = $this->user->membershipPlans()->wherePivot('status', CommonConstant::INACTIVE)->first();
+            $this->list = $this->membershipService->getAllMembershipPlan();
+        }
     }
 
     public function onNextStep($id)
     {
-        $this->nextStepBuy = true;
+        $this->nextStepUpgrade = true;
         $membership = $this->membershipService->getMembershipPlanById($id);
         if ($membership) {
             $config = $this->configService->getConfigByKeys([
@@ -84,17 +89,22 @@ class UpgradeMembership extends Component
             ->body('Có lỗi xảy ra, vui lòng thử lại sau.')
             ->danger()
             ->send();
-        $this->nextStepBuy = false;
+        $this->nextStepUpgrade = false;
         $this->membershipPay = null;
     }
 
-    public function submit($payType)
+    public function submitUpgrade($payType)
     {
-        $result = $this->membershipService->createMembershipForUser(
+        $isUpgrade = false;
+        if ($this->currentplan->id != $this->membershipPay->id) {
+            $isUpgrade = true;
+        }
+        $result = $this->membershipService->updateMembershipForUser(
             userId: auth()->id(),
             membershipPlan: $this->membershipPay,
             dataTransfer: $this->dataTransfer,
-            payType: $payType
+            payType: $payType,
+            isUpgrade: $isUpgrade
         );
         if ($result) {
             Notification::make()
