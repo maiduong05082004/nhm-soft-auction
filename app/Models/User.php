@@ -52,6 +52,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'avatar',
         'introduce',
         'status',
+        'contact_info'
     ];
 
     /**
@@ -75,6 +76,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'email_verified_at' => 'datetime',
         'phone_verified_at' => 'datetime',
         'membership' => 'boolean',
+        'contact_info' => 'array'
     ];
 
 

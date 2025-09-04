@@ -48,6 +48,9 @@ class Membership extends Component implements HasForms, HasTable
                 TextColumn::make('money')
                     ->label('Số tiền')
                     ->money('vnd'),
+                TextColumn::make('created_at')
+                    ->label('Thời gian giao dịch')
+                    ->searchable(),
                 TextColumn::make('status')
                     ->label('Trạng thái')
                     ->badge()

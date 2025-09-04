@@ -78,6 +78,7 @@ class AuthService extends BaseService implements AuthServiceInterface
             $user->phone = $data['phone'];
             $user->address = $data['address'];
             $user->introduce = $data['introduce'];
+            $user->contact_info = $data['contact_info'];
             // Cập nhật mật khẩu nếu có
             if (!empty($data['new_password'])) {
                 $user->password = $data['new_password'];

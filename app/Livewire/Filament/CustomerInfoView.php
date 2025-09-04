@@ -52,19 +52,30 @@ class CustomerInfoView extends Component implements HasForms, HasInfolists
                                         Components\TextEntry::make('created_at')
                                             ->label('Ngày tạo tài khoản')
                                             ->dateTime("d/m/Y H:i"),
+                                        Components\TextEntry::make('contact_info.link_facebook')
+                                            ->label('Trang facebook')
+                                            ->default("Chưa cập nhật"),
+                                        Components\TextEntry::make('contact_info.link_titok')
+                                            ->label('Gian hàng tiktok')
+                                            ->default("Chưa cập nhật"),
                                     ]),
                                     Components\Group::make([
                                         Components\TextEntry::make('membership')->label('Membership')
-                                            ->formatStateUsing(fn($record): string => $record->membershipUsers->count() > 0 ? 'Membership' : 'Chưa đăng ký')
+                                            ->formatStateUsing(fn($record): string => $record->activeMemberships->count() > 0 ? 'Membership' : 'Chưa đăng ký')
                                             ->badge()
-                                             ->color(fn($record): string => $record->membershipUsers->count() > 0 ? 'success' : 'danger'),
+                                            ->color(fn($record): string => $record->activeMemberships->count() > 0 ? 'success' : 'danger'),
                                         Components\TextEntry::make('address')
                                             ->label('Địa chỉ')
                                             ->default("Chưa cập nhật"),
                                         Components\TextEntry::make('introduce')
                                             ->label('Giới thiệu bản thân')
                                             ->default("Chưa cập nhật"),
-
+                                        Components\TextEntry::make('contact_info.link_shoppe')
+                                            ->label('Gian hàng shoppe')
+                                            ->default("Chưa cập nhật"),
+                                        Components\TextEntry::make('contact_info.link_zalo')
+                                            ->label('Số điện thoại zalo')
+                                            ->default("Chưa cập nhật"),
                                     ]),
                                 ]),
                             Components\ImageEntry::make('profile_photo_path')

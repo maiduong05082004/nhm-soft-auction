@@ -473,26 +473,97 @@
 
                                                 @unless ($paid)
                                                     <form method="POST" action="{{ route('auction.pay-now') }}"
-                                                        class="flex flex-col sm:flex-row gap-2">
+                                                        class="flex flex-col gap-2">
                                                         @csrf
                                                         <input type="hidden" name="auction_id"
                                                             value="{{ $auctionData['auction']->id ?? '' }}" />
                                                         <button type="submit" class="btn btn-neutral flex-1">Thanh toán
                                                             ngay</button>
-                                                        @if (!empty($user->email))
-                                                            <a href="mailto:{{ $user->email }}" class="btn btn-outline">Liên
-                                                                hệ người bán</a>
-                                                        @elseif (!empty($user->phone))
-                                                            <a href="tel:{{ $user->phone }}" class="btn btn-outline">Liên hệ
-                                                                người bán</a>
-                                                        @else
-                                                            <a href="#" class="btn btn-outline">Liên hệ người bán</a>
-                                                        @endif
+                                                        <ul class="space-y-2">
+                                                            <h3 class="text-lg font-semibold mb-2">Thông tin liên hệ</h3>
+
+                                                            {{-- Phone --}}
+                                                            @if ($user->phone)
+                                                                <li class="flex items-center gap-2">
+                                                                    <x-heroicon-o-phone class="w-5 h-5 text-green-600" />
+                                                                    <a href="tel:{{ $user->phone }}"
+                                                                        class="text-blue-600 hover:underline">
+                                                                        {{ $user->phone }}
+                                                                    </a>
+                                                                </li>
+                                                            @endif
+
+                                                            {{-- Email --}}
+                                                            @if ($user->email)
+                                                                <li class="flex items-center gap-2">
+                                                                    <x-heroicon-o-envelope class="w-5 h-5 text-gray-600" />
+                                                                    <a href="mailto:{{ $user->email }}"
+                                                                        class="text-blue-600 hover:underline">
+                                                                        {{ $user->email }}
+                                                                    </a>
+                                                                </li>
+                                                            @endif
+
+                                                            {{-- Contact info --}}
+                                                            @if (!empty($user->contact_info))
+                                                                {{-- Zalo --}}
+                                                                @if (!empty($user->contact_info['link_zalo']))
+                                                                    <li class="flex items-center gap-2">
+                                                                        <x-heroicon-o-chat-bubble-left-ellipsis
+                                                                            class="w-5 h-5 text-blue-500" />
+                                                                        <a href="https://zalo.me/{{ $user->contact_info['link_zalo'] }}"
+                                                                            target="_blank"
+                                                                            class="text-blue-600 hover:underline">
+                                                                            Zalo: {{ $user->contact_info['link_zalo'] }}
+                                                                        </a>
+                                                                    </li>
+                                                                @endif
+
+                                                                {{-- Facebook --}}
+                                                                @if (!empty($user->contact_info['link_facebook']))
+                                                                    <li class="flex items-center gap-2">
+                                                                        <x-heroicon-o-globe-alt
+                                                                            class="w-5 h-5 text-blue-700" />
+                                                                        <a href="{{ $user->contact_info['link_facebook'] }}"
+                                                                            target="_blank"
+                                                                            class="text-blue-600 hover:underline">
+                                                                            Facebook
+                                                                        </a>
+                                                                    </li>
+                                                                @endif
+
+                                                                {{-- Shopee --}}
+                                                                @if (!empty($user->contact_info['link_shopee']))
+                                                                    <li class="flex items-center gap-2">
+                                                                        <x-heroicon-o-shopping-bag
+                                                                            class="w-5 h-5 text-orange-500" />
+                                                                        <a href="{{ $user->contact_info['link_shopee'] }}"
+                                                                            target="_blank"
+                                                                            class="text-orange-600 hover:underline">
+                                                                            Shopee
+                                                                        </a>
+                                                                    </li>
+                                                                @endif
+
+                                                                {{-- TikTok --}}
+                                                                @if (!empty($user->contact_info['link_tiktok']))
+                                                                    <li class="flex items-center gap-2">
+                                                                        <x-heroicon-o-play-circle
+                                                                            class="w-5 h-5 text-pink-500" />
+                                                                        <a href="{{ $user->contact_info['link_tiktok'] }}"
+                                                                            target="_blank"
+                                                                            class="text-pink-600 hover:underline">
+                                                                            TikTok
+                                                                        </a>
+                                                                    </li>
+                                                                @endif
+                                                            @endif
+                                                        </ul>
                                                     </form>
                                                 @endunless
                                             </div>
                                         @endif
-
+                                        {{-- {"link_zalo": null, "link_shopee": "shopee.vn", "link_tiktok": null, "link_facebook": null} --}}
                                     </div>
                                 </div>
                             @endif
@@ -914,6 +985,8 @@
                                                     class="ml-1 font-semibold">{{ number_format($sellerAverageRating ?? 0, 1) }}</span>
                                             </div>
                                             <span class="text-gray-500">({{ $sellerTotalReviews ?? 0 }} đánh giá)</span>
+                                            @foreach ($user->contact_info as $item)
+                                            @endforeach
                                         </div>
                                         <p class="text-gray-600 mt-2">Cửa hàng uy tín chuyên bán các sản phẩm công nghệ
                                             chính

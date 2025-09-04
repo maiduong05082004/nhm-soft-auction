@@ -212,7 +212,7 @@ class AuctionService extends BaseService implements AuctionServiceInterface
             if (!$auction) {
                 throw new ServiceException('Không tìm thấy phiên rả giá cho sản phẩm này!');
             }
-            $auction->step_price = $stepPrice;t
+            $auction->step_price = $stepPrice;
             return (bool) $auction->save();
         } catch (ServiceException $e) {
             return false;

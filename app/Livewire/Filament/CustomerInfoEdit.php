@@ -67,7 +67,7 @@ class CustomerInfoEdit extends Component implements HasForms
                             ->alignCenter()
                             ->helperText("Ảnh đại diện sẽ được hiển thị trên trang cá nhân của bạn. Vui lòng chọn ảnh có kích thước tối ưu để hiển thị tốt nhất.")
                             ->maxSize(5120)  // 5MB = 5 * 1024 KB
-                            ,
+                        ,
                         Forms\Components\TextInput::make('name')
                             ->label('Tên')
                             ->required()
@@ -82,6 +82,18 @@ class CustomerInfoEdit extends Component implements HasForms
                             ->placeholder("Ví dụ: 0987654321")
                             ->tel()
                             ->maxLength(255),
+                        Forms\Components\TextInput::make('contact_info.link_shopee')
+                            ->label('Gian hàng shoppe')
+                            ->placeholder("Ví dụ: shoppe.vn/shop_name"),
+                        Forms\Components\TextInput::make('contact_info.link_zalo')
+                            ->label('Số điện thoại zalo')
+                            ->placeholder("Ví dụ: 0987654321"),
+                        Forms\Components\TextInput::make('contact_info.link_facebook')
+                            ->label('Trang facebook')
+                            ->placeholder("Ví dụ: facebook.com/id_facebook"),
+                        Forms\Components\TextInput::make('contact_info.link_tiktok')
+                            ->label('Gian hàng tiktok')
+                            ->placeholder("Ví dụ: tiktok.com/@id_tiktok"),
                         Forms\Components\Textarea::make('address')
                             ->label('Địa chỉ')
                             ->placeholder("Ví dụ: 123 Đường ABC, Phường 1, TP.Hà Nội")
@@ -102,7 +114,7 @@ class CustomerInfoEdit extends Component implements HasForms
                             ->label('Mật khẩu mới')
                             ->required(fn($record) => !empty($record))
                             ->password()
-                            ->dehydrateStateUsing(fn (string $state): string => Hash::make($state))
+                            ->dehydrateStateUsing(fn(string $state): string => Hash::make($state))
                             ->dehydrated(fn($state) => filled($state))
                             ->minLength(8)
                             ->validationMessages([
@@ -124,15 +136,15 @@ class CustomerInfoEdit extends Component implements HasForms
                         Forms\Components\Select::make('bin_bank')
                             ->label('Ngân hàng')
                             ->searchable()
-                            ->required(fn (callable $get) => $get('card_number') || $get('card_holder_name'))
+                            ->required(fn(callable $get) => $get('card_number') || $get('card_holder_name'))
                             ->options(HelperFunc::getListBankOptions()),
                         Forms\Components\TextInput::make('card_number')
                             ->label('Số tài khoản ngân hàng')
                             ->numeric()
-                            ->required(fn (callable $get) => $get('bin_bank') || $get('card_holder_name')),
+                            ->required(fn(callable $get) => $get('bin_bank') || $get('card_holder_name')),
                         Forms\Components\TextInput::make('card_holder_name')
                             ->label('Chủ tài khoản')
-                            ->required(fn (callable $get) => $get('bin_bank') || $get('card_number'))
+                            ->required(fn(callable $get) => $get('bin_bank') || $get('card_number'))
                             ->reactive()
                             ->debounce(1000)
                             ->afterStateUpdated(function ($state, callable $set) {
@@ -158,13 +170,13 @@ class CustomerInfoEdit extends Component implements HasForms
     {
         $form = $this->form->getState();
         $result = $this->service->updateAuthUser($form);
-        if ($result){
+        if ($result) {
             Notification::make()
                 ->title('Thành công')
                 ->body('Cập nhật thông tin thành công!')
                 ->success()
                 ->send();
-        }else{
+        } else {
             Notification::make()
                 ->title('Thất bại')
                 ->body('Cập nhật thông tin thất bại!')
