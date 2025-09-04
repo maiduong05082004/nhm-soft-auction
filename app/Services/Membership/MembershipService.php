@@ -137,17 +137,18 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                 $newEndDate = \Carbon\Carbon::parse($memberUser->end_date)->addMonths($membershipPlan->duration);
             }
 
-            $this->getRepository('membershipUser')->query()
-                ->where('user_id', $userId)
-                ->update([
-                    'end_date' => $newEndDate,
-                    'status' => CommonConstant::INACTIVE
-                ]);
             if ($isUpgrade) {
                 $this->getRepository('membershipUser')->query()
                     ->where('user_id', $userId)
                     ->update([
                         'membership_plan_id' => $membershipPlan->id,
+                        'end_date' => $newEndDate,
+                    ]);
+            }else {
+                $this->getRepository('membershipUser')->query()
+                    ->where('user_id', $userId)
+                    ->update([
+                        'end_date' => $newEndDate,
                     ]);
             }
             if ($payType == PayTypes::POINTS->value) {
@@ -185,6 +186,11 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                         'current_balance' => DB::raw("current_balance - {$dataTransfer['points']}")
                     ]);
             } else {
+                $this->getRepository('membershipUser')->query()
+                    ->where('user_id', $userId)
+                    ->update([
+                        'status' => CommonConstant::INACTIVE,
+                    ]);
                 $this->getRepository('membershipTransaction')->insertOne([
                     'user_id' => $userId,
                     'membership_user_id' => $memberUser->id,

@@ -32,7 +32,7 @@ class CustomerInfoView extends Component implements HasForms, HasInfolists
     }
 
     public function infolist(Infolist $infolist): Infolist
-    {
+    {   
         return $infolist
             ->record($this->auth)
             ->schema([
@@ -55,7 +55,7 @@ class CustomerInfoView extends Component implements HasForms, HasInfolists
                                         Components\TextEntry::make('contact_info.link_facebook')
                                             ->label('Trang facebook')
                                             ->default("Chưa cập nhật"),
-                                        Components\TextEntry::make('contact_info.link_titok')
+                                        Components\TextEntry::make('contact_info.link_tiktok')
                                             ->label('Gian hàng tiktok')
                                             ->default("Chưa cập nhật"),
                                     ]),
@@ -70,8 +70,8 @@ class CustomerInfoView extends Component implements HasForms, HasInfolists
                                         Components\TextEntry::make('introduce')
                                             ->label('Giới thiệu bản thân')
                                             ->default("Chưa cập nhật"),
-                                        Components\TextEntry::make('contact_info.link_shoppe')
-                                            ->label('Gian hàng shoppe')
+                                        Components\TextEntry::make('contact_info.link_shopee')
+                                            ->label('Gian hàng shopee')
                                             ->default("Chưa cập nhật"),
                                         Components\TextEntry::make('contact_info.link_zalo')
                                             ->label('Số điện thoại zalo')

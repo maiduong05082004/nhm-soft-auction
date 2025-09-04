@@ -43,6 +43,7 @@ class CustomerInfoEdit extends Component implements HasForms
             'bin_bank' => $data->creditCards?->first()?->bin_bank ?? null,
             'card_number' => $data->creditCards?->first()?->card_number ?? null,
             'card_holder_name' => $data->creditCards?->first()?->name ?? null,
+            'contact_info' => $data->contact_info
         ]);
     }
 
@@ -87,6 +88,7 @@ class CustomerInfoEdit extends Component implements HasForms
                             ->placeholder("Ví dụ: shoppe.vn/shop_name"),
                         Forms\Components\TextInput::make('contact_info.link_zalo')
                             ->label('Số điện thoại zalo')
+                            ->tel()
                             ->placeholder("Ví dụ: 0987654321"),
                         Forms\Components\TextInput::make('contact_info.link_facebook')
                             ->label('Trang facebook')
