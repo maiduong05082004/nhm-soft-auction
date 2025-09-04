@@ -289,7 +289,7 @@
             toast.className = 'alert alert-warning shadow-lg';
             toast.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="stroke-current shrink-0 h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>Phiên đấu giá đã kết thúc, không thể đấu giá thêm!</span>
+                <span>Phiên trả giá đã kết thúc, không thể trả giá thêm!</span>
             `;
             toastContainer.appendChild(toast);
             setTimeout(()=>{ if (toast.parentNode) toast.parentNode.removeChild(toast); }, 4000);
@@ -338,7 +338,7 @@
     function handleAuctionEnded() {
         const wrapper = document.getElementById('auction-bid-wrapper');
         if (wrapper) {
-            wrapper.innerHTML = '<button class="btn btn-disabled w-full" disabled>Đấu giá ngay</button>';
+            wrapper.innerHTML = '<button class="btn btn-disabled w-full" disabled>Trả giá ngay</button>';
         }
         const ended = document.getElementById('auction-ended-alert');
         if (ended) {
@@ -361,7 +361,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>Bạn cần đợi hết thời gian đếm ngược mới có thể đấu giá tiếp!</span>
+            <span>Bạn cần đợi hết thời gian đếm ngược mới có thể Trả giá tiếp!</span>
         `;
         
         toastContainer.appendChild(toast);
@@ -388,7 +388,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
-            <span>Bây giờ bạn có thể đấu giá tiếp!</span>
+            <span>Bây giờ bạn có thể Trả giá tiếp!</span>
         `;
         
         toastContainer.appendChild(toast);

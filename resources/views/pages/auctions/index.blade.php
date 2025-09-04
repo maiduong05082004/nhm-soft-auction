@@ -2,10 +2,10 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-	<h1 class="text-2xl font-bold mb-6">Phiên đấu giá đang diễn ra</h1>
+	<h1 class="text-2xl font-bold mb-6">Phiên trả giá đang diễn ra</h1>
 
 	@if(empty($auctions) || count($auctions) === 0)
-		<div class="alert alert-info">Hiện chưa có phiên đấu giá nào.</div>
+		<div class="alert alert-info">Hiện chưa có phiên trả giá nào.</div>
 	@else
 		<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6">
 			@foreach ($auctions as $auction)

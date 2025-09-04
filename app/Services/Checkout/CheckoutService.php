@@ -244,11 +244,11 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
         try {
             $auction = $this->auctionRepo->getAll(['id' => $auctionId])->first();
             if (!$auction) {
-                throw new ServiceException('Không tìm thấy phiên đấu giá!');
+                throw new ServiceException('Không tìm thấy phiên trả giá!');
             }
 
             if (!$auction->end_time || now()->lt(\Carbon\Carbon::parse($auction->end_time))) {
-                throw new ServiceException('Phiên đấu giá chưa kết thúc!');
+                throw new ServiceException('Phiên trả giá chưa kết thúc!');
             }
 
             $winnerBid = $this->auctionBidRepo->query()
@@ -260,7 +260,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             }
 
             if ((int)$winnerBid->user_id !== (int)$userId) {
-                throw new ServiceException('Bạn không phải người thắng phiên đấu giá này!');
+                throw new ServiceException('Bạn không phải người thắng phiên trả giá này!');
             }
 
             $user = $this->userRepo->getAll(['id' => $userId])->first();
@@ -285,7 +285,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                         'email' => $user->email ?? '',
                         'phone' => $user->phone ?? '',
                         'address' => $user->address ?? '',
-                        'note' => 'Thanh toán sản phẩm đấu giá #' . $auction->id,
+                        'note' => 'Thanh toán sản phẩm trả giá #' . $auction->id,
                     ]
                 ],
             ];
@@ -312,7 +312,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
 
             $auction = $this->auctionRepo->getAll(['id' => $checkoutData['auction_id']])->first();
             if (!$auction) {
-                throw new ServiceException('Không tìm thấy phiên đấu giá!');
+                throw new ServiceException('Không tìm thấy phiên trả giá!');
             }
 
             $winnerBid = $this->auctionBidRepo->query()
@@ -320,7 +320,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 ->orderBy('bid_price', 'desc')
                 ->first();
             if (!$winnerBid || (int)$winnerBid->user_id !== (int)$userId) {
-                throw new ServiceException('Bạn không phải người thắng phiên đấu giá này!');
+                throw new ServiceException('Bạn không phải người thắng phiên trả giá này!');
             }
 
             $user = $this->userRepo->getAll(['id' => $userId])->first();
@@ -344,7 +344,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 'discount_percentage' => $discountInfo['discount_percentage'],
                 'subtotal' => $amount,
                 'total' => $finalAmount,
-                'note' => $checkoutData['note'] ?? 'Thanh toán sản phẩm đấu giá #' . $auction->id,
+                'note' => $checkoutData['note'] ?? 'Thanh toán sản phẩm trả giá #' . $auction->id,
                 'status' => $orderDetailStatus,
                 'created_at' => now(),
                 'updated_at' => now(),

@@ -66,7 +66,7 @@ class CartController extends Controller
 					'price' => $auctionCheckoutData['amount'],
 					'total' => $auctionCheckoutData['amount'],
 					'product' => (object) [
-						'name' => $product->name ?? 'Sản phẩm đấu giá',
+						'name' => $product->name ?? 'Sản phẩm trả giá',
 						'price' => $auctionCheckoutData['amount'],
 						'images' => $product->images ?? collect(),
 					]

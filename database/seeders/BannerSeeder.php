@@ -32,7 +32,7 @@ class BannerSeeder extends Seeder
                 'banner_type_id' => $bannerType->random()->id,
             ],
             [
-                'name' => 'Đấu giá hot',
+                'name' => 'Trả giá hot',
                 'url_image' => 'banners/hot-auctions.jpg',
                 'banner_type_id' => $bannerType->random()->id,
             ],

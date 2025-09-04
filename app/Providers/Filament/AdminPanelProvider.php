@@ -34,7 +34,6 @@ class AdminPanelProvider extends PanelProvider
             ->registration(Register::class)
             ->passwordReset()
             ->favicon(asset('images/favicon.ico'))
-            ->brandLogo(asset('images/logo-removebg.png'))
             ->brandLogoHeight('1.4rem')
             ->colors([
                 'primary' => Color::Amber,

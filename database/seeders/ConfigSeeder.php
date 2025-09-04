@@ -31,7 +31,7 @@ class ConfigSeeder extends Seeder
     //    Config::query()->create([
     //     'config_key' => ConfigName::COIN_BIND_PRODUCT_AUCTION,
     //     'config_value' => 10,
-    //     'description' => 'Số coin cần để tham gia đấu giá sản phẩm (là số)',
+    //     'description' => 'Số coin cần để tham gia trả giá sản phẩm (là số)',
     // ]);
         // Config::query()->create([
         //     'config_key' => ConfigName::COIN_POST_PRODUCT_SALE,
@@ -41,7 +41,7 @@ class ConfigSeeder extends Seeder
         // Config::query()->create([
         //     'config_key' => ConfigName::COIN_POST_PRODUCT_AUCTION,
         //     'config_value' => 1,
-        //     'description' => 'Số coin cần để đăng đấu giá sản phẩm (là số)',
+        //     'description' => 'Số coin cần để đăng  trả giá sản phẩm (là số)',
         // ]);
         // Config::query()->create([
         //     'config_key' => ConfigName::PRICE_ONE_COIN,
@@ -51,7 +51,7 @@ class ConfigSeeder extends Seeder
         // Config::query()->create([
         //     'config_key' => ConfigName::TIME_DELAY_AUCTION_BIND,
         //     'config_value' => 10,
-        //     'description' => 'Thời gian delay để đấu giá sản phẩm (đơn vị là phút)',
+        //     'description' => 'Thời gian delay để trả giá sản phẩm (đơn vị là phút)',
         // ]);
         // Config::query()->create([
         //     'config_key' => ConfigName::MARQUEE_CONTENT,
@@ -61,7 +61,7 @@ class ConfigSeeder extends Seeder
         Config::query()->create([
             'config_key' => ConfigName::DISPLAY_TIME_AFTER_AUCTION,
             'config_value' => 7,
-            'description' => 'Thời gian hiển thị sau khi đấu giá sản phẩm (đơn vị là ngày)',
+            'description' => 'Thời gian hiển thị sau khi trả giá sản phẩm (đơn vị là ngày)',
         ]);
     }
 }

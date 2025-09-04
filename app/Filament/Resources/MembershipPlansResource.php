@@ -86,8 +86,8 @@ class MembershipPlansResource extends Resource
                             ->default(false),
 
                         Forms\Components\Toggle::make('config.free_auction_participation')
-                            ->label('Tham gia đấu giá miễn phí')
-                            ->helperText('Cho phép tham gia đấu giá không mất phí')
+                            ->label('Tham gia trả giá miễn phí')
+                            ->helperText('Cho phép tham gia trả giá không mất phí')
                             ->default(false),
 
                         Forms\Components\Toggle::make('config.priority_support')

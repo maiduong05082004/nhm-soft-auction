@@ -15,7 +15,7 @@ enum ConfigMembership: string
     {
         return match($this) {
             self::FREE_PRODUCT_LISTING => 'Đăng sản phẩm miễn phí',
-            self::FREE_AUCTION_PARTICIPATION => 'Tham gia đấu giá miễn phí',
+            self::FREE_AUCTION_PARTICIPATION => 'Tham gia trả giá miễn phí',
             self::DISCOUNT_PERCENTAGE => 'Phần trăm giảm giá',
             self::MAX_PRODUCTS_PER_MONTH => 'Số sản phẩm tối đa/tháng',
             self::PRIORITY_SUPPORT => 'Hỗ trợ ưu tiên',

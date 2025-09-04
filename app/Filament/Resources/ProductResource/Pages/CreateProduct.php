@@ -26,56 +26,63 @@ class CreateProduct extends CreateRecord
         if (auth()->user()->hasRole(RoleConstant::ADMIN)) {
             return;
         }
-
-        /** @var AuthServiceInterfacef $user */
         $user = app(AuthServiceInterface::class)->getInfoAuth();
 
-        if (is_array($user) && array_key_exists('membershipPlans', $user)) {
-            $plans = collect($user['membershipPlans']);
-        } elseif (is_object($user) && isset($user->membershipPlans)) {
-            $plans = $user->membershipPlans instanceof \Illuminate\Support\Collection
-                ? $user->membershipPlans
-                : collect($user->membershipPlans);
-        } else {
-            $plans = collect();
+        if (empty($user)) {
+            Notification::make()
+                ->title('Không đủ quyền')
+                ->warning()
+                ->body('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.')
+                ->send();
+
+            redirect()->to(BuyMembershipResource::getUrl());
         }
-        $userId = $user->id;
-        /** @var ProductServiceInterface $products */
+
+        $membershipPlans = collect();
+        $membershipUsers = collect();
+        $userId = null;
+
+        if (is_array($user)) {
+            $membershipPlans = collect($user['membershipPlans'] ?? []);
+            $membershipUsers = collect($user['membershipUsers'] ?? []);
+            $userId = $user['id'] ?? null;
+        } elseif (is_object($user)) {
+            $membershipPlans = $user->membershipPlans instanceof \Illuminate\Support\Collection
+                ? $user->membershipPlans
+                : collect($user->membershipPlans ?? []);
+            $membershipUsers = $user->membershipUsers instanceof \Illuminate\Support\Collection
+                ? $user->membershipUsers
+                : collect($user->membershipUsers ?? []);
+            $userId = $user->id ?? null;
+        }
+
+        if (empty($userId)) {
+            Notification::make()
+                ->title('Không đủ quyền')
+                ->warning()
+                ->body('Không xác định được ID người dùng.')
+                ->send();
+
+            redirect()->to(BuyMembershipResource::getUrl());
+        }
+
         $productsCount = app(ProductServiceInterface::class)->getCountProductByCreatedByAndNearMonthly($userId);
-        if ($plans->isEmpty()) {
+        if ($membershipPlans->isEmpty()) {
             Notification::make()
                 ->title('Không đủ quyền')
                 ->warning()
                 ->body('Bạn cần mua gói thành viên để tạo sản phẩm. Vui lòng chọn gói để tiếp tục.')
                 ->send();
+
             redirect()->to(BuyMembershipResource::getUrl());
         }
 
-        $plansUsers = array_filter($user['membershipUsers']->all(), fn($item) => $item['status'] == CommonConstant::ACTIVE);
-        if (!empty($plansUsers)) {
-            $planKey = array_key_first($plansUsers);
-            $planActive = $plansUsers[$planKey];
-            $config = $planActive['membershipPlan']['config'];
-            if (!$config['free_product_listing']) {
-                if ($productsCount >= $config['max_products_per_month'] || $config['max_products_per_month'] == 0) {
-                    Notification::make()
-                        ->title('Không đủ quyền')
-                        ->warning()
-                        ->body('Bạn đã đạt giới hạn tháng cần mua gói thành viên để tạo sản phẩm. Vui lòng chọn gói để tiếp tục.')
-                        ->send();
+        $planActive = $membershipUsers->first(function ($item) {
+            $status = is_array($item) ? ($item['status'] ?? null) : ($item->status ?? null);
+            return $status == CommonConstant::ACTIVE;
+        });
 
-                    redirect()->to(BuyMembershipResource::getUrl());
-                }
-            } else {
-                Notification::make()
-                    ->title('Không đủ quyền')
-                    ->warning()
-                    ->body('Bạn cần nâng cấp hoặc kích hoạt gói thành viên khác. Vui lòng chọn gói để tiếp tục.')
-                    ->send();
-
-                redirect()->to(BuyMembershipResource::getUrl());
-            }
-        } else {
+        if (empty($planActive)) {
             Notification::make()
                 ->title('Không đủ quyền')
                 ->warning()
@@ -84,7 +91,48 @@ class CreateProduct extends CreateRecord
 
             redirect()->to(BuyMembershipResource::getUrl());
         }
+
+        $config = null;
+        if (is_array($planActive)) {
+            $config = $planActive['membershipPlan']['config'] ?? null;
+        } elseif (is_object($planActive)) {
+            $config = $planActive->membershipPlan->config ?? null;
+        }
+
+        if (empty($config) || !is_array($config) && !is_object($config)) {
+            Notification::make()
+                ->title('Không đủ quyền')
+                ->warning()
+                ->body('Cấu hình gói không hợp lệ. Vui lòng liên hệ quản trị.')
+                ->send();
+
+            redirect()->to(BuyMembershipResource::getUrl());
+        }
+
+        $cfg = is_array($config) ? $config : (array) $config;
+
+        $freeListing = $cfg['free_product_listing'] ?? false;
+        $maxPerMonth = array_key_exists('max_products_per_month', $cfg) ? $cfg['max_products_per_month'] : null;
+
+        if ($freeListing) {
+            return;
+        }
+
+        if (is_null($maxPerMonth) || $maxPerMonth == 0 ) {
+            return;
+        }
+
+        if ( ($maxPerMonth > 0 && $productsCount >= $maxPerMonth)) {
+            Notification::make()
+                ->title('Không đủ quyền')
+                ->warning()
+                ->body('Bạn đã đạt giới hạn tháng cần mua gói thành viên để tạo sản phẩm. Vui lòng chọn gói để tiếp tục.')
+                ->send();
+
+            redirect()->to(BuyMembershipResource::getUrl());
+        }
     }
+
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {

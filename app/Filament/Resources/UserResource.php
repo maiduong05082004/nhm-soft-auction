@@ -101,8 +101,7 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->modifyQueryUsing(fn(Builder $query) => $query->with( 'category'))
-            ->columns([
+        return $table->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên')
                     ->sortable()
@@ -224,7 +223,7 @@ class UserResource extends Resource
                                             ->badge()
                                             ->formatStateUsing(fn(string $state): string => match ($state) {
                                                 'recharge_point' => 'Nạp tiền',
-                                                'bid' => 'Đấu giá',
+                                                'bid' => 'Trả giá',
                                                 'buy_product' => 'Mua sản phẩm',
                                                 default => 'Khác',
                                             })

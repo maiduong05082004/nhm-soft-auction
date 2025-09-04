@@ -69,6 +69,11 @@ class ViewMembership extends Component
         }
     }
 
+    public function goToUpgradeMembership ()
+    {
+        return redirect()->to(BuyMembershipResource::getUrl('upgrade'));
+    }
+
     public function goToBuyMembership()
     {
         return redirect()->to(BuyMembershipResource::getUrl('buy'));

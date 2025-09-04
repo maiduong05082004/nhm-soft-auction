@@ -11,7 +11,7 @@ enum ProductTypeSale: int
     {
         return [
             self::SALE->value => 'Bán hàng',
-            self::AUCTION->value => 'Đấu giá',
+            self::AUCTION->value => 'Trả giá trực tuyến',
         ];
     }
 }

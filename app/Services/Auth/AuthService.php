@@ -144,7 +144,7 @@ class AuthService extends BaseService implements AuthServiceInterface
         // Lấy tổng số tiền mua sản phẩm
         $sumBuyProduct = $repoPayment->sumTransTypeByUserId(TransactionPaymentType::BUY_PRODUCT, $userId);
 
-        // Lấy tổng số tiền mua sản phẩm đấu giá
+        // Lấy tổng số tiền mua sản phẩm Trả giá
         $sumBidProduct = $repoPayment->sumTransTypeByUserId(TransactionPaymentType::BID_PRODUCT, $userId);
 
         // Lấy tổng số point

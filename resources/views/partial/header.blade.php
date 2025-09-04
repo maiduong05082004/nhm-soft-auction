@@ -71,8 +71,8 @@
                         <a href="{{ route('auctions.my-participating') }}"
                             class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
                                transition-all duration-300 hover:-translate-y-0.5 relative">
-                            <img src="{{ asset('images/svg/auction-bid-svg.svg') }}" class="w-6 h-6 mb-1" alt="Đấu giá">
-                            <span class="text-xs font-medium">Đấu giá</span>
+                            <img src="{{ asset('images/svg/auction-bid-svg.svg') }}" class="w-6 h-6 mb-1" alt="Trả giá">
+                            <span class="text-xs font-medium">Trả giá</span>
                         </a>
 
                         <a href="{{ route('news.list') }}"
@@ -172,7 +172,7 @@
                        class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600
                                transition-all duration-300 hover:-translate-y-0.5 relative">
                         <x-heroicon-o-shopping-bag class="w-6 h-6 mb-1"></x-heroicon-o-shopping-bag>
-                        <span class="text-xs font-medium">Đấu giá</span>
+                        <span class="text-xs font-medium">Trả giá</span>
                     </a>
 
                     <a href="{{ route('news.list') }}"
