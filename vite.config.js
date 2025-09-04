@@ -12,7 +12,8 @@ export default defineConfig({
                 'resources/js/partials/filter.js',
                 'resources/js/admin/buy-membership.js',
                 'resources/js/partials/wishlist.js',
-                'resources/js/partials/header.js'
+                'resources/js/partials/header.js',
+                'resources/js/admin/upgrade-membership.js'
             ],
             refresh: [
                 ...refreshPaths,
