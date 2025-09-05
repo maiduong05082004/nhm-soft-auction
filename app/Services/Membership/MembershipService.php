@@ -309,15 +309,6 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                 // Cập nhật membership hiện tại
                 $membershipUser->status = CommonConstant::INACTIVE;
                 $membershipUser->save();
-
-                // Chỉ cập nhật những membership KHÁC của cùng user VÀ đã hết hạn
-                $this->getRepository('membershipUser')->query()
-                    ->where('user_id', $membershipUser->user_id)
-                    // ->where('id', '!=', $membershipUser->id)
-                    ->where('status', CommonConstant::ACTIVE)
-                    ->where('end_date', '<', $now) // Thêm điều kiện này
-                    ->update(['status' => CommonConstant::INACTIVE]);
-
                 // Kiểm tra duplicate notification
                 $alreadyNotified = $this->checkIfAlreadyNotified(
                     $membershipUser->user_id,
