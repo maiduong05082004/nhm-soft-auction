@@ -44,6 +44,8 @@
         </div>
     </nav>
     <aside>
-        <p class="text-center text-sm my-4">Copyright © 2025 - All right reserved by ACME Industries Ltd</p>
+        <p class="text-center text-sm my-4">© {{ \Illuminate\Support\Carbon::now()->format('Y') }}
+            {{ config('app.name') }}.
+            Copyright registered</p>
     </aside>
 </footer>

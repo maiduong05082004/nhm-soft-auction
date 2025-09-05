@@ -8,6 +8,8 @@ use App\Enums\PayTypes;
 use App\Enums\Transactions\TransactionPaymentStatus;
 use App\Enums\Transactions\TransactionPaymentType;
 use App\Models\MembershipUser;
+use App\Notifications\MembershipExpiredNotice;
+use App\Notifications\MembershipExpiringSoonNotice;
 use App\Repositories\MembershipPlan\MembershipPlanRepositoryInterface;
 use App\Repositories\MembershipTransaction\MembershipTransactionRepositoryInterface;
 use App\Repositories\MembershipUser\MembershipUserRepositoryInterface;
@@ -16,6 +18,7 @@ use App\Repositories\TransactionPoint\TransactionPointRepositoryInterface;
 use App\Repositories\Users\UserRepository;
 use App\Services\BaseService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MembershipService extends BaseService implements MembershipServiceInterface
 {
@@ -144,7 +147,7 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                         'membership_plan_id' => $membershipPlan->id,
                         'end_date' => $newEndDate,
                     ]);
-            }else {
+            } else {
                 $this->getRepository('membershipUser')->query()
                     ->where('user_id', $userId)
                     ->update([
@@ -238,5 +241,123 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
         return $item->status == CommonConstant::INACTIVE
             && $item->end_date >= $now
             && $item->membershipTransaction->where('status', MembershipTransactionStatus::ACTIVE->value)->isNotEmpty();
+    }
+
+
+    public function remindMembershipExpiringSoon(int $daysBefore = 3): int
+    {
+        $targetDate = now()->addDays($daysBefore)->toDateString();
+
+        $expiringSoon = $this->getRepository('membershipUser')->query()
+            ->with(['membershipPlan', 'user']) // Eager load để tránh N+1
+            ->where('status', CommonConstant::ACTIVE)
+            ->whereNotNull('end_date')
+            ->whereDate('end_date', $targetDate) // Sử dụng whereDate thay vì whereBetween
+            ->get();
+
+        $count = 0;
+        foreach ($expiringSoon as $membershipUser) {
+            try {
+                // Kiểm tra xem đã gửi notification chưa (tránh duplicate)
+                $alreadyNotified = $this->checkIfAlreadyNotified(
+                    $membershipUser->user_id,
+                    'MembershipExpiringSoonNotice',
+                    $membershipUser->id
+                );
+
+                if ($alreadyNotified) {
+                    continue;
+                }
+
+                $user = $membershipUser->user ?? $this->getRepository('user')->find($membershipUser->user_id);
+
+                if ($user) {
+                    $user->notify(new MembershipExpiringSoonNotice($membershipUser, $daysBefore));
+                    $count++;
+                } else {
+                    Log::warning("remindMembershipExpiringSoon: user not found for membership_user id {$membershipUser->id}");
+                }
+            } catch (\Exception $e) {
+                Log::error('remindMembershipExpiringSoon error: ' . $e->getMessage(), [
+                    'membership_user_id' => $membershipUser->id ?? null,
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
+        }
+
+        Log::info("remindMembershipExpiringSoon: total reminders sent: {$count} for daysBefore={$daysBefore}");
+        return $count;
+    }
+
+    public function checkMembershipExpired(): int
+    {
+        $now = now();
+
+        $expired = $this->getRepository('membershipUser')->query()
+            ->with(['membershipPlan', 'user'])
+            ->where('status', CommonConstant::ACTIVE)
+            ->whereNotNull('end_date')
+            ->where('end_date', '<', $now)
+            ->get();
+
+        $count = 0;
+
+        foreach ($expired as $membershipUser) {
+            DB::beginTransaction();
+            try {
+                // Cập nhật membership hiện tại
+                $membershipUser->status = CommonConstant::INACTIVE;
+                $membershipUser->save();
+
+                // Chỉ cập nhật những membership KHÁC của cùng user VÀ đã hết hạn
+                $this->getRepository('membershipUser')->query()
+                    ->where('user_id', $membershipUser->user_id)
+                    ->where('id', '!=', $membershipUser->id)
+                    ->where('status', CommonConstant::ACTIVE)
+                    ->where('end_date', '<', $now) // Thêm điều kiện này
+                    ->update(['status' => CommonConstant::INACTIVE]);
+
+                // Kiểm tra duplicate notification
+                $alreadyNotified = $this->checkIfAlreadyNotified(
+                    $membershipUser->user_id,
+                    'MembershipExpiredNotice',
+                    $membershipUser->id
+                );
+
+                if (!$alreadyNotified) {
+                    $user = $membershipUser->user ?? $this->getRepository('user')->find($membershipUser->user_id);
+
+                    if ($user) {
+                        $user->notify(new MembershipExpiredNotice($membershipUser));
+                    } else {
+                        Log::warning("checkMembershipExpired: user not found for membership_user id {$membershipUser->id}");
+                    }
+                }
+
+                DB::commit();
+                $count++;
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('checkMembershipExpired error: ' . $e->getMessage(), [
+                    'membership_user_id' => $membershipUser->id ?? null,
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
+        }
+
+        Log::info("checkMembershipExpired finished, total expired processed: {$count}");
+        return $count;
+    }
+
+    // Helper method để kiểm tra duplicate notification
+    private function checkIfAlreadyNotified(int $userId, string $notificationType, int $membershipUserId): bool
+    {
+        return DB::table('notifications')
+            ->where('notifiable_id', $userId)
+            ->where('notifiable_type', 'App\Models\User')
+            ->where('type', "App\Notifications\\{$notificationType}")
+            ->whereJsonContains('data->membership_user_id', $membershipUserId)
+            ->where('created_at', '>=', now()->subDay())
+            ->exists();
     }
 }
