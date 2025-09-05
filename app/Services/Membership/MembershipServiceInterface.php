@@ -20,4 +20,8 @@ interface MembershipServiceInterface extends BaseServiceInterface
     public function getMembershipTransactionByUserId($userId);
 
     public function updateMembershipForUser($userId, $membershipPlan, $dataTransfer, $payType, $isUpgrade);
+
+    public function checkMembershipExpired(): int;
+    
+    public function remindMembershipExpiringSoon(int $daysBefore = 3): int;
 }
