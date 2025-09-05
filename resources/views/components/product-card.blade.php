@@ -49,7 +49,7 @@
                 @endif
             </div>
             <div class="text-[12px] font-bold text-orange-600 whitespace-nowrap overflow-hidden text-ellipsis">
-                {{ $product['price_display'] ?? '0 ₫' }}
+                {{ number_format($product->price, 0, ',', '.') . '0 ₫' }}
             </div>
         </div>
 
