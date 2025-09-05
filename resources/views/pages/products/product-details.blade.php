@@ -985,8 +985,6 @@
                                                     class="ml-1 font-semibold">{{ number_format($sellerAverageRating ?? 0, 1) }}</span>
                                             </div>
                                             <span class="text-gray-500">({{ $sellerTotalReviews ?? 0 }} đánh giá)</span>
-                                            @foreach ($user->contact_info as $item)
-                                            @endforeach
                                         </div>
                                         <p class="text-gray-600 mt-2">Cửa hàng uy tín chuyên bán các sản phẩm công nghệ
                                             chính

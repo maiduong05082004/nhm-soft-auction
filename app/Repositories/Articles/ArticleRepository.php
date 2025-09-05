@@ -37,7 +37,8 @@ class ArticleRepository extends BaseRepository implements ArticleRepositoryInter
     {
         $builder = $this->model->with(['category', 'author'])
             ->where('status', '=', 'published')
-            ->where('publish_time', '<=', now());
+            ->where('publish_time', '<=', now())
+            ->orderBy('publish_time', 'desc');
 
         if (!empty($query['search'])) {
             $keyword = $query['search'];

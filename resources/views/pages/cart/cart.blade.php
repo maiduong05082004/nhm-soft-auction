@@ -48,15 +48,10 @@
                             <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 py-3 sm:py-6">
                                 <div class="flex items-center gap-3 sm:gap-4 flex-1">
                                     <div class="flex items-center gap-3 mb-2">
-                                        <input
-                                            id="select-item-{{ $cartItem->product_id }}"
-                                            name="selected_items[]"
-                                            value="{{ $cartItem->product_id }}"
-                                            type="checkbox"
-                                            checked="checked"
+                                        <input id="select-item-{{ $cartItem->product_id }}" name="selected_items[]"
+                                            value="{{ $cartItem->product_id }}" type="checkbox" checked="checked"
                                             class="select-item checkbox checkbox-neutral checked:!bg-black checked:hover:!bg-black checked:focus:!bg-black checked:!border-transparent"
-                                            data-product-id="{{ $cartItem->product_id }}"
-                                        />
+                                            data-product-id="{{ $cartItem->product_id }}" />
                                     </div>
                                     <div class="flex-shrink-0">
                                         <div
@@ -64,11 +59,13 @@
                                             @if ($cartItem->product && $cartItem->product->images && $cartItem->product->images->count() > 0)
                                                 <img src="{{ isset($cartItem->product->images->first()->image_url) ? \App\Utils\HelperFunc::generateURLFilePath($cartItem->product->images->first()->image_url) : 'https://via.placeholder.com/800x600?text=No+Image' }}"
                                                     alt="{{ $cartItem->product->name ?? 'Sản phẩm' }}"
-                                                    class="object-cover w-full h-full hover:scale-110 transition-transform duration-200">
+                                                    class="object-cover w-full h-full hover:scale-110 transition-transform duration-200"
+                                                    onerror="this.src='{{ asset('images/product_default.jpg') }}'">
                                             @else
                                                 <img src="{{ asset('images/default-avatar.png') }}"
                                                     alt="{{ $cartItem->product->name ?? 'Sản phẩm' }}"
-                                                    class="object-cover w-full h-full hover:scale-110 transition-transform duration-200">
+                                                    class="object-cover w-full h-full hover:scale-110 transition-transform duration-200"
+                                                    onerror="this.src='{{ asset('images/product_default.jpg') }}'">
                                             @endif
                                         </div>
                                     </div>
@@ -210,20 +207,25 @@
             <h3 class="font-bold text-lg mb-4">Lưu thay đổi trước khi thanh toán?</h3>
             <div class="space-y-4">
                 <div class="flex items-start gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-blue-500 mt-0.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 0 1 0 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281Z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-6 h-6 text-blue-500 mt-0.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 0 1 0 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281Z" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                     </svg>
                     <div>
                         <p class="text-gray-700 mb-2">Bạn đã thay đổi số lượng một số sản phẩm trong giỏ hàng.</p>
-                        <p class="text-sm text-gray-600">Bạn có muốn lưu những thay đổi này trước khi tiến hành thanh toán không?</p>
+                        <p class="text-sm text-gray-600">Bạn có muốn lưu những thay đổi này trước khi tiến hành thanh toán
+                            không?</p>
                     </div>
                 </div>
-                
+
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <div class="flex items-center gap-2 mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-5 h-5 text-blue-600">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                         </svg>
                         <span class="text-sm font-medium text-blue-800">Lưu ý</span>
                     </div>
