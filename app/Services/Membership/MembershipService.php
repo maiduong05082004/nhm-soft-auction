@@ -272,7 +272,8 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                 $user = $membershipUser->user ?? $this->getRepository('user')->find($membershipUser->user_id);
 
                 if ($user) {
-                    $user->notify(new MembershipExpiringSoonNotice($membershipUser, $daysBefore));
+                    $mail = new MembershipExpiringSoonNotice($membershipUser, $daysBefore);
+                    $mail->toMail($user);
                     $count++;
                 } else {
                     Log::warning("remindMembershipExpiringSoon: user not found for membership_user id {$membershipUser->id}");
@@ -312,7 +313,7 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                 // Chỉ cập nhật những membership KHÁC của cùng user VÀ đã hết hạn
                 $this->getRepository('membershipUser')->query()
                     ->where('user_id', $membershipUser->user_id)
-                    ->where('id', '!=', $membershipUser->id)
+                    // ->where('id', '!=', $membershipUser->id)
                     ->where('status', CommonConstant::ACTIVE)
                     ->where('end_date', '<', $now) // Thêm điều kiện này
                     ->update(['status' => CommonConstant::INACTIVE]);
@@ -328,7 +329,8 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                     $user = $membershipUser->user ?? $this->getRepository('user')->find($membershipUser->user_id);
 
                     if ($user) {
-                        $user->notify(new MembershipExpiredNotice($membershipUser));
+                        $mail = new MembershipExpiredNotice($membershipUser);
+                        $mail->toMail($user);
                     } else {
                         Log::warning("checkMembershipExpired: user not found for membership_user id {$membershipUser->id}");
                     }
