@@ -272,8 +272,7 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                 $user = $membershipUser->user ?? $this->getRepository('user')->find($membershipUser->user_id);
 
                 if ($user) {
-                    $mail = new MembershipExpiringSoonNotice($membershipUser, $daysBefore);
-                    $mail->toMail($user);
+                    $user(new MembershipExpiringSoonNotice($membershipUser, $daysBefore));
                     $count++;
                 } else {
                     Log::warning("remindMembershipExpiringSoon: user not found for membership_user id {$membershipUser->id}");
@@ -320,8 +319,7 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                     $user = $membershipUser->user ?? $this->getRepository('user')->find($membershipUser->user_id);
 
                     if ($user) {
-                        $mail = new MembershipExpiredNotice($membershipUser);
-                        $mail->toMail($user);
+                        $user->notify(new MembershipExpiredNotice($membershipUser));
                     } else {
                         Log::warning("checkMembershipExpired: user not found for membership_user id {$membershipUser->id}");
                     }
