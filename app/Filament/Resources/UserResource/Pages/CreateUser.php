@@ -18,6 +18,13 @@ class CreateUser extends CreateRecord
         ];
     }
 
+    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    {
+        if (!empty($data['new_password'])) {
+            $data['password'] = $data['new_password'];
+        }
+        return static::getModel()::create($data);
+    }
     protected function getCreateFormAction(): Actions\Action
     {
         return parent::getCreateFormAction()
