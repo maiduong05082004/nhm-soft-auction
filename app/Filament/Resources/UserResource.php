@@ -39,6 +39,24 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required()
+                    ->rules([
+                        fn($get) => function (string $attribute, $value, $fail) use ($get) {
+                            $id = $get('id');
+                            if ($id) {
+                                // Nếu là chỉnh sửa, bỏ qua bản ghi hiện tại trong việc kiểm tra email trùng lặp
+                                $check = User::query()
+                                    ->where('email', $value)
+                                    ->where('id', '!=', $id)
+                                    ->exists();
+                            } else {
+                                // Nếu là tạo mới, kiểm tra trùng lặp
+                                $check = User::query()->where('email', $value)->exists();
+                            }
+                            if ($check) {
+                                $fail('Email này đã có người sử dụng');
+                            }
+                        },
+                    ])
                     ->maxLength(255),
                 Forms\Components\DateTimePicker::make('email_verified_at'),
 
