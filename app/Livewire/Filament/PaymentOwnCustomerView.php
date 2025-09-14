@@ -32,7 +32,7 @@ class PaymentOwnCustomerView extends Component implements HasTable, HasForms
     public ?Authenticatable $auth;
     public $sumTransaction;
     public ?array $data = [];
-    public string $viewType = '1';
+    public string $viewType = '2';
     public $current_balance = 0;
     public $config;
     private AuthServiceInterface $authService;

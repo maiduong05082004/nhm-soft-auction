@@ -3,7 +3,7 @@
 @endassets
 
 <div class="space-y-4">
-    <x-filament::section icon="heroicon-m-currency-dollar">
+    {{-- <x-filament::section icon="heroicon-m-currency-dollar">
         <x-slot name="heading">
             Tổng quan
         </x-slot>
@@ -37,8 +37,8 @@
                     <span class="text-2xl text-gray-600 dark:text-gray-400">VND</span>
                 </div>
             </div> --}}
-        </div>
-    </x-filament::section>
+        {{-- </div>
+    </x-filament::section> --}} 
 
     <x-filament::section>
         <x-slot name="heading">Lịch sử giao dịch</x-slot>
