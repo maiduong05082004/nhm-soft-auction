@@ -91,7 +91,7 @@ class BuyMembership extends Component
                     'X-Api-Key'   => env('API_KEY'),
                     'Content-Type' => 'application/json',
                 ])
-                    ->timeout(15) // ⏳ chống treo lâu quá
+                    ->timeout(15) 
                     ->post('https://api-merchant.payos.vn/v2/payment-requests', array_merge($payload, [
                         'expiredAt' => $expiredAtForApi,
                         'signature' => $signature
@@ -185,12 +185,6 @@ class BuyMembership extends Component
             // chưa thanh toán
         } else if ($result == MembershipTransactionStatus::ACTIVE->value) {
             $this->paymentSuccess = true;
-
-            Notification::make()
-                ->title('Thành công')
-                ->body('Thanh toán thành công.')
-                ->success()
-                ->send();
 
             $this->dispatch('payment-success');
         } else {
