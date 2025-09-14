@@ -374,7 +374,6 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
         return $count;
     }
 
-    // Helper method để kiểm tra duplicate notification
     private function checkIfAlreadyNotified(int $userId, string $notificationType, int $membershipUserId): bool
     {
         return DB::table('notifications')
@@ -384,6 +383,7 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
             ->whereJsonContains('data->membership_user_id', $membershipUserId)
             ->where('created_at', '>=', now()->subDay())
             ->exists();
+    }
     public function refreshMemberShipTransaction($userId, $dataTransfer): int
     {
         $membershipTransaction = $this->getRepository('membershipTransaction')

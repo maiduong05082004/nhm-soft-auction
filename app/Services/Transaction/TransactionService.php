@@ -144,17 +144,9 @@ class TransactionService extends BaseService implements TransactionServiceInterf
                 } else if ($membershipTransaction && $status == MembershipTransactionStatus::WAITING->value) {
                     $membershipTransaction->status = MembershipTransactionStatus::WAITING->value;
                     $membershipTransaction->save();
-
-                    $membershipUser = $membershipTransaction->membershipUser;
-                    $membershipUser->status = false;
-                    $membershipUser->save();
                 } else {
                     $membershipTransaction->status = MembershipTransactionStatus::FAILED->value;
                     $membershipTransaction->save();
-
-                    $membershipUser = $membershipTransaction->membershipUser;
-                    $membershipUser->status = false;
-                    $membershipUser->save();
                 }
             }
             DB::commit();
