@@ -32,6 +32,8 @@ class CheckMembershipExpired extends Command
 
         $this->info("Checked and notice " . $expiredMembershipsSoon . " expired memberships.");
         $this->info("Checked and updated " . $expiredMemberships . " expired memberships.");
+        Log::info("Checked and notice {$expiredMembershipsSoon} expired memberships.");
+        Log::info("Checked and updated {$expiredMemberships} expired memberships.");
         return Command::SUCCESS;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\Products\ProductServiceInterface;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class CloseExpiredListings extends Command
 {
@@ -29,6 +30,8 @@ class CloseExpiredListings extends Command
         $closedCount = $productService->closeExpiredListings();
         $this->info("Đã đóng {$closedCount} sản phẩm hết hạn.");
         $this->info('Đã xử lý tất cả sản phẩm hết hạn.');
+        Log::info("Đã đóng {$closedCount} sản phẩm hết hạn.");
+        Log::info('Đã xử lý tất cả sản phẩm hết hạn.');
 
         return Command::SUCCESS;
     }
