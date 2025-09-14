@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::table('banner_types', function (Blueprint $table) {
             $table->dropColumn('status');
+        });
+        Schema::table('banner_types', function (Blueprint $table) {
             $table->integer('status')->default(1)->comment('0: inactive, 1: active');
         });
     }
@@ -23,8 +25,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('banner_types', function (Blueprint $table) {
-            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->dropColumn('status');
+        });
+
+        Schema::table('banner_types', function (Blueprint $table) {
+            $table->enum('status', ['active', 'inactive'])->default('active');
         });
     }
 };

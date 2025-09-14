@@ -26,6 +26,7 @@ class CreateProduct extends CreateRecord
         if (auth()->user()->hasRole(RoleConstant::ADMIN)) {
             return;
         }
+
         $user = app(AuthServiceInterface::class)->getInfoAuth();
 
         if (empty($user)) {
@@ -66,40 +67,41 @@ class CreateProduct extends CreateRecord
             redirect()->to(BuyMembershipResource::getUrl());
         }
 
-        $productsCount = app(ProductServiceInterface::class)->getCountProductByCreatedByAndNearMonthly($userId);
+        $productsCount = app(ProductServiceInterface::class)
+            ->getCountProductByCreatedByAndNearMonthly($userId);
+
         if ($membershipPlans->isEmpty()) {
             Notification::make()
                 ->title('Không đủ quyền')
                 ->warning()
-                ->body('Bạn cần mua gói thành viên để tạo sản phẩm. Vui lòng chọn gói để tiếp tục.')
+                ->body('Bạn cần mua gói thành viên để tạo sản phẩm.')
                 ->send();
 
             redirect()->to(BuyMembershipResource::getUrl());
         }
 
-        $planActive = $membershipUsers->first(function ($item) {
-            $status = is_array($item) ? ($item['status'] ?? null) : ($item->status ?? null);
-            return $status == CommonConstant::ACTIVE;
-        });
+        $planActive = null;
+
+        $plansUsers = $membershipUsers->filter(fn($item) => $item['status'] == CommonConstant::ACTIVE);
+        if ($plansUsers->isNotEmpty()) {
+            $planActive = $plansUsers->first();
+        }
 
         if (empty($planActive)) {
             Notification::make()
                 ->title('Không đủ quyền')
                 ->warning()
-                ->body('Bạn cần nâng cấp hoặc kích hoạt gói thành viên khác. Vui lòng chọn gói để tiếp tục.')
+                ->body('Bạn cần nâng cấp hoặc kích hoạt gói thành viên khác.')
                 ->send();
 
             redirect()->to(BuyMembershipResource::getUrl());
         }
 
-        $config = null;
-        if (is_array($planActive)) {
-            $config = $planActive['membershipPlan']['config'] ?? null;
-        } elseif (is_object($planActive)) {
-            $config = $planActive->membershipPlan->config ?? null;
-        }
+        $config = is_array($planActive)
+            ? $planActive['membershipPlan']['config'] ?? null
+            : $planActive->membershipPlan->config ?? null;
 
-        if (empty($config) || !is_array($config) && !is_object($config)) {
+        if (empty($config)) {
             Notification::make()
                 ->title('Không đủ quyền')
                 ->warning()
@@ -112,21 +114,30 @@ class CreateProduct extends CreateRecord
         $cfg = is_array($config) ? $config : (array) $config;
 
         $freeListing = $cfg['free_product_listing'] ?? false;
-        $maxPerMonth = array_key_exists('max_products_per_month', $cfg) ? $cfg['max_products_per_month'] : null;
+        $maxPerMonth = $cfg['max_products_per_month'] ?? null;
 
         if ($freeListing) {
+            if ($maxPerMonth > 0 && $productsCount >= $maxPerMonth) {
+                Notification::make()
+                    ->title('Không đủ quyền')
+                    ->warning()
+                    ->body('Bạn đã đạt giới hạn tháng.')
+                    ->send();
+
+                redirect()->to(BuyMembershipResource::getUrl());
+            }
             return;
         }
 
         if (is_null($maxPerMonth) || $maxPerMonth == 0) {
-            return;
+            return; 
         }
 
-        if (($maxPerMonth > 0 && $productsCount >= $maxPerMonth)) {
+        if ($productsCount >= $maxPerMonth) {
             Notification::make()
                 ->title('Không đủ quyền')
                 ->warning()
-                ->body('Bạn đã đạt giới hạn tháng cần mua gói thành viên để tạo sản phẩm. Vui lòng chọn gói để tiếp tục.')
+                ->body('Bạn đã đạt giới hạn tháng cần mua gói thành viên để tạo thêm sản phẩm.')
                 ->send();
 
             redirect()->to(BuyMembershipResource::getUrl());
@@ -134,22 +145,6 @@ class CreateProduct extends CreateRecord
     }
 
 
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        $typeSale = is_object($data['type_sale']) && method_exists($data['type_sale'], 'value')
-            ? $data['type_sale']->value
-            : (int) $data['type_sale'];
-        if ($typeSale === ProductTypeSale::SALE->value) {
-            $data['min_bid_amount'] = 0;
-            $data['max_bid_amount'] = 0;
-            $data['start_time'] = null;
-            $data['end_time'] = null;
-        } else if ($typeSale === ProductTypeSale::AUCTION->value) {
-            $data['price'] = $data['max_bid_amount'] ?? 0;
-        }
-        $data['created_by'] = auth()->user()->id;
-        return $data;
-    }
 
     protected function beforeCreate(): void
     {
@@ -179,12 +174,11 @@ class CreateProduct extends CreateRecord
         }
     }
 
-    protected function mutateFormDataBeforeSave(array $data): array
+    protected function mutateFormDataBeforeCreate(array $data): array
     {
         $typeSale = is_object($data['type_sale']) && method_exists($data['type_sale'], 'value')
             ? $data['type_sale']->value
             : (int) $data['type_sale'];
-
         if ($typeSale === ProductTypeSale::SALE->value) {
             $data['min_bid_amount'] = 0;
             $data['max_bid_amount'] = 0;
@@ -196,7 +190,6 @@ class CreateProduct extends CreateRecord
         $data['created_by'] = auth()->user()->id;
         return $data;
     }
-
 
     protected function handleRecordCreation(array $data): Model
     {

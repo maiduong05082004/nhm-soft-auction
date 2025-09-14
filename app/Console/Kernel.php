@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('app:close-expired-listings')->daily();
-        $schedule->command('membership:check-expired')->daily();
+        $schedule->command('transactions:cancel-expired')->everyMinute();
     }
 
     /**

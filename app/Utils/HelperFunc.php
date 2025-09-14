@@ -87,6 +87,16 @@ class HelperFunc
         return $left . '***' . $right;
     }
 
+    public static function generateSignature(array $data, string $key): string
+    {
+        ksort($data);
+
+        $dataString = urldecode(http_build_query($data));
+
+        return hash_hmac('sha256', $dataString, $key);
+    }
+
+
     // public static function getPageLayouts(): array
     // {
     //     $path = resource_path('views/page-layouts');

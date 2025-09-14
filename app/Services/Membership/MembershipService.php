@@ -17,7 +17,9 @@ use App\Repositories\TransactionPayment\TransactionPaymentRepositoryInterface;
 use App\Repositories\TransactionPoint\TransactionPointRepositoryInterface;
 use App\Repositories\Users\UserRepository;
 use App\Services\BaseService;
+use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class MembershipService extends BaseService implements MembershipServiceInterface
@@ -56,69 +58,51 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
             ->first();
     }
 
-    public function createMembershipForUser($userId, $membershipPlan, $dataTransfer, $payType): bool
+    public function createMembershipForUser($userId, $membershipPlan, $dataTransfer): bool
     {
         $now = now();
 
         try {
             DB::beginTransaction();
-            // Tạo membership cho người dùng
-            $memberUser = $this->getRepository('membershipUser')->insertOne([
+
+            $memberUser = $this->getRepository('membershipUser')
+                ->query()
+                ->where('user_id', $userId)
+                ->first();
+
+            if (! $memberUser) {
+                $memberUser = $this->getRepository('membershipUser')->insertOne([
+                    'user_id' => $userId,
+                    'membership_plan_id' => $membershipPlan->id,
+                    'status' => CommonConstant::INACTIVE,
+                    'start_date' => $now,
+                    'end_date' => $now->copy()->addMonths($membershipPlan->duration),
+                ]);
+
+                if (! $memberUser || ! isset($memberUser->id)) {
+                    throw new \Exception("Failed to create membership_user record");
+                }
+            }
+
+            $this->getRepository('membershipTransaction')->insertOne([
                 'user_id' => $userId,
+                'membership_user_id' => $memberUser->id,
+                'money' => $dataTransfer['totalPrice'] ?? 0,
+                'status' => MembershipTransactionStatus::WAITING,
                 'membership_plan_id' => $membershipPlan->id,
-                'status' => CommonConstant::INACTIVE,
-                'start_date' => $now,
-                'end_date' => $now->copy()->addMonths($membershipPlan->duration),
+                'transaction_code' => $dataTransfer['descBank'] ?? null,
+                'order_code' => $dataTransfer['orderCode'] ?? null,
+                'expired_at' => now()->addMinutes(5),
             ]);
 
-
-            if ($payType == PayTypes::POINTS->value) {
-                $this->getRepository('membershipTransaction')->insertOne([
-                    'user_id' => $userId,
-                    'membership_user_id' => $memberUser->id,
-                    'money' => $dataTransfer['points'],
-                    'status' => MembershipTransactionStatus::ACTIVE,
-                    'transaction_code' => 'PAY BY POINTS',
-                ]);
-                $memberUser->update(['status' => CommonConstant::ACTIVE]);
-                $this->getRepository('membershipUser')->query()
-                    ->where('user_id', $memberUser->user_id)
-                    ->where('id', '!=', $memberUser->id)
-                    ->update(['status' => false]);
-                $transactionPayment = $this->getRepository('transactionPayment')->insertOne([
-                    'user_id' => $userId,
-                    'type' => TransactionPaymentType::RECHANGE_POINT->value,
-                    'description' => 'PAY BY POINTS',
-                    'money' => $dataTransfer['points'],
-                    'status' => TransactionPaymentStatus::ACTIVE->value,
-                ]);
-
-                $this->getRepository('transactionPoint')->insertOne([
-                    'user_id' => $userId,
-                    'status' => TransactionPaymentStatus::ACTIVE->value,
-                    'point' => -$dataTransfer['points'],
-                    'transaction_payment_id' => $transactionPayment->id,
-                ]);
-
-                $this->getRepository('user')
-                    ->query()
-                    ->where('id', $userId)
-                    ->update([
-                        'current_balance' => DB::raw("current_balance - {$dataTransfer['points']}")
-                    ]);
-            } else {
-                $this->getRepository('membershipTransaction')->insertOne([
-                    'user_id' => $userId,
-                    'membership_user_id' => $memberUser->id,
-                    'money' => $dataTransfer['totalPrice'],
-                    'status' => MembershipTransactionStatus::WAITING,
-                    'transaction_code' => $dataTransfer['descBank'],
-                ]);
-            }
             DB::commit();
             return true;
         } catch (\Exception $exception) {
             DB::rollBack();
+            Log::error('Create membership error', [
+                'msg' => $exception->getMessage(),
+                'trace' => $exception->getTraceAsString(),
+            ]);
             return false;
         }
     }
@@ -214,6 +198,56 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
     public function getMembershipTransactionByUserId($userId)
     {
         return $this->getRepository('membershipTransaction')->query()->where('user_id', $userId)->get();
+    }
+
+
+    public function payByPointsForMembershipUser($userId, $dataTransfer): bool
+    {
+        try {
+            DB::beginTransaction();
+
+            $memberUser = $this->getRepository('membershipUser')->query()->where('user_id', $userId)->where('status', CommonConstant::INACTIVE);
+
+            $this->getRepository('membershipTransaction')->query()->where('order_code', $dataTransfer['orderCode'])->update([
+                'user_id' => $userId,
+                'membership_user_id' => $memberUser->id,
+                'money' => $dataTransfer['points'],
+                'status' => MembershipTransactionStatus::ACTIVE,
+                'transaction_code' => 'PAY BY POINTS',
+            ]);
+
+            $memberUser->update(['status' => CommonConstant::ACTIVE]);
+            $this->getRepository('membershipUser')->query()
+                ->where('user_id', $memberUser->user_id)
+                ->where('id', '!=', $memberUser->id)
+                ->update(['status' => false]);
+            $transactionPayment = $this->getRepository('transactionPayment')->insertOne([
+                'user_id' => $userId,
+                'type' => TransactionPaymentType::RECHANGE_POINT->value,
+                'description' => 'PAY BY POINTS',
+                'money' => $dataTransfer['points'],
+                'status' => TransactionPaymentStatus::ACTIVE->value,
+            ]);
+
+            $this->getRepository('transactionPoint')->insertOne([
+                'user_id' => $userId,
+                'status' => TransactionPaymentStatus::ACTIVE->value,
+                'point' => -$dataTransfer['points'],
+                'transaction_payment_id' => $transactionPayment->id,
+            ]);
+
+            $this->getRepository('user')
+                ->query()
+                ->where('id', $userId)
+                ->update([
+                    'current_balance' => DB::raw("current_balance - {$dataTransfer['points']}")
+                ]);
+            DB::commit();
+            return true;
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            return false;
+        }
     }
 
     public function reActivateMembershipForUser(MembershipUser $membershipUser): bool
@@ -350,5 +384,18 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
             ->whereJsonContains('data->membership_user_id', $membershipUserId)
             ->where('created_at', '>=', now()->subDay())
             ->exists();
+    public function refreshMemberShipTransaction($userId, $dataTransfer): int
+    {
+        $membershipTransaction = $this->getRepository('membershipTransaction')
+            ->query()
+            ->where('order_code', $dataTransfer['orderCode'])
+            ->where('user_id', $userId)
+            ->first();
+
+        if ($membershipTransaction) {
+            return $membershipTransaction['status'];
+        } else {
+            return MembershipTransactionStatus::ACTIVE->value;
+        }
     }
 }

@@ -33,6 +33,9 @@ class MembershipTransaction extends Model
         'money',
         'transaction_code',
         'status',
+        'order_code',
+        'membership_plan_id',
+        'expired_at'
     ];
 
     protected static function boot()
@@ -53,4 +56,8 @@ class MembershipTransaction extends Model
         return $this->belongsTo(MembershipUser::class, 'membership_user_id');
     }
 
+    public function membershipPlan()
+    {
+        return $this->belongsTo(MembershipPlan::class, 'membership_plan_id', 'id');
+    }
 }
