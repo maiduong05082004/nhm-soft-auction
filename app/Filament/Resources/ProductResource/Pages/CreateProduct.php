@@ -55,9 +55,10 @@ class CreateProduct extends CreateRecord
         if (!empty($plansUsers)) {
             $planKey = array_key_first($plansUsers);
             $planActive = $plansUsers[$planKey];
+
             $config = $planActive['membershipPlan']['config'];
-            if (!$config['free_product_listing']) {
-                if ($productsCount >= $config['max_products_per_month'] || $config['max_products_per_month'] == 0) {
+            if ($config['free_product_listing']) {
+                if ($productsCount >= $config['max_products_per_month'] && $config['max_products_per_month'] != 0) {
                     Notification::make()
                         ->title('Không đủ quyền')
                         ->warning()
