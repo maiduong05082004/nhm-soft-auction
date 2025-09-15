@@ -90,7 +90,9 @@ class DashboardController extends Controller
     public function page_static(string $slug)
     {
         $page = $this->pageStaticService->getBySlug($slug)->first();
-
+        if (!$page) {
+            abort(404, 'Page not found');
+        }
         $news = $this->articleService->getArticlesList([], 1, 12);
         $query['is_hot'] = 'true';
         $products = $this->productService->filterProductList($query, 1, 12);
