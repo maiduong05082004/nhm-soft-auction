@@ -70,6 +70,9 @@ class UpgradeMembership extends Component
         $membership = $this->membershipService->getMembershipPlanById($id);
         if ($membership) {
             $config = $this->configService->getConfigByKeys([
+                ConfigName::API_KEY,
+                ConfigName::CLIENT_ID_APP,
+                ConfigName::CHECKSUM_KEY,
                 ConfigName::PRICE_ONE_COIN,
             ]);
             $totalPrice = $membership->price * $config[ConfigName::PRICE_ONE_COIN->value];
@@ -93,11 +96,11 @@ class UpgradeMembership extends Component
                     'returnUrl' => $returnUrl,
                 ];
 
-                $signature = HelperFunc::generateSignature($payload, env('CHECKSUM_KEY'));
+                $signature = HelperFunc::generateSignature($payload, $config[ConfigName::CHECKSUM_KEY->value]);
 
                 $response = Http::withHeaders([
-                    'X-Client-Id' => env('CLIENT_ID_APP'),
-                    'X-Api-Key'   => env('API_KEY'),
+                    'X-Client-Id' => $config[ConfigName::CLIENT_ID_APP->value],
+                    'X-Api-Key'   => $config[ConfigName::API_KEY->value],
                     'Content-Type' => 'application/json',
                 ])
                     ->timeout(15)
