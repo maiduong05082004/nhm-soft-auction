@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Config\ConfigName;
 use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,4 +24,11 @@ class Config extends Model
         'config_value',
         'description',
     ];
+
+    public static function getValue(ConfigName $key, $default = null)
+    {
+        return optional(
+            static::where('config_key', $key)->first()
+        )->config_value ?? $default;
+    }
 }

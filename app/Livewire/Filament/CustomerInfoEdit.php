@@ -52,8 +52,6 @@ class CustomerInfoEdit extends Component implements HasForms
         return $form
             ->fill()
             ->schema([
-
-
                 Forms\Components\Fieldset::make('identification')
                     ->label("Thông tin cá nhân")
                     ->schema([

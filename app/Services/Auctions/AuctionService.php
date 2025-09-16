@@ -296,7 +296,7 @@ class AuctionService extends BaseService implements AuctionServiceInterface
         try {
             $auctions = $this->auctionRepo->getUserParticipatingAuctions($userId);
 
-            $auctions->each(function($auction) {
+            $auctions->each(function ($auction) {
                 $this->processAuctionData($auction);
             });
 
@@ -316,14 +316,14 @@ class AuctionService extends BaseService implements AuctionServiceInterface
     {
         $highestBid = $auction->bids()->orderBy('bid_price', 'desc')->first();
         $currentPrice = $highestBid ? $highestBid->bid_price : $auction->starting_price;
-        
-        $auction->current_price_display = number_format($currentPrice, 0, ',', '.') . ' ₫';
-        
-        
+
+        $auction->current_price_display = $currentPrice;
+
+
         $auction->starting_price_display = number_format($auction->starting_price, 0, ',', '.') . ' ₫';
-        
+
         $auction->highest_bid_display = $highestBid ? number_format($highestBid->bid_price, 0, ',', '.') . ' ₫' : $auction->starting_price_display;
-        
+
         $userBid = $auction->bids()->where('user_id', auth()->id())->orderBy('bid_time', 'desc')->first();
         $auction->user_bid_display = $userBid ? number_format($userBid->bid_price, 0, ',', '.') . ' ₫' : 'Chưa đặt giá';
     }

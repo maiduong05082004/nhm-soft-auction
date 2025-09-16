@@ -12,6 +12,7 @@ use App\Repositories\TransactionPoint\TransactionPointRepositoryInterface;
 use App\Repositories\Users\UserRepositoryInterface;
 use App\Services\BaseService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AuthService extends BaseService implements AuthServiceInterface
@@ -64,7 +65,7 @@ class AuthService extends BaseService implements AuthServiceInterface
         /**
          * @var User $user
          */
-        return $this->getRepository('user')->query()->with('creditCards')->find(auth()->id());
+        return $this->getRepository('user')->query()->with('creditCard')->find(auth()->id());
     }
 
     public function updateAuthUser(array $data): bool
@@ -96,8 +97,7 @@ class AuthService extends BaseService implements AuthServiceInterface
             $user->save();
 
             // Lấy thẻ ngân hàng của người dùng
-            $creditCard = $user->creditCards()->first();
-
+            $creditCard = $user->creditCard;
             // Cập nhật thông tin thẻ ngân hàng
             $bin = $data['bin_bank'] ?? null;
             $cardNumber = $data['card_number'] ?? null;
@@ -110,11 +110,11 @@ class AuthService extends BaseService implements AuthServiceInterface
                     $creditCard->update([
                         'bin_bank' => $bin,
                         'card_number' => $cardNumber,
-                        'card_holder_name' => $cardHolder,
+                        'name' => $cardHolder,
                     ]);
                 } else {
                     // Tạo mới thẻ ngân hàng nếu chưa có
-                    $user->creditCards()->create([
+                    $user->creditCard()->create([
                         'bin_bank' => $bin,
                         'card_number' => $cardNumber,
                         'name' => $cardHolder,
@@ -127,6 +127,7 @@ class AuthService extends BaseService implements AuthServiceInterface
             return true;
         } catch (\Exception $exception) {
             DB::rollBack();
+            Log::info($exception);
             return false;
         }
     }
