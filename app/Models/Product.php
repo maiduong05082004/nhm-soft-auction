@@ -61,6 +61,11 @@ class Product extends Model
         return $this->hasMany(Wishlist::class);
     }
 
+    public function owner () 
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function evaluations()
     {
         return $this->hasMany(Evaluate::class);

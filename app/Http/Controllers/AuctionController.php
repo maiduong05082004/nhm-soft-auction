@@ -126,7 +126,7 @@ class AuctionController extends Controller
     public function getUserParticipatingAuctions()
     {
         $result = $this->auctionService->getUserParticipatingAuctions($this->userId);
-
+        // dd($result['data']);
         if ($result['success']) {
             return view('pages.auctions.user-participating', ['auctions' => $result['data']]);
         } else {

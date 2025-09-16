@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Permission\RoleConstant;
 use App\Services\Cart\CartServiceInterface;
 use App\Services\Checkout\CheckoutServiceInterface;
 use App\Repositories\Products\ProductRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 class CartController extends Controller
 {
 	protected $cartService;
@@ -30,7 +32,7 @@ class CartController extends Controller
 		$quantity = $request->input('quantity', 1);
 
 		$result = $this->cartService->addToCart($this->userId, $productId, $quantity);
-		
+
 		if ($result['success']) {
 			return redirect()->route('cart.index')->with('success', $result['message']);
 		} else {
@@ -55,10 +57,10 @@ class CartController extends Controller
 	public function checkout()
 	{
 		$auctionCheckoutData = session('auction_checkout_data');
-		
+
 		if ($auctionCheckoutData) {
 			$product = $this->productRepo->find($auctionCheckoutData['product_id']);
-			
+
 			$cartItems = collect([
 				(object) [
 					'product_id' => $auctionCheckoutData['product_id'],
@@ -72,20 +74,28 @@ class CartController extends Controller
 					]
 				]
 			]);
-			
+
 			$user = auth()->user();
 			$auctionCheckoutData['name'] = $user->name ?? '';
 			$auctionCheckoutData['phone'] = $user->phone ?? '';
 			$auctionCheckoutData['product_slug'] = $product->slug ?? '';
-			
+
 			$total = $auctionCheckoutData['amount'];
-			$hasCreditCard = $this->checkoutService->hasCreditCardConfig();
 			
+			$hasCreditCard = false;
+			foreach ($cartItems as $item) {
+				$product = $this->productRepo->find($item->product_id);
+				if ($product->owner->creditCard || $product->owner->hasRole(RoleConstant::ADMIN) ) {
+					$hasCreditCard = true;
+					break;
+				}
+			}
+
 			$discountInfo = $this->checkoutService->getCheckoutDiscountInfo($this->userId, $total);
-			
+
 			return view('pages.checkout.checkout', compact('cartItems', 'total', 'hasCreditCard', 'auctionCheckoutData', 'discountInfo'));
 		}
-		
+
 		$result = $this->cartService->getUserCart($this->userId);
 
 		if ($result['success']) {
@@ -98,15 +108,20 @@ class CartController extends Controller
 					$total = $cartItems->sum(fn($i) => ($i->price ?? 0) * ($i->quantity ?? 0));
 				}
 			}
-			
+
 			if ($cartItems->isEmpty()) {
 				return redirect()->route('cart.index')->with('error', 'Giỏ hàng trống!');
 			}
+			$hasCreditCard = false;
+			foreach ($cartItems as $item) {
+				if ($item->product->owner->creditCard || $item->product->owner->hasRole(RoleConstant::ADMIN)) {
+					$hasCreditCard = true;
+					break;
+				}
+			}
 
-			$hasCreditCard = $this->checkoutService->hasCreditCardConfig();
-			
 			$discountInfo = $this->checkoutService->getCheckoutDiscountInfo($this->userId, $total);
-			
+
 			return view('pages.checkout.checkout', compact('cartItems', 'total', 'hasCreditCard', 'discountInfo'));
 		} else {
 			return redirect()->back()->with('error', $result['message']);
@@ -125,7 +140,7 @@ class CartController extends Controller
 			'auction_id' => 'nullable|integer',
 			'note' => 'nullable|string|max:1000'
 		]);
-		
+
 		if ($request->filled('auction_id')) {
 			$checkoutData = [
 				'auction_id' => $request->auction_id,
@@ -137,16 +152,12 @@ class CartController extends Controller
 				'note' => $request->note ?? '',
 			];
 
-			if ($checkoutData['payment_method'] == '1' && !$this->checkoutService->hasCreditCardConfig()) {
-				return redirect()->back()->with('error', 'Chưa cấu hình thẻ ngân hàng để tạo QR.');
-			}
-
 			$result = $this->checkoutService->processAuctionCheckout($this->userId, $checkoutData);
 			
 			if ($result['success']) {
 				$orderId = $result['data']['order_detail_id'];
 				$paymentStatus = $result['data']['payment_status'];
-				
+
 				if ($paymentStatus === 'success') {
 					return redirect()->route('order.success', ['order' => $orderId]);
 				} else {
@@ -156,7 +167,7 @@ class CartController extends Controller
 				return redirect()->back()->with('error', $result['message']);
 			}
 		}
-		
+
 		$checkoutData = [
 			'name' => $request->name,
 			'phone' => $request->phone,
@@ -167,16 +178,12 @@ class CartController extends Controller
 			'selected' => $request->selected
 		];
 
-		if ($checkoutData['payment_method'] == '1' && !$this->checkoutService->hasCreditCardConfig()) {
-			return redirect()->back()->with('error', 'Chưa cấu hình thẻ ngân hàng để tạo QR.');
-		}
-
 		$result = $this->checkoutService->processCheckout($this->userId, $checkoutData);
-		
+
 		if ($result['success']) {
 			$paymentMethod = $checkoutData['payment_method'];
 			$orderId = $result['data']['order_detail_id'];
-			
+
 			if ($paymentMethod == '1') {
 				return redirect()->route('payment.qr', ['order' => $orderId]);
 			} else {
@@ -190,17 +197,20 @@ class CartController extends Controller
 	public function qrPayment($orderId)
 	{
 		$result = $this->checkoutService->getOrderDetails($orderId);
-		
 		if ($result['success']) {
 			$orderDetail = $result['data']['orderDetail'];
 			$payment = $result['data']['payment'];
-			if (!$this->checkoutService->hasCreditCardConfig()) {
-				return redirect()->route('cart.index')->with('error', 'Thiếu cấu hình thẻ ngân hàng để tạo QR.');
+			
+			foreach ($payment as $pay) {
+				if ($pay->payer->hasRole(RoleConstant::ADMIN)) {
+					$pay->vietqr = $this->checkoutService->buildVietQrUrl($pay, \App\Utils\HelperFunc::getAdminCreditCard(), $orderDetail);
+				} else {
+
+					$creditcard = $pay->payer->creditCard;
+					$pay->vietqr = $this->checkoutService->buildVietQrUrl($pay, $creditcard, $orderDetail);
+				}
 			}
-
-			$vietqrUrl = $this->checkoutService->buildVietQrUrl($orderDetail, $payment);
-
-			return view('pages.checkout.payment', compact('orderDetail', 'payment', 'vietqrUrl'));
+			return view('pages.checkout.payment', compact('orderDetail', 'payment'));
 		} else {
 			return redirect()->back()->with('error', $result['message']);
 		}
@@ -239,7 +249,7 @@ class CartController extends Controller
 	public function orderSuccess($orderId)
 	{
 		$result = $this->checkoutService->getOrderDetails($orderId);
-		
+
 		if ($result['success']) {
 			$orderDetail = $result['data']['orderDetail'];
 			return view('pages.checkout.success', compact('orderDetail'));
@@ -287,7 +297,4 @@ class CartController extends Controller
 			return response()->json($result, 400);
 		}
 	}
-
-
-
 }

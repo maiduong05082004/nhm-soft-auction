@@ -19,7 +19,7 @@
 						'name' => $product->name ?? 'Sản phẩm',
 						'firstImage' => $firstImage ? ['image_url' => $firstImage->image_url] : null,
 						'type_sale' => \App\Enums\Product\ProductTypeSale::AUCTION->value,
-						'price_display' => number_format((float) $currentPrice, 0, ',', '.') . ' ₫',
+						'price' => (float) $currentPrice,
 						'views' => $product->views ?? null,
 						'created_at' => $product->created_at ?? null,
 					];

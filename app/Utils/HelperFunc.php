@@ -2,6 +2,8 @@
 
 namespace App\Utils;
 
+use App\Enums\Config\ConfigName;
+use App\Models\Config;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
@@ -96,18 +98,11 @@ class HelperFunc
         return hash_hmac('sha256', $dataString, $key);
     }
 
-
-    // public static function getPageLayouts(): array
-    // {
-    //     $path = resource_path('views/page-layouts');
-    //     $files = File::files($path);
-
-    //     $layouts = [];
-    //     foreach ($files as $file) {
-    //         $name = $file->getFilenameWithoutExtension();
-    //         $layouts[$name] = Str::headline($name); 
-    //     }
-
-    //     return $layouts;
-    // }
+    public static function getAdminCreditCard(): array {
+        return [
+            'bank_name'   => Config::getValue(ConfigName::ADMIN_ACCOUNT_BANK_NAME),
+            'bank_bin'    => Config::getValue(ConfigName::ADMIN_ACCOUNT_BANK_BIN),
+            'bank_account'=> Config::getValue(ConfigName::ADMIN_ACCOUNT_BANK_ACCOUNT),
+        ];
+    }
 }

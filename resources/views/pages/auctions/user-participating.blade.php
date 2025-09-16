@@ -24,7 +24,7 @@
                         'firstImage' => $auction->product->images && $auction->product->images->count() > 0 ? [
                             'image_url' => $auction->product->images->first()->image_url
                         ] : null,
-                        'price_display' => $auction->current_price_display,
+                        'price' => (int) $auction->current_price_display,
                     ];
                 @endphp
                 

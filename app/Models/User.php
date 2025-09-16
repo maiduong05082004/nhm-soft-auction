@@ -15,6 +15,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Filament\Models\Contracts\FilamentUser;
 use Spatie\Permission\Traits\HasRoles;
 use App\Enums\CommonConstant;
+use App\Enums\Permission\RoleConstant;
+
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasRoles;
@@ -152,13 +154,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Notification::class);
     }
 
-    // Các mối quan hệ với TransactionPayment
     public function transactionPayments()
     {
         return $this->hasMany(TransactionPayment::class);
     }
 
-    // Các mối quan hệ với TransactionPoint
     public function transactionPoints()
     {
         return $this->hasMany(TransactionPoint::class);
@@ -169,9 +169,9 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Auction::class, 'winner_id');
     }
 
-    public function creditCards()
+    public function creditCard()
     {
-        return $this->hasMany(CreditCard::class);
+        return $this->hasOne(CreditCard::class);
     }
 
 }
