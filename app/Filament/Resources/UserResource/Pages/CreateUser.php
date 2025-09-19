@@ -23,6 +23,8 @@ class CreateUser extends CreateRecord
         if (!empty($data['new_password'])) {
             $data['password'] = $data['new_password'];
         }
+        $data['email_verified_at'] = now();
+        dd($data);
         return static::getModel()::create($data);
     }
     protected function getCreateFormAction(): Actions\Action

@@ -117,7 +117,7 @@ class ProductService extends BaseService implements ProductServiceInterface
             $currentUserOrderDetail = null;
             $currentUserPayment = null;
             $isCurrentUserPaid = false;
-            
+
             if (auth()->check()) {
                 $currentUserId = auth()->id();
                 $currentUserOrderDetail = $this->repositories['orderDetail']->getAll([
@@ -126,14 +126,14 @@ class ProductService extends BaseService implements ProductServiceInterface
                     $order = $this->repositories['order']->getAll(['order_detail_id' => $od->id, 'product_id' => $product->id])->first();
                     return $order !== null;
                 });
-                
+
                 if ($currentUserOrderDetail) {
                     $currentUserPayment = $this->repositories['payment']->getAll(['order_detail_id' => $currentUserOrderDetail->id])->first();
-                    
+
                     $isCurrentUserPaid = $currentUserPayment && ($currentUserPayment->status === 'success');
                 }
             }
-            
+
             $payment = $currentUserPayment ?: ($orderDetail ? $this->repositories['payment']->getAll(['order_detail_id' => $orderDetail->id])->first() : null);
 
             $auctionData = [
@@ -155,11 +155,11 @@ class ProductService extends BaseService implements ProductServiceInterface
 
         $evaluateStats = $this->evaluateService->getProductRatingStats($product->id);
         $statUserId = $user->id ?? null;
-        if($statUserId){
+        if ($statUserId) {
             $sellerStats = $this->evaluateService->getUserSellerRatingStats((int) $statUserId);
-        } else{
+        } else {
             $defaultStats = [];
-            for($i = 1; $i <= 5; $i++) {
+            for ($i = 1; $i <= 5; $i++) {
                 $defaultStats[$i] = 0;
             }
             $sellerStats = $statUserId ? $this->evaluateService->getUserSellerRatingStats((int) $statUserId) : [
@@ -190,19 +190,19 @@ class ProductService extends BaseService implements ProductServiceInterface
 
         $userMembership = null;
         $canParticipateAuctions = false;
-        
+
         if (auth()->check()) {
             $currentUserId = auth()->id();
-            
+
             $activeMembership = $this->repositories['membershipUser']->getAll([
                 'user_id' => $currentUserId,
                 'status' => 1,
             ])->where('end_date', '>=', now())->first();
-            
+
             if ($activeMembership) {
                 $activeMembership->load('membershipPlan');
             }
-            
+
             if ($activeMembership) {
                 $membershipPlan = $activeMembership->membershipPlan;
                 if ($membershipPlan) {
@@ -262,16 +262,16 @@ class ProductService extends BaseService implements ProductServiceInterface
     public function getCurrentProductPrice(Product $product): float
     {
         if ((int)($product->type_sale ?? 0) === ProductTypeSale::AUCTION->value) {
-            $auction = $product->relationLoaded('auction') 
-                ? $product->auction 
+            $auction = $product->relationLoaded('auction')
+                ? $product->auction
                 : $this->repositories['auction']->getAuctionByProductId($product->id);
-            
+
             if ($auction) {
                 $highestBid = $this->repositories['auction']->getHighestBid($auction->id);
                 return $highestBid ? (float) $highestBid->bid_price : (float) ($auction->start_price ?? 0);
             }
         }
-        
+
         return (float) ($product->price ?? 0);
     }
 
@@ -286,7 +286,8 @@ class ProductService extends BaseService implements ProductServiceInterface
         return $this->productRepository->incrementViewCount($productId);
     }
 
-    public function getCountProductByCreatedByAndNearMonthly ($userId)  {
+    public function getCountProductByCreatedByAndNearMonthly($userId)
+    {
         return $this->productRepository->getCountProductByCreatedByAndNearMonthly($userId);
     }
 
@@ -309,24 +310,22 @@ class ProductService extends BaseService implements ProductServiceInterface
     public function closeExpiredListings(): int
     {
         $now = Carbon::now();
-        $defaultDays = (int) $this->configService->getConfigValue(ConfigName::DISPLAY_TIME_AFTER_AUCTION->value, 0);
+        $defaultDays = (int) $this->configService->getConfigValue(
+            ConfigName::DISPLAY_TIME_AFTER_AUCTION->value,
+            0
+        );
 
-        $activeProducts = $this->productRepository->query()
+        $expireThreshold = $now->subDays($defaultDays);
+
+        $closed = $this->productRepository->query()
             ->where('status', ProductStatus::ACTIVE)
-            ->get();
-
-        $closed = 0;
-        foreach ($activeProducts as $product) {
-            $expireTime = Carbon::parse($product->end_time)->addDays($defaultDays);
-            if ($now->greaterThanOrEqualTo($expireTime)) {
-                $product->status = ProductStatus::INACTIVE;
-                $product->save();
-                $closed++;
-            }
-        }
+            ->whereNotNull('end_time')
+            ->where('end_time', '<=', $expireThreshold)
+            ->update(['status' => ProductStatus::INACTIVE]);
 
         return $closed;
     }
+
 
     public function createProductWithSideEffects(array $data, int $userId): Product
     {

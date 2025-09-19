@@ -77,7 +77,7 @@ class BuyMembership extends Component
                 $returnUrl = route('home');
                 $cancelUrl = route('home');
                 $desc = $descBank;
-                $expiredAtForApi = now()->addMinutes(5)->timestamp;
+                $expiredAtForApi = now()->addMinutes(15)->timestamp;
 
                 $payload = [
                     'amount' => $amount,

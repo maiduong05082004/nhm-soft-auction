@@ -92,7 +92,7 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                 'membership_plan_id' => $membershipPlan->id,
                 'transaction_code' => $dataTransfer['descBank'] ?? null,
                 'order_code' => $dataTransfer['orderCode'] ?? null,
-                'expired_at' => now()->addMinutes(5),
+                'expired_at' => now()->addMinutes(15),
             ]);
 
             DB::commit();

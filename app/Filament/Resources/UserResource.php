@@ -38,6 +38,7 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
                     ->email()
+                    ->unique()
                     ->required()
                     ->rules([
                         fn($get) => function (string $attribute, $value, $fail) use ($get) {
@@ -58,7 +59,6 @@ class UserResource extends Resource
                         },
                     ])
                     ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
 
                 Forms\Components\Fieldset::make('Password')
                     ->schema([
@@ -79,7 +79,7 @@ class UserResource extends Resource
                             ),
 
                         Forms\Components\TextInput::make('new_password')
-                            ->label('New Password')
+                            ->label('Mật khẩu')
                             ->password()
                             ->visible(fn($get, $record) => $record === null || $get('showChangePassword') === true)
                             ->required(fn($record) => $record === null)
@@ -101,7 +101,7 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Select::make('role')
                     ->required()
-                    ->label('RoleConstant')
+                    ->label('Quyền')
                     ->options(function () {
                         if (auth()->user()->role === 'admin') {
                             return [
@@ -120,47 +120,47 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Tên')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\ImageColumn::make('profile_photo_path')
-                    ->label('Ảnh')
-                    ->circular()
-                    ->defaultImageUrl(fn($record) => $record->profile_photo_url),
-                Tables\Columns\TextColumn::make('phone')
-                    ->label('Số điện thoại')
-                    ->searchable()
-                    ->default('no phone'),
-                Tables\Columns\TextColumn::make('address')
-                    ->label('Địa chỉ')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('current_balance')
-                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫')
-                    ->label('Số dư')
-                    ->searchable()
-                    ->default(0),
-                Tables\Columns\TextColumn::make('membership')
-                    ->searchable()
-                    ->formatStateUsing(fn($record): string => $record->activeMemberships->count() > 0 ? 'Membership' : 'Chưa đăng ký')
-                    ->badge()
-                    ->color(fn($record): string => $record->activeMemberships->count() > 0 ? 'success' : 'danger'),
-                Tables\Columns\TextColumn::make('reputation')
-                    ->label('Danh tiếng')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            Tables\Columns\TextColumn::make('name')
+                ->label('Tên')
+                ->sortable()
+                ->searchable(),
+            Tables\Columns\TextColumn::make('email')
+                ->label('Email')
+                ->sortable()
+                ->searchable(),
+            Tables\Columns\ImageColumn::make('profile_photo_path')
+                ->label('Ảnh')
+                ->circular()
+                ->defaultImageUrl(fn($record) => $record->profile_photo_url),
+            Tables\Columns\TextColumn::make('phone')
+                ->label('Số điện thoại')
+                ->searchable()
+                ->default('no phone'),
+            Tables\Columns\TextColumn::make('address')
+                ->label('Địa chỉ')
+                ->sortable(),
+            Tables\Columns\TextColumn::make('current_balance')
+                ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫')
+                ->label('Số dư')
+                ->searchable()
+                ->default(0),
+            Tables\Columns\TextColumn::make('membership')
+                ->searchable()
+                ->formatStateUsing(fn($record): string => $record->activeMemberships->count() > 0 ? 'Membership' : 'Chưa đăng ký')
+                ->badge()
+                ->color(fn($record): string => $record->activeMemberships->count() > 0 ? 'success' : 'danger'),
+            Tables\Columns\TextColumn::make('reputation')
+                ->label('Danh tiếng')
+                ->sortable(),
+            Tables\Columns\TextColumn::make('created_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+            Tables\Columns\TextColumn::make('updated_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ])
             ->filters([
                 //
             ])
