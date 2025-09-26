@@ -67,6 +67,22 @@ class CreateOrder extends CreateRecord
         }
     }
 
+    protected function beforeCreate(): void
+    {
+        $data = $this->form->getState();
+        $paymentMethod = $data['payment_method'] ?? '0';
+        $validation = $this->Service()->validatePaymentMethodForItems($data['items'] ?? [], $paymentMethod);
+        if (!($validation['ok'] ?? true)) {
+            $names = implode(', ', array_values($validation['invalid']));
+            Notification::make()
+                ->title('Phương thức thanh toán không phù hợp')
+                ->body('Các sản phẩm không hỗ trợ phương thức đã chọn: ' . $names)
+                ->danger()
+                ->send();
+            $this->halt();
+        }
+    }
+
     protected function getRedirectUrl(): string
     {
         $formData = $this->form->getState();

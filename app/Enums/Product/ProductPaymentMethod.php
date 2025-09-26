@@ -4,7 +4,7 @@ namespace App\Enums\Product;
 
 enum ProductPaymentMethod: int
 {
-    case COD = 0;
+    case COD = 0; 
     case QR_CODE = 1;
     case BOTH = 2;
 

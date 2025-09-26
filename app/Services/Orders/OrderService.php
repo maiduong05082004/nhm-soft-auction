@@ -2,6 +2,7 @@
 
 namespace App\Services\Orders;
 
+use App\Enums\Product\ProductPaymentMethod;
 use App\Models\OrderDetail;
 use App\Models\Payment;
 use App\Models\Product;
@@ -74,7 +75,7 @@ class OrderService extends BaseService implements OrderServiceInterface
     public function persistOrderItems(OrderDetail $orderDetail, array $items): void
     {
         Order::where('order_detail_id', $orderDetail->id)->delete();
-
+        
         foreach ($items as $it) {
             $productId = (int) ($it['product_id'] ?? 0);
             $qty = (float) ($it['quantity'] ?? 1);
@@ -104,7 +105,7 @@ class OrderService extends BaseService implements OrderServiceInterface
             'total' => $subtotal + $shippingFee,
         ])->save();
 
-        Payment::create([
+        $payment = Payment::create([
             'order_detail_id' => $orderDetail->id,
             'user_id' => $orderDetail->user_id,
             'payment_method' => $paymentMethod,
@@ -117,6 +118,8 @@ class OrderService extends BaseService implements OrderServiceInterface
             'transaction_fee' => 0,
             'status' => $paymentMethod === '1' ? 'pending' : 'success',
         ]);
+
+        Order::where('order_detail_id', $orderDetail->id)->update(['payment_id' => $payment->id]);
     }
 
     public function mapOrderItemsForEdit(OrderDetail $orderDetail): array
@@ -134,6 +137,34 @@ class OrderService extends BaseService implements OrderServiceInterface
                 'subtotal' => $line,
             ];
         })->toArray();
+    }
+
+    public function validatePaymentMethodForItems(array $items, string $paymentMethod): array
+    {
+        $invalid = [];
+        foreach ($items as $it) {
+            $productId = (int) ($it['product_id'] ?? 0);
+            if ($productId <= 0) {
+                continue;
+            }
+            $product = $this->repositories['product']->find($productId);
+            if (!$product) {
+                continue;
+            }
+            $support = (int) ($product->pay_method ?? 0);
+            if ($paymentMethod === '0') {
+                $allowed = in_array($support, [ProductPaymentMethod::COD->value, \App\Enums\Product\ProductPaymentMethod::BOTH->value], true);
+            } else {
+                $allowed = in_array($support, [ProductPaymentMethod::QR_CODE->value, \App\Enums\Product\ProductPaymentMethod::BOTH->value], true);
+            }
+            if (!$allowed) {
+                $invalid[$productId] = (string) ($product->name ?? ('#' . $productId));
+            }
+        }
+        return [
+            'ok' => count($invalid) === 0,
+            'invalid' => $invalid,
+        ];
     }
 
     public function createOrder(array $data)
@@ -272,7 +303,7 @@ class OrderService extends BaseService implements OrderServiceInterface
                 ]);
             }
 
-            Payment::create([
+            $payment = Payment::create([
                 'id' => HelperFunc::getTimestampAsId(),
                 'order_detail_id' => $orderDetail->id,
                 'user_id' => $userId,
@@ -281,6 +312,8 @@ class OrderService extends BaseService implements OrderServiceInterface
                 'status' => $checkoutData['payment_method'] === '1' ? 'pending' : 'success',
                 'pay_date' => $checkoutData['payment_method'] === '0' ? now() : null
             ]);
+
+            Order::where('order_detail_id', $orderDetail->id)->update(['payment_id' => $payment->id]);
 
             Cart::where('user_id', $userId)
                 ->where('status', 'active')
