@@ -103,16 +103,16 @@ class UserResource extends Resource
                     ->required()
                     ->label('Quyền')
                     ->options(function () {
-                        if (auth()->user()->role === 'admin') {
+                        if (auth()->user()->hasRole('admin')) {
                             return [
-                                'user' => 'User',
-                                'member' => 'Member',
-                            ];
-                        } else {
-                            return [
-                                'user' => 'User',
+                                \App\Enums\Permission\RoleConstant::ADMIN->value    => 'Admin',
+                                \App\Enums\Permission\RoleConstant::CUSTOMER->value => 'Customer',
                             ];
                         }
+
+                        return [
+                            \App\Enums\Permission\RoleConstant::CUSTOMER->value => 'Customer',
+                        ];
                     }),
             ]);
     }

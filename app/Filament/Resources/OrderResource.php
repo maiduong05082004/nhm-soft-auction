@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
 use App\Services\Orders\OrderService;
 use App\Enums\Permission\RoleConstant;
 use Filament\Support\Enums\MaxWidth;
+
 class OrderResource extends Resource
 {
     protected static ?string $model = OrderDetail::class;
@@ -35,8 +36,13 @@ class OrderResource extends Resource
     protected static ?string $pluralModelLabel = 'Đơn hàng';
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?int $navigationSort = 1;
-    
+
     public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
+    }
+
+    public static function canAccess(): bool
     {
         return auth()->user()->hasRole(RoleConstant::ADMIN);
     }
@@ -217,7 +223,7 @@ class OrderResource extends Resource
                     ->modalContent(function (OrderDetail $record) {
                         $payment = $record->payments->first();
                         $isAdmin = static::currentUserIsAdmin();
-                        
+
                         return view('filament.admin.resources.orders.payment-status-modal', [
                             'order' => $record,
                             'payment' => $payment,
