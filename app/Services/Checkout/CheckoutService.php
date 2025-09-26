@@ -5,6 +5,7 @@ namespace App\Services\Checkout;
 use App\Services\BaseService;
 use App\Enums\OrderStatus;
 use App\Enums\Permission\RoleConstant;
+use App\Enums\Product\ProductPaymentMethod;
 use App\Repositories\Orders\OrderRepository;
 use App\Repositories\OrderDetails\OrderDetailRepository;
 use App\Repositories\Payments\PaymentRepository;
@@ -146,7 +147,6 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                     ['stock' => DB::raw('GREATEST(stock - ' . (int) $cartItem->quantity . ', 0)')]
                 );
             }
-
             foreach ($ordersByOwner as $ownerId => $data) {
                 $items = $data['items'];
                 $orderIds  = $data['order_ids'];
@@ -157,8 +157,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                 $amountAfterDiscount = round($finalTotal * $shareRatio, 2);
 
                 $owner = $items[0]->product->owner;
-
-                $paymentMethod = $checkoutData['payment_method'] === '1'
+                $paymentMethod = $checkoutData['payment_method'] == ProductPaymentMethod::QR_CODE->value
                     ? ($owner->creditCard || $owner->hasRole(RoleConstant::ADMIN) ? 1 : 2)
                     : 2;
 
@@ -168,7 +167,6 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                     'amount'          => $amountAfterDiscount,
                     'payment_method'  => $paymentMethod,
                     'transaction_id'  => 'TXN-' . HelperFunc::getTimestampAsId(),
-                    'payer_id'        => $ownerId,
                     'pay_date'        => now(),
                     'currency_code'   => 'VND',
                     'payer_email'     => $checkoutData['email'],
@@ -177,8 +175,11 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
                     'created_at'      => now(),
                     'updated_at'      => now(),
                 ]);
-
-                $payment->orders()->attach($orderIds);
+                foreach( $orderIds as $orderId)
+                $this->getRepository('order')->updateMany(
+                    ['id' => $orderId],
+                    ['payment_id' => $payment->id]
+                );
             }
 
             $cartResult->each(function ($item) {
@@ -203,7 +204,6 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             ];
         } catch (\Exception $e) {
             DB::rollBack();
-            dd($e);
             return [
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi xử lý đơn hàng!',
@@ -221,7 +221,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             }
 
             $payment = null;
-            if ($orderDetail->payment_method == '1') {
+            if ($orderDetail->payment_method != ProductPaymentMethod::COD->value) {
                 $payment = $this->getRepository('payment')->getAll(['order_detail_id' => $orderId]);
             }
 

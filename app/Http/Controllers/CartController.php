@@ -81,11 +81,11 @@ class CartController extends Controller
 			$auctionCheckoutData['product_slug'] = $product->slug ?? '';
 
 			$total = $auctionCheckoutData['amount'];
-			
+
 			$hasCreditCard = false;
 			foreach ($cartItems as $item) {
 				$product = $this->productRepo->find($item->product_id);
-				if ($product->owner->creditCard || $product->owner->hasRole(RoleConstant::ADMIN) ) {
+				if ($product->owner->creditCard || $product->owner->hasRole(RoleConstant::ADMIN)) {
 					$hasCreditCard = true;
 					break;
 				}
@@ -153,7 +153,7 @@ class CartController extends Controller
 			];
 
 			$result = $this->checkoutService->processAuctionCheckout($this->userId, $checkoutData);
-			
+
 			if ($result['success']) {
 				$orderId = $result['data']['order_detail_id'];
 				$paymentStatus = $result['data']['payment_status'];
@@ -199,15 +199,12 @@ class CartController extends Controller
 		$result = $this->checkoutService->getOrderDetails($orderId);
 		if ($result['success']) {
 			$orderDetail = $result['data']['orderDetail'];
-			$payment = $result['data']['payment'];
-			
+			$payment = collect($result['data']['payment']);
 			foreach ($payment as $pay) {
-				if ($pay->payer->hasRole(RoleConstant::ADMIN)) {
+				if ($pay->orders->first()->product->owner->hasRole(RoleConstant::ADMIN)) {
 					$pay->vietqr = $this->checkoutService->buildVietQrUrl($pay, \App\Utils\HelperFunc::getAdminCreditCard(), $orderDetail);
-				} else {
-
-					$creditcard = $pay->payer->creditCard;
-					$pay->vietqr = $this->checkoutService->buildVietQrUrl($pay, $creditcard, $orderDetail);
+				} else if ($pay->orders->first()->product->owner->creditCard) {
+					$pay->vietqr = $this->checkoutService->buildVietQrUrl($pay, $pay->orders->first()->product->owner->creditCard, $orderDetail);
 				}
 			}
 			return view('pages.checkout.payment', compact('orderDetail', 'payment'));
