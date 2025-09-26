@@ -23,7 +23,7 @@
         @endif
 
         @if (isset($product['type_sale']) && $product['type_sale'] == \App\Enums\Product\ProductTypeSale::AUCTION->value)
-            <span class="absolute top-2 right-2 badge badge-warning gap-1 text-[10px]">Đấu giá</span>
+            <span class="absolute top-2 right-2 badge badge-warning gap-1 text-[10px]">Trả giá</span>
         @elseif (!empty($product['created_at']) && \Carbon\Carbon::parse($product['created_at'])->gt(now()->subWeek()))
             <span class="absolute top-2 right-2 badge badge-accent gap-1 text-[10px]">Mới</span>
         @endif
@@ -49,7 +49,7 @@
                 @endif
             </div>
             <div class="text-[12px] font-bold text-orange-600 whitespace-nowrap overflow-hidden text-ellipsis">
-                {{ $product['price_display'] ?? '0 ₫' }}
+                {{ number_format($product['price'], 0, ',', '.') . '₫' }}
             </div>
         </div>
 

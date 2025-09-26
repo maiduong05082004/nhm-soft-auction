@@ -6,6 +6,7 @@ use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Payment extends Model
 {
     use HasFactory;
@@ -20,7 +21,6 @@ class Payment extends Model
         'transaction_id',
         'pay_date',
         'currency_code',
-        'payer_id',
         'payer_email',
         'transaction_fee',
         'status',
@@ -39,7 +39,7 @@ class Payment extends Model
         return $this->belongsTo(OrderDetail::class);
     }
 
-    public function user()
+    public function payer()
     {
         return $this->belongsTo(User::class);
     }

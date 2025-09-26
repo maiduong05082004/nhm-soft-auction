@@ -15,7 +15,6 @@ use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
 use App\Models\Cart;
 use App\Models\Order;
-
 class OrderService extends BaseService implements OrderServiceInterface
 {
     protected ProductService $productService;
@@ -61,6 +60,82 @@ class OrderService extends BaseService implements OrderServiceInterface
         return number_format($amount, 0, ',', '.') . ' ₫';
     }
 
+    public function getLinePrice(int $productId): float
+    {
+        return $this->getProductCurrentPrice($productId);
+    }
+
+    public function computeLineTotal(int $productId, float $quantity): float
+    {
+        $price = $this->getLinePrice($productId);
+        return $quantity * (float) $price;
+    }
+
+    public function persistOrderItems(OrderDetail $orderDetail, array $items): void
+    {
+        Order::where('order_detail_id', $orderDetail->id)->delete();
+
+        foreach ($items as $it) {
+            $productId = (int) ($it['product_id'] ?? 0);
+            $qty = (float) ($it['quantity'] ?? 1);
+            if ($productId <= 0 || $qty <= 0) {
+                continue;
+            }
+            $total = $this->computeLineTotal($productId, $qty);
+            Order::create([
+                'order_detail_id' => $orderDetail->id,
+                'product_id' => $productId,
+                'quantity' => $qty,
+                'total' => $total,
+            ]);
+        }
+    }
+
+    public function recalcTotalsAndCreatePayment(OrderDetail $orderDetail, string $paymentMethod): void
+    {
+        $orderDetail->loadMissing('items');
+        $subtotal = 0.0;
+        foreach ($orderDetail->items as $item) {
+            $subtotal += (float) ($item->total ?? 0);
+        }
+        $shippingFee = (float) ($orderDetail->shipping_fee ?? 0);
+        $orderDetail->forceFill([
+            'subtotal' => $subtotal,
+            'total' => $subtotal + $shippingFee,
+        ])->save();
+
+        Payment::create([
+            'order_detail_id' => $orderDetail->id,
+            'user_id' => $orderDetail->user_id,
+            'payment_method' => $paymentMethod,
+            'amount' => $orderDetail->total,
+            'transaction_id' => HelperFunc::getTimestampAsId(),
+            'payer_id' => HelperFunc::getTimestampAsId(),
+            'pay_date' => now(),
+            'currency_code' => 'VND',
+            'payer_email' => $orderDetail->email_receiver,
+            'transaction_fee' => 0,
+            'status' => $paymentMethod === '1' ? 'pending' : 'success',
+        ]);
+    }
+
+    public function mapOrderItemsForEdit(OrderDetail $orderDetail): array
+    {
+        $orderDetail->loadMissing('items');
+        return $orderDetail->items->map(function ($it) {
+            $qty = (float) ($it->quantity ?? 0);
+            $productId = (int) ($it->product_id ?? 0);
+            $unit = $this->getLinePrice($productId);
+            $line = $this->computeLineTotal($productId, $qty);
+            return [
+                'product_id' => $productId,
+                'quantity' => $qty,
+                'price' => $unit,
+                'subtotal' => $line,
+            ];
+        })->toArray();
+    }
+
     public function createOrder(array $data)
     {
         $data['subtotal'] = $this->calculateSubtotal($data['items'] ?? []);
@@ -99,12 +174,17 @@ class OrderService extends BaseService implements OrderServiceInterface
     public function afterCreate(OrderDetail $orderDetail, string $paymentMethod): void
     {
         $orderDetail->loadMissing('items', 'items.product');
+       
         $subtotal = 0.0;
 
         foreach ($orderDetail->items as $item) {
             $qty = (float) ($item->quantity ?? 0);
-            $price = (float) ($item->product?->price ?? 0);
-            $subtotal += $qty * $price;
+            $price = (float) ($item->price ?? ($item->product?->price ?? 0));
+            $line = $qty * $price;
+            if (!empty($item->subtotal)) {
+                $line = (float) $item->subtotal;
+            }
+            $subtotal += $line;
         }
 
         $shippingFee = (float) ($orderDetail->shipping_fee ?? 0);

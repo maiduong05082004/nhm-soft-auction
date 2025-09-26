@@ -314,7 +314,7 @@
                         <span
                             class="px-2 py-1 rounded text-xs font-medium
                             {{ $product->type_sale === ($typeSale['AUCTION'] ?? 2) ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-600' }}">
-                            {{ $product->type_sale === ($typeSale['AUCTION'] ?? 2) ? 'Đấu giá' : 'Bán hàng' }}
+                            {{ $product->type_sale === ($typeSale['AUCTION'] ?? 2) ? 'Trả giá' : 'Bán hàng' }}
                         </span>
                         @if ($product->created_at && $product->created_at->diffInDays(now()) <= 7)
                             <div class="badge badge-ghost">new</div>
@@ -334,7 +334,7 @@
                                 {{ number_format($currentPrice, 0, ',', '.') }} ₫
                             </div>
                             <div class="text-sm text-gray-500 mt-1">
-                                ({{ $totalBids }} lượt đấu giá)
+                                ({{ $totalBids }} lượt trả giá)
                             </div>
                         @else
                             <div>
@@ -414,7 +414,7 @@
                                     <path
                                         d="M16.5 3.75a.75.75 0 01.75.75v1.055a6.75 6.75 0 013 5.695v.75a6.75 6.75 0 01-3 5.695V19.5a.75.75 0 01-.75.75h-9a.75.75 0 01-.75-.75v-1.305a6.75 6.75 0 01-3-5.695v-.75a6.75 6.75 0 013-5.695V4.5a.75.75 0 01.75-.75h9z" />
                                 </svg>
-                                <span><span class="font-semibold">Đấu giá đã kết thúc</span> - Kết thúc lúc
+                                <span><span class="font-semibold">Phiên Trả giá đã kết thúc</span> - Kết thúc lúc
                                     {{ $endedAtStr }}</span>
                             </div>
                             @php
@@ -430,7 +430,7 @@
                                                 <path
                                                     d="M11.7 1.7a.75.75 0 01.6 0l6 2.5a.75.75 0 01.45.97l-2.27 6.15a6.75 6.75 0 01-4.02 3.98l-.46.16-.01 2.04a.75.75 0 01-.75.75H12a.75.75 0 01-.75-.75v-2.03l-.46-.17a6.75 6.75 0 01-4.01-3.97L4.5 5.17a.75.75 0 01.45-.97l6-2.5z" />
                                             </svg>
-                                            <span>Người thắng đấu giá</span>
+                                            <span>Người thắng phiên trả giá</span>
                                         </div>
 
                                         @if ($isCurrentUserWinner)
@@ -473,26 +473,97 @@
 
                                                 @unless ($paid)
                                                     <form method="POST" action="{{ route('auction.pay-now') }}"
-                                                        class="flex flex-col sm:flex-row gap-2">
+                                                        class="flex flex-col gap-2">
                                                         @csrf
                                                         <input type="hidden" name="auction_id"
                                                             value="{{ $auctionData['auction']->id ?? '' }}" />
                                                         <button type="submit" class="btn btn-neutral flex-1">Thanh toán
                                                             ngay</button>
-                                                        @if (!empty($user->email))
-                                                            <a href="mailto:{{ $user->email }}" class="btn btn-outline">Liên
-                                                                hệ người bán</a>
-                                                        @elseif (!empty($user->phone))
-                                                            <a href="tel:{{ $user->phone }}" class="btn btn-outline">Liên hệ
-                                                                người bán</a>
-                                                        @else
-                                                            <a href="#" class="btn btn-outline">Liên hệ người bán</a>
-                                                        @endif
+                                                        <ul class="space-y-2">
+                                                            <h3 class="text-lg font-semibold mb-2">Thông tin liên hệ</h3>
+
+                                                            {{-- Phone --}}
+                                                            @if ($user->phone)
+                                                                <li class="flex items-center gap-2">
+                                                                    <x-heroicon-o-phone class="w-5 h-5 text-green-600" />
+                                                                    <a href="tel:{{ $user->phone }}"
+                                                                        class="text-blue-600 hover:underline">
+                                                                        {{ $user->phone }}
+                                                                    </a>
+                                                                </li>
+                                                            @endif
+
+                                                            {{-- Email --}}
+                                                            @if ($user->email)
+                                                                <li class="flex items-center gap-2">
+                                                                    <x-heroicon-o-envelope class="w-5 h-5 text-gray-600" />
+                                                                    <a href="mailto:{{ $user->email }}"
+                                                                        class="text-blue-600 hover:underline">
+                                                                        {{ $user->email }}
+                                                                    </a>
+                                                                </li>
+                                                            @endif
+
+                                                            {{-- Contact info --}}
+                                                            @if (!empty($user->contact_info))
+                                                                {{-- Zalo --}}
+                                                                @if (!empty($user->contact_info['link_zalo']))
+                                                                    <li class="flex items-center gap-2">
+                                                                        <x-heroicon-o-chat-bubble-left-ellipsis
+                                                                            class="w-5 h-5 text-blue-500" />
+                                                                        <a href="https://zalo.me/{{ $user->contact_info['link_zalo'] }}"
+                                                                            target="_blank"
+                                                                            class="text-blue-600 hover:underline">
+                                                                            Zalo: {{ $user->contact_info['link_zalo'] }}
+                                                                        </a>
+                                                                    </li>
+                                                                @endif
+
+                                                                {{-- Facebook --}}
+                                                                @if (!empty($user->contact_info['link_facebook']))
+                                                                    <li class="flex items-center gap-2">
+                                                                        <x-heroicon-o-globe-alt
+                                                                            class="w-5 h-5 text-blue-700" />
+                                                                        <a href="{{ $user->contact_info['link_facebook'] }}"
+                                                                            target="_blank"
+                                                                            class="text-blue-600 hover:underline">
+                                                                            Facebook
+                                                                        </a>
+                                                                    </li>
+                                                                @endif
+
+                                                                {{-- Shopee --}}
+                                                                @if (!empty($user->contact_info['link_shopee']))
+                                                                    <li class="flex items-center gap-2">
+                                                                        <x-heroicon-o-shopping-bag
+                                                                            class="w-5 h-5 text-orange-500" />
+                                                                        <a href="{{ $user->contact_info['link_shopee'] }}"
+                                                                            target="_blank"
+                                                                            class="text-orange-600 hover:underline">
+                                                                            Shopee
+                                                                        </a>
+                                                                    </li>
+                                                                @endif
+
+                                                                {{-- TikTok --}}
+                                                                @if (!empty($user->contact_info['link_tiktok']))
+                                                                    <li class="flex items-center gap-2">
+                                                                        <x-heroicon-o-play-circle
+                                                                            class="w-5 h-5 text-pink-500" />
+                                                                        <a href="{{ $user->contact_info['link_tiktok'] }}"
+                                                                            target="_blank"
+                                                                            class="text-pink-600 hover:underline">
+                                                                            TikTok
+                                                                        </a>
+                                                                    </li>
+                                                                @endif
+                                                            @endif
+                                                        </ul>
                                                     </form>
                                                 @endunless
                                             </div>
                                         @endif
-
+                                        {{-- {"link_zalo": null, "link_shopee": "shopee.vn", "link_tiktok": null, "link_facebook": null} --}}
                                     </div>
                                 </div>
                             @endif
@@ -559,7 +630,7 @@
                                                     <button type="button"
                                                         class="w-full btn btn-neutral text-white font-semibold rounded-lg"
                                                         onclick="showBidConfirmation(event)">
-                                                        Đấu giá ngay
+                                                        Trả giá ngay
                                                     </button>
                                                 @else
                                                     <a href="{{ url('/admin/buy-memberships') }}"
@@ -571,7 +642,7 @@
                                                 <button type="button"
                                                     class="w-full btn btn-outline font-semibold rounded-lg"
                                                     onclick="window.location.href='{{ url('/admin/login') }}'">
-                                                    Đăng nhập để đấu giá
+                                                    Đăng nhập để Trả giá
                                                 </button>
                                             @endif
                                         </form>
@@ -635,16 +706,16 @@
                                     @if (!(isset($auctionData['auction']) && \Carbon\Carbon::parse($auctionData['auction']->end_time)->lte(now())))
                                         <div class="text-gray-500 mb-2">
                                             @if ($auctionData)
-                                                Phiên đấu giá chưa bắt đầu hoặc đã kết thúc
+                                                Phiên trả giá chưa bắt đầu hoặc đã kết thúc
                                                 <br><small>Status: {{ $auctionData['auction']->status }}</small>
                                             @else
-                                                Chưa có phiên đấu giá cho sản phẩm này
+                                                Chưa có phiên trả giá cho sản phẩm này
                                             @endif
                                         </div>
                                     @endif
                                     @if (!$isAuctionEnded)
                                         <button class="btn btn-disabled w-full" disabled>
-                                            Đấu giá ngay
+                                            Trả giá ngay
                                         </button>
                                     @endif
                                 </div>
@@ -748,7 +819,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
                                     </svg>
-                                    <h2 class="card-title">Lịch sử đấu giá của bạn</h2>
+                                    <h2 class="card-title">Lịch sử trả giá của bạn</h2>
                                 </div>
 
                                 @if ($userBidInfo && $userBidInfo['success'] && isset($userBidInfo['can_bid_now']) && !$userBidInfo['can_bid_now'])
@@ -794,7 +865,7 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0118 0Z" />
                                                 </svg>
-                                                <span class="font-medium">Bạn có thể đấu giá ngay bây giờ!</span>
+                                                <span class="font-medium">Bạn có thể trả giá ngay bây giờ!</span>
                                             </div>
                                         </div>
                                     </div>
@@ -839,7 +910,7 @@
                     @endphp
                     <div class="card w-full bg-base-100 card-md shadow-sm mt-4">
                         <div class="card-body">
-                            <h2 class="card-title">{{ $isAuctionEnded ? 'Lịch sử đấu giá cuối' : 'Lịch sử đấu giá' }}</h2>
+                            <h2 class="card-title">{{ $isAuctionEnded ? 'Lịch sử trả giá cuối' : 'Lịch sử Trả giá' }}</h2>
                             @if (!empty($auctionData['recent_bids']) && count($auctionData['recent_bids']) > 0)
                                 <div class="space-y-3">
                                     @foreach ($auctionData['recent_bids']->take(5) as $bid)
@@ -867,7 +938,7 @@
                                     @endforeach
                                 </div>
                             @else
-                                <div class="text-sm text-gray-500">Chưa có lịch sử đấu giá</div>
+                                <div class="text-sm text-gray-500">Chưa có lịch sử trả giá</div>
                             @endif
                         </div>
                     </div>
@@ -877,7 +948,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span>Chỉ đấu giá khi bạn thực sự muốn mua sản phẩm. Việc đấu giá thành công có tính ràng buộc
+                        <span>Chỉ Trả giá khi bạn thực sự muốn mua sản phẩm. Việc trả giá thành công có tính ràng buộc
                             pháp
                             lý.</span>
                     </div>
@@ -1199,7 +1270,7 @@
         @endphp
         <dialog id="bid_confirmation_modal" class="modal">
             <div class="modal-box">
-                <h3 class="font-bold text-lg mb-4">Xác nhận đấu giá</h3>
+                <h3 class="font-bold text-lg mb-4">Xác nhận trả giá</h3>
                 <div class="space-y-4">
 
                     {{-- @unless ($userHasBidded)
@@ -1233,7 +1304,7 @@
                     @endunless --}}
 
                     <div class="text-sm text-gray-600">
-                        <p>Bạn có chắc chắn muốn tham gia đấu giá sản phẩm này?</p>
+                        <p>Bạn có chắc chắn muốn tham gia trả giá sản phẩm này?</p>
                     </div>
                 </div>
 
@@ -1241,7 +1312,7 @@
                     <form method="dialog">
                         <button class="btn btn-outline" onclick="closeBidConfirmation()">Hủy</button>
                     </form>
-                    <button class="btn btn-neutral" onclick="confirmBid()">Xác nhận đấu giá</button>
+                    <button class="btn btn-neutral" onclick="confirmBid()">Xác nhận trả giá</button>
                 </div>
             </div>
         </dialog>

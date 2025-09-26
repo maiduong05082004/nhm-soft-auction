@@ -50,7 +50,11 @@
                     <div>
                         <span class="font-medium text-gray-700">Trạng thái:</span>
                         <span class="ml-2">
-                            @if($payment->status === 'success')
+                            @if($payment->payment_method == '0')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Giao dịch trực tiếp
+                                </span>
+                            @elseif($payment->status === 'success')
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
@@ -95,28 +99,10 @@
                         </span>
                     </div>
                 </div>
-
-                @if($payment->status === 'pending' && $isAdmin)
-                    <div class="border-t pt-4">
-                        <h4 class="font-medium text-gray-900 mb-3">Xác nhận thanh toán</h4>
-                        <p class="text-sm text-gray-600 mb-4">
-                            Xác nhận rằng bạn đã nhận được tiền từ khách hàng và cập nhật trạng thái thanh toán.
-                        </p>
-                        <form action="{{ route('admin.orders.confirm-payment', $order->id) }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                Xác nhận đã nhận tiền
-                            </button>
-                        </form>
-                    </div>
-                @endif
             </div>
         @else
             <div class="p-4 text-center text-gray-500">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="mx-auto h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
                 <h3 class="mt-2 text-sm font-medium text-gray-900">Chưa có thông tin thanh toán</h3>

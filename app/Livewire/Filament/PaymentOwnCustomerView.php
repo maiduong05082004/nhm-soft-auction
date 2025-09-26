@@ -32,7 +32,7 @@ class PaymentOwnCustomerView extends Component implements HasTable, HasForms
     public ?Authenticatable $auth;
     public $sumTransaction;
     public ?array $data = [];
-    public string $viewType = '1';
+    public string $viewType = '2';
     public $current_balance = 0;
     public $config;
     private AuthServiceInterface $authService;
@@ -70,7 +70,7 @@ class PaymentOwnCustomerView extends Component implements HasTable, HasForms
         $userId = $this->auth?->id ?? auth()->id();
 
         return match ($this->viewType) {
-            '1'     => TransactionPayment::where('user_id', $userId)->where('description', '!=', 'PAY BY POINTS')->latest(),
+            // '1'     => TransactionPayment::where('user_id', $userId)->where('description', '!=', 'PAY BY POINTS')->latest(),
             '2'     => MembershipTransaction::where('user_id', $userId)->latest(),
             // '3'     => Payment::where('user_id', $userId)->latest(),
             default => TransactionPayment::where('user_id', $userId)->latest(),
@@ -96,30 +96,30 @@ class PaymentOwnCustomerView extends Component implements HasTable, HasForms
     protected function getTableColumns(): array
     {
         return match ($this->viewType) {
-            '1' => [
-                Tables\Columns\TextColumn::make('description')->label('Mã GD')->sortable(),
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Loại')
-                    ->toggleable()
-                    ->formatStateUsing(fn($state) => TransactionPaymentType::label($state ?? '')),
-                $this->moneyColumn('money'),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Trạng thái')
-                    ->formatStateUsing(function ($state) {
-                        $int = is_numeric($state) ? (int)$state : null;
-                        return $int !== null ? TransactionPaymentStatus::getLabel($int) : $state;
-                    })
-                    ->color(function ($state) {
-                        if (!is_numeric($state)) return 'default';
-                        return match (TransactionPaymentStatus::from((int)$state)) {
-                            TransactionPaymentStatus::WAITING => 'warning',
-                            TransactionPaymentStatus::ACTIVE  => 'success',
-                            TransactionPaymentStatus::FAILED  => 'danger',
-                            default => 'default',
-                        };
-                    }),
-                $this->createdAtColumn(),
-            ],
+            // '1' => [
+            //     Tables\Columns\TextColumn::make('description')->label('Mã GD')->sortable(),
+            //     Tables\Columns\TextColumn::make('type')
+            //         ->label('Loại')
+            //         ->toggleable()
+            //         ->formatStateUsing(fn($state) => TransactionPaymentType::label($state ?? '')),
+            //     $this->moneyColumn('money'),
+            //     Tables\Columns\TextColumn::make('status')
+            //         ->label('Trạng thái')
+            //         ->formatStateUsing(function ($state) {
+            //             $int = is_numeric($state) ? (int)$state : null;
+            //             return $int !== null ? TransactionPaymentStatus::getLabel($int) : $state;
+            //         })
+            //         ->color(function ($state) {
+            //             if (!is_numeric($state)) return 'default';
+            //             return match (TransactionPaymentStatus::from((int)$state)) {
+            //                 TransactionPaymentStatus::WAITING => 'warning',
+            //                 TransactionPaymentStatus::ACTIVE  => 'success',
+            //                 TransactionPaymentStatus::FAILED  => 'danger',
+            //                 default => 'default',
+            //             };
+            //         }),
+            //     $this->createdAtColumn(),
+            // ],
 
             '2' => [
                 Tables\Columns\TextColumn::make('transaction_code')->label('Mã GD')->sortable(),

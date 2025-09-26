@@ -26,6 +26,8 @@ use Illuminate\Support\Carbon;
 use App\Services\Orders\OrderService;
 use App\Enums\Permission\RoleConstant;
 use Filament\Support\Enums\MaxWidth;
+use App\Models\User;
+
 class OrderResource extends Resource
 {
     protected static ?string $model = OrderDetail::class;
@@ -35,8 +37,13 @@ class OrderResource extends Resource
     protected static ?string $pluralModelLabel = 'Đơn hàng';
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?int $navigationSort = 1;
-    
+
     public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->hasRole(RoleConstant::ADMIN);
+    }
+
+    public static function canAccess(): bool
     {
         return auth()->user()->hasRole(RoleConstant::ADMIN);
     }
@@ -217,7 +224,7 @@ class OrderResource extends Resource
                     ->modalContent(function (OrderDetail $record) {
                         $payment = $record->payments->first();
                         $isAdmin = static::currentUserIsAdmin();
-                        
+
                         return view('filament.admin.resources.orders.payment-status-modal', [
                             'order' => $record,
                             'payment' => $payment,
@@ -402,16 +409,37 @@ class OrderResource extends Resource
                 ->maxLength(32)
                 ->unique(OrderDetail::class, 'code_orders', ignoreRecord: true),
 
-            Forms\Components\Select::make('user_id')
+                Forms\Components\Select::make('user_id')
                 ->label('Khách hàng')
                 ->relationship('user', 'name')
-                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->name} - {$record->phone}")
                 ->searchable()
                 ->required()
+                ->options(function () {
+                    return User::query()
+                        ->latest()
+                        ->limit(5)
+                        ->get()
+                        ->mapWithKeys(fn($user) => [
+                            $user->id => "{$user->name} - " . ($user->phone ?? 'Không có số điện thoại')
+                        ]);
+                })
+                ->getOptionLabelFromRecordUsing(fn(Model $record) => 
+                    "{$record->name} - " . ($record->phone ?? 'Không có số điện thoại')
+                )
+                ->getSearchResultsUsing(function (string $search) {
+                    return User::query()
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->limit(50)
+                        ->get()
+                        ->mapWithKeys(fn($user) => [
+                            $user->id => "{$user->name} - " . ($user->phone ?? 'Không có số điện thoại')
+                        ]);
+                })
                 ->live()
                 ->afterStateUpdated(function ($state, Forms\Set $set) {
                     if ($state) {
-                        $user = \App\Models\User::find($state);
+                        $user = User::find($state);
                         if ($user && $user->address) {
                             $set('ship_address', $user->address);
                             $set('email_receiver', $user->email);
@@ -457,7 +485,7 @@ class OrderResource extends Resource
                         return [];
                     }
 
-                    $user = \App\Models\User::find($userId);
+                    $user = User::find($userId);
                     if (!$user || !$user->address) {
                         return [];
                     }
@@ -587,9 +615,18 @@ class OrderResource extends Resource
     {
         return Repeater::make('items')
             ->label('Sản phẩm')
-            ->relationship()
             ->addable(! $isEdit)
             ->deletable(! $isEdit)
+            ->afterStateHydrated(function (Forms\Set $set, ?\App\Models\OrderDetail $record, $state) {
+                if ($state && is_array($state) && count($state) > 0) {
+                    return;
+                }
+                if (! $record) {
+                    return;
+                }
+                $mapped = static::orderService()->mapOrderItemsForEdit($record);
+                $set('items', $mapped);
+            })
             ->schema([
                 Forms\Components\Select::make('product_id')
                     ->label('Sản phẩm')
@@ -599,7 +636,7 @@ class OrderResource extends Resource
                     ->reactive()
                     ->afterStateUpdated(function ($state, Forms\Set $set) {
                         if ($state) {
-                            $price = static::orderService()->getProductCurrentPrice($state);
+                            $price = static::orderService()->getLinePrice((int) $state);
                             $set('price', $price);
                             $set('quantity', 1);
                             $set('subtotal', $price * 1);
@@ -619,8 +656,9 @@ class OrderResource extends Resource
                     ->live(debounce: 700)
                     ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                         $quantity = (float) ($state ?: 1);
-                        $price = (float) ($get('price') ?: 0);
-                        $line = $quantity * $price;
+                        $productId = (int) ($get('product_id') ?: 0);
+                        $line = static::orderService()->computeLineTotal($productId, $quantity);
+                        $set('price', static::orderService()->getLinePrice($productId));
                         $set('subtotal', $line);
                     })
                     ->columnSpan([
@@ -629,7 +667,7 @@ class OrderResource extends Resource
                     ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
                         $productId = $get('product_id');
                         if ($productId) {
-                            $price = static::orderService()->getProductCurrentPrice($productId);
+                            $price = static::orderService()->getLinePrice((int) $productId);
                             $quantity = (float) ($get('quantity') ?: 0);
                             $set('price', $price);
                             $set('subtotal', $price * $quantity);
@@ -672,7 +710,7 @@ class OrderResource extends Resource
                     ]),
             ])
             ->columns(12)
-            ->defaultItems(1)
+            ->minItems(1)
             ->reorderable(false)
             ->collapsible(false)
             ->addActionLabel('Thêm sản phẩm')

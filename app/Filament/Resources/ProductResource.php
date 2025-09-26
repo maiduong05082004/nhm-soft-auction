@@ -293,7 +293,7 @@ class ProductResource extends Resource
                     })->formatStateUsing(fn($state) => $state ? 'hoạt động' : 'không hoạt động'),
                 Tables\Columns\TextColumn::make('type_sale')
                     ->label('Dạng Sản Phẩm')
-                    ->formatStateUsing(fn($state): string => $state == 1 ? 'Bán trực tiếp' : ($state == 2 ? 'Đấu giá' : 'Không xác định'))
+                    ->formatStateUsing(fn($state): string => $state == 1 ? 'Bán trực tiếp' : ($state == 2 ? 'Trả giá' : 'Không xác định'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make("start_time")
                     ->toggleable(isToggledHiddenByDefault: true)
@@ -343,7 +343,7 @@ class ProductResource extends Resource
                     ->label('Dạng sản phẩm')
                     ->options([
                         1 => 'Bán trực tiếp',
-                        2 => 'Đấu giá',
+                        2 => 'Trả giá',
                     ]),
 
                 Tables\Filters\SelectFilter::make('status')
@@ -428,7 +428,7 @@ class ProductResource extends Resource
                                 if (empty($record->auction()->get()) || empty($record->orderDetails()->get())) {
                                     Notification::make()
                                         ->title('Lỗi')
-                                        ->body("Không thể xóa sản phẩm '{$record->name}' vì nó có liên quan đến lệnh hoặc đấu giá.")
+                                        ->body("Không thể xóa sản phẩm '{$record->name}' vì nó có liên quan đến lệnh hoặc trả giá trực tuyến.")
                                         ->danger()
                                         ->send();
                                     return;

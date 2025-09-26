@@ -28,11 +28,6 @@ class ViewCustomerInfo extends Page
                 ->url(route('filament.admin.resources.customer-infos.edit'))
                 ->icon('heroicon-o-pencil')
                 ->color('primary'),
-            Actions\Action::make('payment')
-                ->label('Nạp tiền')
-                ->url(route('filament.admin.resources.point-packages.buy'))
-                ->icon('heroicon-o-credit-card')
-                ->color('success'),
         ];
     }
 }

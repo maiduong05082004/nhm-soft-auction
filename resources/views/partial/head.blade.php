@@ -1,6 +1,6 @@
 <title>@yield('title', 'Takara-ooku')</title>
-<meta name="description" content="@yield('meta_description', 'Mô tả mặc định cho trang đấu giá của bạn')">
-<meta name="keywords" content="@yield('meta_keywords', 'đấu giá, mua bán, auctions')">
+<meta name="description" content="@yield('meta_description', 'Mô tả mặc định cho trang trả giá trực tuyến của bạn')">
+<meta name="keywords" content="@yield('meta_keywords', 'Trả giá, mua bán, auctions')">
 <meta name="author" content="Tên của bạn">
 
 <!-- Open Graph -->
@@ -81,7 +81,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         @if (session('success'))
-            @if (str_contains(session('success'), 'Đấu giá thành công'))
+            @if (str_contains(session('success'), 'Trả giá thành công'))
                 @if (session('user_bid_data'))
                     showAuctionSuccessToast({!! json_encode(session('user_bid_data'), JSON_UNESCAPED_UNICODE) !!});
                 @else

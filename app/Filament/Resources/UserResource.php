@@ -38,9 +38,27 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
                     ->email()
+                    ->unique()
                     ->required()
+                    ->rules([
+                        fn($get) => function (string $attribute, $value, $fail) use ($get) {
+                            $id = $get('id');
+                            if ($id) {
+                                // Nếu là chỉnh sửa, bỏ qua bản ghi hiện tại trong việc kiểm tra email trùng lặp
+                                $check = User::query()
+                                    ->where('email', $value)
+                                    ->where('id', '!=', $id)
+                                    ->exists();
+                            } else {
+                                // Nếu là tạo mới, kiểm tra trùng lặp
+                                $check = User::query()->where('email', $value)->exists();
+                            }
+                            if ($check) {
+                                $fail('Email này đã có người sử dụng');
+                            }
+                        },
+                    ])
                     ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
 
                 Forms\Components\Fieldset::make('Password')
                     ->schema([
@@ -61,7 +79,7 @@ class UserResource extends Resource
                             ),
 
                         Forms\Components\TextInput::make('new_password')
-                            ->label('New Password')
+                            ->label('Mật khẩu')
                             ->password()
                             ->visible(fn($get, $record) => $record === null || $get('showChangePassword') === true)
                             ->required(fn($record) => $record === null)
@@ -83,67 +101,66 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Select::make('role')
                     ->required()
-                    ->label('RoleConstant')
+                    ->label('Quyền')
                     ->options(function () {
-                        if (auth()->user()->role === 'admin') {
+                        if (auth()->user()->hasRole('admin')) {
                             return [
-                                'user' => 'User',
-                                'member' => 'Member',
-                            ];
-                        } else {
-                            return [
-                                'user' => 'User',
+                                \App\Enums\Permission\RoleConstant::ADMIN->value    => 'Admin',
+                                \App\Enums\Permission\RoleConstant::CUSTOMER->value => 'Customer',
                             ];
                         }
+
+                        return [
+                            \App\Enums\Permission\RoleConstant::CUSTOMER->value => 'Customer',
+                        ];
                     }),
             ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table->modifyQueryUsing(fn(Builder $query) => $query->with('author', 'category'))
-            ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Tên')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\ImageColumn::make('profile_photo_path')
-                    ->label('Ảnh')
-                    ->circular()
-                    ->defaultImageUrl(fn($record) => $record->profile_photo_url),
-                Tables\Columns\TextColumn::make('phone')
-                    ->label('Số điện thoại')
-                    ->searchable()
-                    ->default('no phone'),
-                Tables\Columns\TextColumn::make('address')
-                    ->label('Địa chỉ')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('current_balance')
-                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫')
-                    ->label('Số dư')
-                    ->searchable()
-                    ->default(0),
-                Tables\Columns\TextColumn::make('membership')
-                    ->searchable()
-                    ->formatStateUsing(fn($record): string => $record->membershipUsers->count() > 0 ? 'Membership' : 'Chưa đăng ký')
-                    ->badge()
-                    ->color(fn($record): string => $record->membershipUsers->count() > 0 ? 'success' : 'danger'),
-                Tables\Columns\TextColumn::make('reputation')
-                    ->label('Danh tiếng')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
+        return $table->columns([
+            Tables\Columns\TextColumn::make('name')
+                ->label('Tên')
+                ->sortable()
+                ->searchable(),
+            Tables\Columns\TextColumn::make('email')
+                ->label('Email')
+                ->sortable()
+                ->searchable(),
+            Tables\Columns\ImageColumn::make('profile_photo_path')
+                ->label('Ảnh')
+                ->circular()
+                ->defaultImageUrl(fn($record) => $record->profile_photo_url),
+            Tables\Columns\TextColumn::make('phone')
+                ->label('Số điện thoại')
+                ->searchable()
+                ->default('no phone'),
+            Tables\Columns\TextColumn::make('address')
+                ->label('Địa chỉ')
+                ->sortable(),
+            Tables\Columns\TextColumn::make('current_balance')
+                ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.') . ' ₫')
+                ->label('Số dư')
+                ->searchable()
+                ->default(0),
+            Tables\Columns\TextColumn::make('membership')
+                ->searchable()
+                ->formatStateUsing(fn($record): string => $record->activeMemberships->count() > 0 ? 'Membership' : 'Chưa đăng ký')
+                ->badge()
+                ->color(fn($record): string => $record->activeMemberships->count() > 0 ? 'success' : 'danger'),
+            Tables\Columns\TextColumn::make('reputation')
+                ->label('Danh tiếng')
+                ->sortable(),
+            Tables\Columns\TextColumn::make('created_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+            Tables\Columns\TextColumn::make('updated_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ])
             ->filters([
                 //
             ])
@@ -224,7 +241,7 @@ class UserResource extends Resource
                                             ->badge()
                                             ->formatStateUsing(fn(string $state): string => match ($state) {
                                                 'recharge_point' => 'Nạp tiền',
-                                                'bid' => 'Đấu giá',
+                                                'bid' => 'Trả giá',
                                                 'buy_product' => 'Mua sản phẩm',
                                                 default => 'Khác',
                                             })

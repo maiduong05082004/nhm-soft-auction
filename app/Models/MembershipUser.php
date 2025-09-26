@@ -46,6 +46,6 @@ class MembershipUser extends Model
 
     public function membershipTransaction ()
     {
-        return $this->hasMany(MembershipTransaction::class);
+        return $this->hasMany(MembershipTransaction::class)->orderBy('created_at', 'desc');
     }
 }

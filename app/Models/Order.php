@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Product;
+
 class Order extends Model
 {
     use HasFactory;
@@ -18,6 +19,7 @@ class Order extends Model
         'product_id',
         'quantity',
         'total',
+        'payment_id'
     ];
 
     protected $casts = [
@@ -44,11 +46,6 @@ class Order extends Model
         });
     }
 
-    public function order()
-    {
-        return $this->belongsTo(OrderDetail::class, 'order_detail_id');
-    }
-
     public function orderDetail()
     {
         return $this->belongsTo(OrderDetail::class, 'order_detail_id');
@@ -57,5 +54,10 @@ class Order extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
     }
 }

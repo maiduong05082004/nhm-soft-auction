@@ -30,7 +30,7 @@
                 </div>
             </div>
             <div class="space-x-4">
-                <a href="{{ url('/admin/orders') }}" class="btn btn-neutral">
+                <a href="{{ url('/admin/my-orders-page') }}" class="btn btn-neutral">
                     Quản lý đơn hàng
                 </a>
                 <a href="{{ route('cart.index') }}" class="btn btn-outline">

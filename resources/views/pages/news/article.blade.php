@@ -121,7 +121,7 @@
                 @if (!empty($imagePath))
                     <figure class="mt-4">
                         <img src="{{ $ogImage }}" class="w-full h-auto object-cover rounded"
-                            alt="{{ $article->title }} - {{ $siteName }}" loading="lazy" itemprop="image" />
+                            alt="{{ $article->title }} - {{ $siteName }}" loading="lazy" itemprop="image" onerror="this.src='{{ asset('images/product_default.jpg') }}'"/>
                     </figure>
                 @endif
 

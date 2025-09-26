@@ -3,7 +3,7 @@
 @endassets
 
 <div class="space-y-4">
-    <x-filament::section icon="heroicon-m-currency-dollar">
+    {{-- <x-filament::section icon="heroicon-m-currency-dollar">
         <x-slot name="heading">
             Tổng quan
         </x-slot>
@@ -31,14 +31,14 @@
                 </div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-                <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Tổng số tiền đã mua đấu giá</div>
+                <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Tổng số tiền đã mua Trả giá</div>
                 <div class="text-3xl font-bold text-gray-700 dark:text-white">
                     {{ number_format($this->sumTransaction['sum_bid_product'], 0, ',', '.') }}
                     <span class="text-2xl text-gray-600 dark:text-gray-400">VND</span>
                 </div>
             </div> --}}
-        </div>
-    </x-filament::section>
+        {{-- </div>
+    </x-filament::section> --}} 
 
     <x-filament::section>
         <x-slot name="heading">Lịch sử giao dịch</x-slot>

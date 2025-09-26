@@ -49,7 +49,10 @@ class CreateOrder extends CreateRecord
         $formData = $this->form->getState();
         $paymentMethod = $formData['payment_method'] ?? '0';
 
-        $this->Service()->afterCreate($orderDetail, $paymentMethod);
+        $items = $formData['items'] ?? [];
+        $this->Service()->persistOrderItems($orderDetail, $items);
+
+        $this->Service()->recalcTotalsAndCreatePayment($orderDetail, $paymentMethod);
 
         if ($paymentMethod === '1') {
             Notification::make()

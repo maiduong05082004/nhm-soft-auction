@@ -168,60 +168,36 @@ class PageStaticResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')
-                    ->label('Ảnh')
-                    ->circular()
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('title')
-                    ->label('Tiêu đề')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(50),
-
-                Tables\Columns\TextColumn::make('slug')
-                    ->label('URL')
-                    ->toggleable()
-                    ->copyable()
-                    ->copyMessage('URL đã sao chép!')
-                    ->copyMessageDuration(1500),
-
+                Tables\Columns\TextColumn::make('id')->label('#')->sortable(),
+                Tables\Columns\TextColumn::make('title')->searchable()->sortable()->limit(50),
+                Tables\Columns\TextColumn::make('slug')->label('URL')->toggleable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Trạng thái')
-                    ->formatStateUsing(fn($state): string => $state == CommonConstant::ACTIVE ? 'Kích hoạt' : 'Ẩn')
-                    ->badge()
-                    ->color(fn($state): string => $state == CommonConstant::ACTIVE ? 'success' : 'gray')
+                    ->formatStateUsing(fn($state) : string => $state ? 'Đã đăng' : 'Nháp')
+                    ->colors([
+                        'secondary' => 'draft',
+                        'success' => 'published',
+                    ])
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('published_at')
                     ->label('Thời điểm đăng')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Tạo lúc')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->label('Created')->dateTime()->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Trạng thái')
                     ->options([
-                        CommonConstant::INACTIVE => 'Ẩn',
-                        CommonConstant::ACTIVE => 'Kích hoạt',
+                        0 => 'Nháp',
+                        1 => 'Đã đăng',
                     ]),
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\Filter::make('published_range')
                     ->label('Khoảng thời gian đăng')
                     ->form([
-                        DateTimePicker::make('published_from')
-                            ->label('Từ ngày')
-                            ->native(false),
-                        DateTimePicker::make('published_until')
-                            ->label('Đến ngày')
-                            ->native(false),
+                        DateTimePicker::make('published_from')->label('Từ'),
+                        DateTimePicker::make('published_until')->label('Tới'),
                     ])
                     ->query(function ($query, $data) {
                         return $query

@@ -52,7 +52,7 @@
                                 <div class="text-center">
                                     <a href="{{ route('products.list', ['product_type' => 'auction']) }}"
                                         class="block hover:opacity-80 transition-opacity">
-                                        <img src="{{ asset('images/svg/auction-bid-svg.svg') }}" class="w-8 h-8 mx-auto mb-2 rounded-lg" alt="Đấu giá">
+                                        <img src="{{ asset('images/svg/auction-bid-svg.svg') }}" class="w-8 h-8 mx-auto mb-2 rounded-lg" alt="Trả giá">
                                         <h3 class="text-xs font-medium text-gray-700 leading-tight">
                                             Trả giá trực tuyến
                                         </h3>
