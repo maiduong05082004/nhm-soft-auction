@@ -24,7 +24,7 @@ class MyOrdersPage extends Page implements HasTable
 
     public static function shouldRegisterNavigation(): bool
     {
-               return auth()->user()->hasRole(RoleConstant::CUSTOMER);
+        return auth()->user()->hasRole(RoleConstant::CUSTOMER);
     }
 
     public function table(Table $table): Table
@@ -43,17 +43,22 @@ class MyOrdersPage extends Page implements HasTable
                     ->label('Thanh toán')
                     ->state(function ($record) {
                         $payment = $record->payments->first();
+                        if ($payment && (string) $payment->payment_method === '0') {
+                            return 'direct';
+                        }
                         return $payment?->status ?? 'pending';
                     })
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'success' => 'success',
                         'pending' => 'warning',
+                        'direct' => 'info',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'success' => 'Đã thanh toán',
                         'pending' => 'Chờ xác nhận',
+                        'direct' => 'Giao dịch trực tiếp',
                         default => ucfirst($state),
                     }),
                 Tables\Columns\TextColumn::make('seller_confirmed')
@@ -68,6 +73,15 @@ class MyOrdersPage extends Page implements HasTable
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Ngày tạo'),
             ])
             ->actions([
+                Tables\Actions\Action::make('pay_now')
+                    ->label('Thanh toán ngay')
+                    ->icon('heroicon-o-credit-card')
+                    ->color('warning')
+                    ->visible(function (OrderDetail $record) {
+                        $payment = $record->payments->first();
+                        return $payment && $payment->status === 'pending';
+                    })
+                    ->url(fn(OrderDetail $record) => ConfirmPayment::getUrl(['record' => $record->id])),
                 Tables\Actions\ViewAction::make()
                     ->label('Xem')
                     ->modalHeading('Trạng thái thanh toán')
@@ -75,9 +89,8 @@ class MyOrdersPage extends Page implements HasTable
                     ->modalWidth(MaxWidth::SixExtraLarge)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Đóng'),
+
             ])
             ->recordUrl(null);
     }
 }
-
-

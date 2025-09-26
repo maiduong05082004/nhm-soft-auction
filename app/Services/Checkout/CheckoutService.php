@@ -204,6 +204,7 @@ class CheckoutService extends BaseService implements CheckoutServiceInterface
             ];
         } catch (\Exception $e) {
             DB::rollBack();
+            dd($e);
             return [
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi xử lý đơn hàng!',
