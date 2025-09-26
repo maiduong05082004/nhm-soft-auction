@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
 use App\Services\Orders\OrderService;
 use App\Enums\Permission\RoleConstant;
 use Filament\Support\Enums\MaxWidth;
+use App\Models\User;
 
 class OrderResource extends Resource
 {
@@ -408,16 +409,37 @@ class OrderResource extends Resource
                 ->maxLength(32)
                 ->unique(OrderDetail::class, 'code_orders', ignoreRecord: true),
 
-            Forms\Components\Select::make('user_id')
+                Forms\Components\Select::make('user_id')
                 ->label('Khách hàng')
                 ->relationship('user', 'name')
-                ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->name} - {$record->phone}")
                 ->searchable()
                 ->required()
+                ->options(function () {
+                    return User::query()
+                        ->latest()
+                        ->limit(5)
+                        ->get()
+                        ->mapWithKeys(fn($user) => [
+                            $user->id => "{$user->name} - " . ($user->phone ?? 'Không có số điện thoại')
+                        ]);
+                })
+                ->getOptionLabelFromRecordUsing(fn(Model $record) => 
+                    "{$record->name} - " . ($record->phone ?? 'Không có số điện thoại')
+                )
+                ->getSearchResultsUsing(function (string $search) {
+                    return User::query()
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->limit(50)
+                        ->get()
+                        ->mapWithKeys(fn($user) => [
+                            $user->id => "{$user->name} - " . ($user->phone ?? 'Không có số điện thoại')
+                        ]);
+                })
                 ->live()
                 ->afterStateUpdated(function ($state, Forms\Set $set) {
                     if ($state) {
-                        $user = \App\Models\User::find($state);
+                        $user = User::find($state);
                         if ($user && $user->address) {
                             $set('ship_address', $user->address);
                             $set('email_receiver', $user->email);
@@ -463,7 +485,7 @@ class OrderResource extends Resource
                         return [];
                     }
 
-                    $user = \App\Models\User::find($userId);
+                    $user = User::find($userId);
                     if (!$user || !$user->address) {
                         return [];
                     }
