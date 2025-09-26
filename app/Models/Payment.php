@@ -21,7 +21,6 @@ class Payment extends Model
         'transaction_id',
         'pay_date',
         'currency_code',
-        'payer_id',
         'payer_email',
         'transaction_fee',
         'status',
@@ -40,18 +39,8 @@ class Payment extends Model
         return $this->belongsTo(OrderDetail::class);
     }
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
     public function payer()
     {
-        return $this->belongsTo(User::class, 'payer_id');
-    }
-
-    public function orders()
-    {
-        return $this->belongsToMany(Order::class, 'order_payment');
+        return $this->belongsTo(User::class);
     }
 }
