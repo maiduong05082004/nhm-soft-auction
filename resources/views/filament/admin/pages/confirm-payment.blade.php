@@ -62,11 +62,8 @@
                     Xác nhận đã thanh toán
                 </x-filament::button>
 
-                <x-filament::button tag="a" color="gray" 
-                    href="{{ route('filament.admin.resources.orders.edit', ['record' => $this->record->id]) }}" 
-                    icon="heroicon-o-arrow-left" 
-                    class="px-6 py-2 text-base">
-                    Quay lại đơn hàng
+                <x-filament::button tag="a" color="gray" href="{{ \App\Filament\Pages\MyOrdersPage::getUrl() }}" icon="heroicon-o-arrow-left" class="px-6 py-2 text-base">
+                    Quay lại danh sách đơn hàng
                 </x-filament::button>
             </div>
         </div>

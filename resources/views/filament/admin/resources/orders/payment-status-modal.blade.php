@@ -50,7 +50,11 @@
                     <div>
                         <span class="font-medium text-gray-700">Trạng thái:</span>
                         <span class="ml-2">
-                            @if($payment->status === 'success')
+                            @if($payment->payment_method == '0')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Giao dịch trực tiếp
+                                </span>
+                            @elseif($payment->status === 'success')
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>

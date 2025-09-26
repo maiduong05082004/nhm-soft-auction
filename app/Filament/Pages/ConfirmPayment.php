@@ -1,32 +1,53 @@
 <?php
 
-namespace App\Filament\Resources\OrderResource\Pages;
+namespace App\Filament\Pages;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\Permission\RoleConstant;
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\CreditCard;
 use App\Models\OrderDetail;
 use App\Models\Payment;
-use Filament\Resources\Pages\Page;
+use Filament\Pages\Page;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
-class QrPayment extends Page
+class ConfirmPayment extends Page
 {
-    protected static string $resource = OrderResource::class;
-    protected static string $view = 'filament.admin.resources.orders.qr-code';
+    protected static string $view = 'filament.admin.pages.confirm-payment';
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     
     public OrderDetail $record;
-    public Payment $payment;
+    public ?Payment $payment = null;
     public ?CreditCard $creditCard = null;
     public array $sellerBreakdowns = [];
 
-    public function mount(OrderDetail $record): void
+    public function mount($record = null): void
     {
-        $this->record = $record;
-        $this->payment = Payment::where('order_detail_id', $record->id)->first();
-        $items = Order::where('order_detail_id', $record->id)
+        $recordId = is_object($record) ? ($record->id ?? null) : ($record ?? null);
+        if (!$recordId) {
+            $recordId = (string) request('record');
+        }
+
+        $this->record = OrderDetail::findOrFail($recordId);
+        $this->payment = Payment::where('order_detail_id', $this->record->id)->first();
+
+        if ((int) ($this->record->user_id) !== (int) (Auth::id())) {
+            abort(403);
+        }
+
+        $firstItem = Order::where('order_detail_id', $this->record->id)
+            ->with('product.owner.creditCard')
+            ->first();
+
+        $this->creditCard = $firstItem?->product?->owner?->creditCard;
+
+        $items = \App\Models\Order::where('order_detail_id', $this->record->id)
             ->with(['product.owner.creditCard'])
             ->get();
 
@@ -65,19 +86,34 @@ class QrPayment extends Page
         }
 
         if (!$this->payment) {
-            abort(404);
+            Notification::make()
+                ->title('Chưa có thông tin thanh toán')
+                ->body('Đơn hàng này chưa có bản ghi thanh toán. Vui lòng thử lại sau.')
+                ->warning()
+                ->send();
+            $this->redirect(\App\Filament\Pages\MyOrdersPage::getUrl());
+            return;
+        }
+        if (!$this->creditCard) {
+            Notification::make()
+                ->title('Thiếu thông tin tài khoản người bán')
+                ->body('Người bán chưa cấu hình tài khoản ngân hàng. Vui lòng liên hệ người bán để cập nhật.')
+                ->warning()
+                ->send();
+            $this->redirect(\App\Filament\Pages\MyOrdersPage::getUrl());
+            return;
         }
     }
 
     public function getTitle(): string
     {
-        return 'QR Code Thanh Toán - Đơn hàng ' . $this->record->code_orders;
+        return 'Thanh Toán - Đơn hàng ' . $this->record->code_orders;
     }
 
     public function getVietQRUrl(?CreditCard $card = null, ?float $amount = null, ?string $addInfo = null): string
     {
         $useCard = $card ?? $this->creditCard;
-        $useAmount = $amount ?? (float) $this->payment->amount;
+        $useAmount = $amount ?? (float) ($this->payment->amount ?? 0);
         $useInfo = $addInfo ?? ('Thanh toan don hang ' . $this->record->code_orders);
         if (!$useCard) {
             return '';
@@ -91,6 +127,9 @@ class QrPayment extends Page
 
     public function confirmPayment(): void
     {
+        if (!$this->payment) {
+            return;
+        }
         $this->payment->update([
             'status' => PaymentStatus::SUCCESS->value,
             'pay_date' => now(),
@@ -103,7 +142,7 @@ class QrPayment extends Page
             ->title('Thanh toán đã được xác nhận!')
             ->success()
             ->send();
-
-        $this->redirect(route('filament.admin.resources.orders.edit', ['record' => $this->record->id]));
+            
+        $this->redirect(\App\Filament\Pages\MyOrdersPage::getUrl());
     }
 }

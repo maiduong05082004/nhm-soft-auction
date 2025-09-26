@@ -48,17 +48,22 @@ class CustomerOrdersPage extends Page implements HasTable
                     ->label('Thanh toán')
                     ->state(function (OrderDetail $record) {
                         $payment = $record->payments->first();
+                        if ($payment && (string) $payment->payment_method === '0') {
+                            return 'direct';
+                        }
                         return $payment?->status ?? 'pending';
                     })
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'success' => 'success',
                         'pending' => 'warning',
+                        'direct' => 'info',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'success' => 'Đã thanh toán',
                         'pending' => 'Chờ xác nhận',
+                        'direct' => 'Giao dịch trực tiếp',
                         default => ucfirst($state),
                     }),
                 Tables\Columns\TextColumn::make('seller_confirmed')

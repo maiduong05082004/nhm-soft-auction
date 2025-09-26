@@ -615,9 +615,18 @@ class OrderResource extends Resource
     {
         return Repeater::make('items')
             ->label('Sản phẩm')
-            ->relationship()
             ->addable(! $isEdit)
             ->deletable(! $isEdit)
+            ->afterStateHydrated(function (Forms\Set $set, ?\App\Models\OrderDetail $record, $state) {
+                if ($state && is_array($state) && count($state) > 0) {
+                    return;
+                }
+                if (! $record) {
+                    return;
+                }
+                $mapped = static::orderService()->mapOrderItemsForEdit($record);
+                $set('items', $mapped);
+            })
             ->schema([
                 Forms\Components\Select::make('product_id')
                     ->label('Sản phẩm')
@@ -627,7 +636,7 @@ class OrderResource extends Resource
                     ->reactive()
                     ->afterStateUpdated(function ($state, Forms\Set $set) {
                         if ($state) {
-                            $price = static::orderService()->getProductCurrentPrice($state);
+                            $price = static::orderService()->getLinePrice((int) $state);
                             $set('price', $price);
                             $set('quantity', 1);
                             $set('subtotal', $price * 1);
@@ -647,8 +656,9 @@ class OrderResource extends Resource
                     ->live(debounce: 700)
                     ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                         $quantity = (float) ($state ?: 1);
-                        $price = (float) ($get('price') ?: 0);
-                        $line = $quantity * $price;
+                        $productId = (int) ($get('product_id') ?: 0);
+                        $line = static::orderService()->computeLineTotal($productId, $quantity);
+                        $set('price', static::orderService()->getLinePrice($productId));
                         $set('subtotal', $line);
                     })
                     ->columnSpan([
@@ -657,7 +667,7 @@ class OrderResource extends Resource
                     ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
                         $productId = $get('product_id');
                         if ($productId) {
-                            $price = static::orderService()->getProductCurrentPrice($productId);
+                            $price = static::orderService()->getLinePrice((int) $productId);
                             $quantity = (float) ($get('quantity') ?: 0);
                             $set('price', $price);
                             $set('subtotal', $price * $quantity);
@@ -700,7 +710,7 @@ class OrderResource extends Resource
                     ]),
             ])
             ->columns(12)
-            ->defaultItems(1)
+            ->minItems(1)
             ->reorderable(false)
             ->collapsible(false)
             ->addActionLabel('Thêm sản phẩm')
