@@ -36,14 +36,14 @@ class MembershipExpiredNotice extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $planName = $this->membershipUser->membershipPlan->name ?? 'gói thành viên';
-        $endDate = $this->membershipUser->end_date ? $this->membershipUser->end_date->format('d/m/Y') : null;
+        $endDate = $this->membershipUser->end_date ? \Carbon\Carbon::parse($this->membershipUser->end_date)->format('d/m/Y') : null;
 
         return (new MailMessage)
             ->subject("Gói thành viên của bạn đã hết hạn")
             ->greeting("Xin chào " . ($notifiable->name ?? 'Bạn'))
             ->line("Gói {$planName} của bạn đã hết hạn vào ngày {$endDate}.")
             ->line('Để tiếp tục sử dụng các quyền lợi, vui lòng gia hạn hoặc chọn gói khác.')
-            ->action('Gia hạn gói', url(route('membership.plans', [], false)))
+            ->action('Gia hạn gói', url('https://takaraooku.com/admin/buy-memberships'))
             ->line('Cảm ơn bạn đã sử dụng dịch vụ.');
     }
 
@@ -57,7 +57,7 @@ class MembershipExpiredNotice extends Notification implements ShouldQueue
             'membership_plan_id' => $this->membershipUser->membership_plan_id,
             'plan_name' => $this->membershipUser->membershipPlan->name ?? null,
             'end_date' => $this->membershipUser->end_date?->toDateString(),
-            'message' => "Gói thành viên đã hết hạn vào ngày {$this->membershipUser->end_date?->format('d/m/Y')}",
+            'message' => "Gói thành viên đã hết hạn vào ngày { $this->membershipUser->end_date}",
         ];
     }
 }

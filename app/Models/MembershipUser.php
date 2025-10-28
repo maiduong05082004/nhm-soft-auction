@@ -25,6 +25,11 @@ class MembershipUser extends Model
         'end_date',
         'status',
     ];
+
+    protected $casts = [
+        'end_date' => 'datetime',
+    ];
+
     protected static function boot()
     {
         parent::boot();
@@ -44,7 +49,7 @@ class MembershipUser extends Model
         return $this->belongsTo(MembershipPlan::class);
     }
 
-    public function membershipTransaction ()
+    public function membershipTransaction()
     {
         return $this->hasMany(MembershipTransaction::class)->orderBy('created_at', 'desc');
     }

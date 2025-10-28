@@ -24,7 +24,7 @@ class MembershipExpiringSoonNotice extends Notification implements ShouldQueue
     /**
      * Get the notification's delivery channels.
      */
-    public function via(object $notifiable): array 
+    public function via(object $notifiable): array
     {
         return ['mail', 'database'];
     }
@@ -32,7 +32,7 @@ class MembershipExpiringSoonNotice extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage 
+    public function toMail(object $notifiable): MailMessage
     {
         $planName = $this->membershipUser->membershipPlan->name ?? 'gói thành viên';
         $endDate = $this->membershipUser->end_date ? $this->membershipUser->end_date->format('d/m/Y') : null;
@@ -41,14 +41,14 @@ class MembershipExpiringSoonNotice extends Notification implements ShouldQueue
             ->subject("Nhắc nhở: Gói {$planName} của bạn sắp hết hạn")
             ->line("Gói {$planName} của bạn sẽ hết hạn vào ngày {$endDate}.")
             ->line("Đây là thông báo trước {$this->daysBefore} ngày để bạn kịp thời gia hạn.")
-            ->action('Gia hạn ngay', url(route('membership.plans', [], false)))
+            ->action('Gia hạn gói', url('https://takaraooku.com/admin/buy-memberships'))
             ->line('Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.');
     }
 
     /**
      * Store data for database notifications.
      */
-    public function toArray(object $notifiable): array 
+    public function toArray(object $notifiable): array
     {
         return [
             'membership_user_id' => $this->membershipUser->id,
