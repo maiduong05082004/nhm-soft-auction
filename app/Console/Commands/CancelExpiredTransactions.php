@@ -27,7 +27,7 @@ class CancelExpiredTransactions extends Command
             $this->info("Transaction {$transaction->id} expired and marked as FAILED.");
             $this->info("Transaction {$transaction->id} expired and marked as FAILED.");
             Log::info("Transaction {$transaction->id} expired and marked as FAILED.");
-            Log::nfo("Transaction {$transaction->id} expired and marked as FAILED.");
+            Log::info("Transaction {$transaction->id} expired and marked as FAILED.");
         }
 
         return Command::SUCCESS;
