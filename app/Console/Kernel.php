@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -15,6 +16,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('membership:check-expired')->daily();
         $schedule->command('app:close-expired-listings')->daily();
         $schedule->command('transactions:cancel-expired')->everyMinute();
+
+        $schedule->call(fn () => Log::info('Scheduler tick: '.now()))->everyMinute();
+
     }
 
     /**

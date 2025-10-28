@@ -39,7 +39,7 @@ class MembershipExpiredNotice extends Notification implements ShouldQueue
         $endDate = $this->membershipUser->end_date ? $this->membershipUser->end_date->format('d/m/Y') : null;
 
         return (new MailMessage)
-            ->subject("Gói membership của bạn đã hết hạn")
+            ->subject("Gói thành viên của bạn đã hết hạn")
             ->greeting("Xin chào " . ($notifiable->name ?? 'Bạn'))
             ->line("Gói {$planName} của bạn đã hết hạn vào ngày {$endDate}.")
             ->line('Để tiếp tục sử dụng các quyền lợi, vui lòng gia hạn hoặc chọn gói khác.')
