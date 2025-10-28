@@ -15,7 +15,6 @@ use Laravel\Sanctum\HasApiTokens;
 use Filament\Models\Contracts\FilamentUser;
 use Spatie\Permission\Traits\HasRoles;
 use App\Enums\CommonConstant;
-use App\Enums\Permission\RoleConstant;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
@@ -152,7 +151,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
     public function notifications()
     {
-        return $this->hasMany(Notification::class);
+        return $this->morphMany(Notification::class, 'notifiable')
+            ->orderBy('created_at', 'desc');
     }
 
     public function transactionPayments()
@@ -174,5 +174,4 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     {
         return $this->hasOne(CreditCard::class);
     }
-
 }

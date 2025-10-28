@@ -6,7 +6,9 @@ use App\Utils\HelperFunc;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-class Notification extends Model
+use Illuminate\Notifications\DatabaseNotification;
+
+class Notification extends DatabaseNotification
 {
     use HasFactory;
     use SoftDeletes;
@@ -27,5 +29,10 @@ class Notification extends Model
         static::creating(function ($model) {
             $model->id = HelperFunc::getTimestampAsId();
         });
+    }
+
+    public function notifiable()
+    {
+        return $this->morphTo('notifiable');
     }
 }
