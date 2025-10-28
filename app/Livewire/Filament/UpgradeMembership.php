@@ -66,9 +66,47 @@ class UpgradeMembership extends Component
 
     public function onNextStep($id)
     {
-        $this->nextStepUpgrade = true;
         $membership = $this->membershipService->getMembershipPlanById($id);
         if ($membership) {
+
+            if ($membership->is_testing) {
+                $planTesting = $this->user->membershipPlans->firstWhere('is_testing', true);
+
+                if ($planTesting) {
+                    Notification::make()
+                        ->title('Lỗi')
+                        ->body('Bạn không thể tiếp tục kịch hoạt gói dùng thử')
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+
+                $result = $this->membershipService->createMembershipForUser(
+                    userId: auth()->id(),
+                    membershipPlan: $membership,
+                    dataTransfer: $this->dataTransfer,
+                );
+                if ($result) {
+                    Notification::make()
+                        ->title('Thành công')
+                        ->body('Đăng ký gói dùng thử thành công')
+                        ->success()
+                        ->send();
+                    $this->dispatch('redirect-after-delay', url: '/admin/buy-memberships', delay: 1000);
+                } else {
+                    Notification::make()
+                        ->title('Lỗi')
+                        ->body('Không thể kịch hoạt gói dùng thử')
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+
+                return;
+            }
+
             $config = $this->configService->getConfigByKeys([
                 ConfigName::API_KEY,
                 ConfigName::CLIENT_ID_APP,
@@ -143,6 +181,7 @@ class UpgradeMembership extends Component
                     'orderCode'     => $orderCode,
                     'expiredAt'     => $expiredAtForApi,
                 ];
+                $this->nextStepUpgrade = true;
 
                 $this->membershipService->createMembershipForUser(
                     userId: auth()->id(),
@@ -193,7 +232,6 @@ class UpgradeMembership extends Component
         $this->status = $result;
 
         if ($result == MembershipTransactionStatus::WAITING->value) {
-
         } else if ($result == MembershipTransactionStatus::ACTIVE->value) {
             $this->paymentSuccess = true;
 

@@ -57,9 +57,47 @@ class BuyMembership extends Component
 
     public function onNextStep($id)
     {
-        $this->nextStepBuy = true;
         $membership = $this->membershipService->getMembershipPlanById($id);
         if ($membership) {
+
+            if ($membership->is_testing) {
+                $planTesting = $this->user->membershipPlans->firstWhere('is_testing', true);
+
+                if ($planTesting) {
+                    Notification::make()
+                        ->title('Lỗi')
+                        ->body('Bạn không thể tiếp tục kịch hoạt gói dùng thử')
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+
+                $result = $this->membershipService->createMembershipForUser(
+                    userId: auth()->id(),
+                    membershipPlan: $membership,
+                    dataTransfer: $this->dataTransfer,
+                );
+                if ($result) {
+                    Notification::make()
+                        ->title('Thành công')
+                        ->body('Đăng ký gói dùng thử thành công')
+                        ->success()
+                        ->send();
+                        $this->dispatch('redirect-after-delay', url: '/admin/buy-memberships', delay: 1000);
+                } else {
+                    Notification::make()
+                        ->title('Lỗi')
+                        ->body('Không thể kịch hoạt gói dùng thử')
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+
+                return;
+            }
+
             $config = $this->configService->getConfigByKeys([
                 ConfigName::API_KEY,
                 ConfigName::CLIENT_ID_APP,
@@ -94,7 +132,7 @@ class BuyMembership extends Component
                     'X-Api-Key'   => $config[ConfigName::API_KEY->value],
                     'Content-Type' => 'application/json',
                 ])
-                    ->timeout(15) 
+                    ->timeout(15)
                     ->post('https://api-merchant.payos.vn/v2/payment-requests', array_merge($payload, [
                         'expiredAt' => $expiredAtForApi,
                         'signature' => $signature
@@ -135,6 +173,8 @@ class BuyMembership extends Component
                     'orderCode'     => $orderCode,
                     'expiredAt'     => $expiredAtForApi,
                 ];
+
+                $this->nextStepBuy = true;
 
                 $this->membershipService->createMembershipForUser(
                     userId: auth()->id(),

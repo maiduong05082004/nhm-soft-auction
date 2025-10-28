@@ -16,6 +16,10 @@
                                 Chưa kích hoạt
                             </x-filament::badge>
                         @endif
+                        @if ($membership->membershipPlan->is_testing)
+                            <x-filament::badge size="xs" class="my-2" color="info">Gói dùng
+                                thử</x-filament::badge>
+                        @endif
                         <div class="p-2">
                             <div class="flex flex-col gap-4">
                                 {{-- Tiêu đề --}}

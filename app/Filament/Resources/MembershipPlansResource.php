@@ -72,12 +72,17 @@ class MembershipPlansResource extends Resource
                 ColorPicker::make('badge_color')
                     ->label('Chọn màu huy hiệu')
                     ->default('#ff5733'),
-
-                Forms\Components\Textarea::make('description')
-                    ->label('Miêu tả')
-                    ->required()
-                    ->columnSpanFull()
-                    ->maxLength(255),
+                Forms\Components\Section::make()
+                    ->schema([
+                        Forms\Components\Textarea::make('description')
+                            ->label('Miêu tả')
+                            ->required()
+                            ->columnSpanFull()
+                            ->maxLength(255),
+                        Forms\Components\Toggle::make('is_testing')
+                            ->label('Gói dùng thử')
+                            ->helperText('Gói thành viên có tính năng tương đương'),
+                    ]),
                 Forms\Components\Section::make('Cấu hình quyền lợi')
                     ->schema([
                         Forms\Components\Toggle::make('config.free_product_listing')

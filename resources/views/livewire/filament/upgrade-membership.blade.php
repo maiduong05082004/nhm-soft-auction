@@ -22,6 +22,10 @@
                                         <p class="text-gray-600 dark:text-white">{{ $currentplan->badge }}</p>
                                     </x-filament::badge>
                                 @endif
+                                @if ($currentplan->is_testing)
+                                    <x-filament::badge size="xs" color="info">Gói dùng
+                                        thử</x-filament::badge>
+                                @endif
                                 <div class="flex flex-col gap-4 mb-4">
                                     {{-- Tiêu đề --}}
                                     <h5 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
@@ -321,6 +325,10 @@
                             <x-filament::badge size="sm" style="{{ $badgeStyle }}" class="mb-2">
                                 <p class="text-gray-600 dark:text-white">{{ $membershipPay->badge }}</p>
                             </x-filament::badge>
+                        @endif
+                        @if ($membershipPay->is_testing)
+                            <x-filament::badge size="xs" class="my-2" color="info">Gói dùng
+                                thử</x-filament::badge>
                         @endif
                         <div class="flex flex-col gap-4 mb-4">
                             {{-- Tiêu đề --}}

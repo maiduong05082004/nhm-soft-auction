@@ -38,11 +38,13 @@ class MembershipPlan extends Model
         'badge',
         'sort',
         'badge_color',
+        'is_testing'
     ];
 
     protected $casts = [
         'config' => 'array',
         'status' => 'boolean',
+        'is_testing' => 'boolean',
     ];
 
     protected static function boot()

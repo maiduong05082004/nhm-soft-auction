@@ -70,6 +70,23 @@ class MembershipService extends BaseService implements MembershipServiceInterfac
                 ->where('user_id', $userId)
                 ->first();
 
+            if ($membershipPlan->is_testing) {
+                $memberUser = $this->getRepository('membershipUser')->insertOne([
+                    'user_id' => $userId,
+                    'membership_plan_id' => $membershipPlan->id,
+                    'status' => CommonConstant::ACTIVE,
+                    'start_date' => $now,
+                    'end_date' => $now->copy()->addMonths($membershipPlan->duration),
+                ]);
+
+                if (! $memberUser || ! isset($memberUser->id)) {
+                    throw new \Exception("Failed to create membership_user record");
+                }
+
+                DB::commit();
+                return true;
+            }
+
             if (! $memberUser) {
                 $memberUser = $this->getRepository('membershipUser')->insertOne([
                     'user_id' => $userId,

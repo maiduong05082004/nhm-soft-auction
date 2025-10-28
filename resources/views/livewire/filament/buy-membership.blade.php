@@ -1,5 +1,19 @@
 @assets
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/admin/buy-membership.js'])
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('redirect-after-delay', ({
+                url,
+                delay
+            }) => {
+                const redirectUrl = url || '/';
+                const redirectDelay = delay || 1000;
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, redirectDelay);
+            });
+        });
+    </script>
 @endassets
 
 <div>
@@ -25,6 +39,10 @@
                                         <x-filament::badge size="sm" style="{{ $badgeStyle }}" class="mb-2">
                                             <p class="text-gray-600 dark:text-white">{{ $item->badge }}</p>
                                         </x-filament::badge>
+                                    @endif
+                                    @if ($item->is_testing)
+                                        <x-filament::badge class="my-2" size="xs" color="info">Gói dùng
+                                            thử</x-filament::badge>
                                     @endif
                                     <div class="flex flex-col gap-4 mb-4">
                                         {{-- Tiêu đề --}}
@@ -165,7 +183,7 @@
                             </template>
 
                             <!-- QR Code -->
-                            <img src="{{ $dataTransfer['urlBankQrcode'] }}" alt="QR Code"
+                            <img src="{{ $dataTransfer['urlBankQrcode'] ?? '' }}" alt="QR Code"
                                 class="w-full h-full object-contain rounded-lg shadow-sm"
                                 x-bind:class="{ 'opacity-0': loading, 'opacity-100': !loading }"
                                 x-on:load="loading = false" x-on:error="loading = false"
@@ -193,6 +211,10 @@
                                 </x-filament::badge>
                             @endif
 
+                            @if ($membership->is_testing)
+                                <x-filament::badge size="xs" class="my-2" color="info">Gói dùng
+                                    thử</x-filament::badge>
+                            @endif
                             <div class="flex flex-col gap-4 mb-6">
                                 <!-- Title -->
                                 <h5
@@ -209,6 +231,7 @@
                                         / {{ $membership->duration }} tháng
                                     </span>
                                 </div>
+
 
                                 <!-- Description -->
                                 <p class="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
